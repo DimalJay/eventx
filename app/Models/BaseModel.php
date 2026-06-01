@@ -10,4 +10,8 @@ abstract class BaseModel {
         echo SchemaGenerator::createTable(static::class);
     }
 
+    public function updateRecord($field, $value){
+        echo SchemaGenerator::updateRecord(static::class, $field, $value);
+    }
+
 }

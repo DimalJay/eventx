@@ -45,5 +45,18 @@ class SchemaGenerator {
 
         return $sql;
     }
+
+    public static function updateRecord(string $className, array $conditions, array $set): string {
+        $reflection = new \ReflectionClass($className);
+        
+        $tableAttr = $reflection->getAttributes(Table::class);
+        if (empty($tableAttr)) {
+            throw new Exception("Class {$className} is missing the #[Table] attribute.");
+        }
+        $tableName = $tableAttr[0]->newInstance()->name;
+        $setClause = implode(', ', array_map(fn($k, $v) => "`{$k}` = '{$v}'", array_keys($set), $set));
+        $whereClause = implode(' AND ', array_map(fn($k, $v) => "`{$k}` = '{$v}'", array_keys($conditions), $conditions));
+        return "UPDATE `{$tableName}` SET {$setClause} WHERE {$whereClause};";
+    }
     
 }

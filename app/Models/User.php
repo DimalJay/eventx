@@ -46,15 +46,22 @@ class User extends BaseModel
     #[Column(type: 'DATETIME', default: 'CURRENT_TIMESTAMP')]
     protected DateTime $createdAt;
 
-    #[Column(type: 'DATETIME', default: 'CURRENT_TIMESTAMP')]
+    #[Column(type: 'DATETIME', nullable: true)]
     protected DateTime $updatedAt;
 
-    #[Column(type: 'DATETIME', default: 'CURRENT_TIMESTAMP')]
+    #[Column(type: 'DATETIME', nullable: true)]
     protected ?DateTime $lastLogin = null;
 
-    // created At
-    // updated At
-    // lastLogin
-    // profilePicture
-    // accountStatus
+    public function __construct($email, $firstName, $lastName, $password, $profilePicture, $loginType = 'standard', $role = 'user') {
+        $this->email = $email;
+        $this->firstName = $firstName;
+        $this->lastName = $lastName;
+        $this->password = password_hash($password, PASSWORD_BCRYPT);
+        $this->profilePicture = $profilePicture;
+        $this->loginType = $loginType;
+        $this->role = $role;
+        $this->createdAt = new DateTime();
+        $this->updatedAt = new DateTime();
+        $this->lastLogin = new DateTime();
+    }
 }
