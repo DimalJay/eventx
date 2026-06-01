@@ -65,4 +65,8 @@ class User extends BaseModel
         $this->lastLogin = new DateTime();
         parent::__construct();
     }
+
+    public static function empty() : self {
+        return new self("", "", "", "", "");
+    }
 }
