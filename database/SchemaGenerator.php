@@ -8,17 +8,23 @@ use database\Table;
 use database\Column;
 
 class SchemaGenerator {
-    public static function createTable(string $className): string{
-        $reflection = new \ReflectionClass($className);
-        
-        $tableAttr = $reflection->getAttributes(Table::class);
+    private $reflection;
+    private $tableName;
+    public function __construct(string $className) {
+        $this->reflection = new \ReflectionClass($className);
+        $tableAttr = $this->reflection->getAttributes(Table::class);
         if (empty($tableAttr)) {
-            throw new Exception("Class {$className} is missing the #[Table] attribute.");
+            throw new \Exception("Class is missing the #[Table] attribute.");
         }
-        $tableName = $tableAttr[0]->newInstance()->name;
+        $this->tableName = $tableAttr[0]->newInstance()->name;
+    }
+
+    public  function createTable(): string{
+        
+        
         $columnDefinitions = [];
         
-        foreach ($reflection->getProperties() as $property){
+        foreach ($this->reflection->getProperties() as $property){
             $columnAttribute = $property->getAttributes(Column::class);
             if (empty($columnAttribute)) {
                 continue;
@@ -39,24 +45,17 @@ class SchemaGenerator {
             $columnDefinitions[] = "    `{$columnName}` {$typeStr} {$defaultStr} {$nullStr} {$uniqueStr}{$aiStr}{$pkStr}";
         }
         
-        $sql = "CREATE TABLE `{$tableName}` (\n";
+        $sql = "CREATE TABLE `{$this->tableName}` (\n";
         $sql .= implode(",\n", $columnDefinitions);
         $sql .= "\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
 
         return $sql;
     }
 
-    public static function updateRecord(string $className, array $conditions, array $set): string {
-        $reflection = new \ReflectionClass($className);
-        
-        $tableAttr = $reflection->getAttributes(Table::class);
-        if (empty($tableAttr)) {
-            throw new Exception("Class {$className} is missing the #[Table] attribute.");
-        }
-        $tableName = $tableAttr[0]->newInstance()->name;
+    public  function updateRecord(array $conditions, array $set): string {
         $setClause = implode(', ', array_map(fn($k, $v) => "`{$k}` = '{$v}'", array_keys($set), $set));
         $whereClause = implode(' AND ', array_map(fn($k, $v) => "`{$k}` = '{$v}'", array_keys($conditions), $conditions));
-        return "UPDATE `{$tableName}` SET {$setClause} WHERE {$whereClause};";
+        return "UPDATE `{$this->tableName}` SET {$setClause} WHERE {$whereClause};";
     }
     
 }

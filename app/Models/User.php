@@ -63,5 +63,6 @@ class User extends BaseModel
         $this->createdAt = new DateTime();
         $this->updatedAt = new DateTime();
         $this->lastLogin = new DateTime();
+        parent::__construct();
     }
 }
