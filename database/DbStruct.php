@@ -15,6 +15,8 @@ class Column {
         public ?int $length = null,
         public bool $nullable = false,
         public bool $primaryKey = false,
-        public bool $autoIncrement = false
+        public bool $autoIncrement = false,
+        public bool|string|null $default = null,
+        public bool $unique = false,
     ) {}
 }

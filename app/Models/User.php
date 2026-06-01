@@ -7,16 +7,54 @@ require 'BaseModel.php';
 use app\Models\BaseModel;
 use database\Column;
 use database\Table;
+use DateTime;
 
 
 #[Table(name: 'users')]
-class User extends BaseModel{
+class User extends BaseModel
+{
     #[Column(type: 'INT', nullable: false, primaryKey: true, autoIncrement: true)]
     protected int $id;
-    
+
+    #[Column(type: 'VARCHAR', length: 50, nullable: false, unique: true)]
+    protected string $email;
+
     #[Column(type: 'VARCHAR', length: 150, nullable: false)]
-    protected string $name;
-    
-    #[Column(type: 'INT', nullable: false)]
-    protected int $age;
+    protected string $firstName;
+
+    #[Column(type: 'VARCHAR', length: 150, nullable: false)]
+    protected string $lastName;
+
+    #[Column(type: 'VARCHAR', length: 255, nullable: false)]
+    protected string $password;
+
+    #[Column(type: 'VARCHAR', length: 50, nullable: false)]
+    protected string $loginType;
+
+    #[Column(type: 'BOOLEAN', nullable: false, default: true)]
+    protected bool $isVerified;
+
+    #[Column(type: 'VARCHAR', length: 50, nullable: false)]
+    protected string $role;
+
+    #[Column(type: 'TEXT', nullable: true)]
+    protected ?string $profilePicture = null;
+
+    #[Column(type: 'VARCHAR', length: 20, nullable: false, default: "'active'")]
+    protected string $accountStatus = 'active';
+
+    #[Column(type: 'DATETIME', default: 'CURRENT_TIMESTAMP')]
+    protected DateTime $createdAt;
+
+    #[Column(type: 'DATETIME', default: 'CURRENT_TIMESTAMP')]
+    protected DateTime $updatedAt;
+
+    #[Column(type: 'DATETIME', default: 'CURRENT_TIMESTAMP')]
+    protected ?DateTime $lastLogin = null;
+
+    // created At
+    // updated At
+    // lastLogin
+    // profilePicture
+    // accountStatus
 }

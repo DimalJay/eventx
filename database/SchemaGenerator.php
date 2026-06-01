@@ -31,10 +31,12 @@ class SchemaGenerator {
                 $typeStr .= "({$column->length})";
             }
             $nullStr = $column->nullable ? "NULL" : "NOT NULL";
+            $uniqueStr = $column->unique ? "UNIQUE" : "";
             $aiStr = $column->autoIncrement ? " AUTO_INCREMENT" : "";
             $pkStr = $column->primaryKey ? " PRIMARY KEY" : "";
+            $defaultStr = $column->default ? "DEFAULT {$column->default}": "";
 
-            $columnDefinitions[] = "    `{$columnName}` {$typeStr} {$nullStr}{$aiStr}{$pkStr}";
+            $columnDefinitions[] = "    `{$columnName}` {$typeStr} {$defaultStr} {$nullStr} {$uniqueStr}{$aiStr}{$pkStr}";
         }
         
         $sql = "CREATE TABLE `{$tableName}` (\n";
