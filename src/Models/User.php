@@ -1,10 +1,10 @@
 <?php
 
-namespace app\Models;
+namespace Models;
 
 require 'BaseModel.php';
 
-use app\Models\BaseModel;
+use Models\BaseModel;
 use database\Column;
 use database\Table;
 use DateTime;

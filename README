@@ -18,3 +18,10 @@ Contributors
 - Sandara
 - Pramod
 - Irudini
+
+
+# Installation
+```cmd
+composer install
+composer dump-autoload
+```
