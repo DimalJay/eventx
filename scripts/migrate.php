@@ -2,7 +2,7 @@
 require 'vendor/autoload.php';
 require "app/Models/User.php";
 
-use app\Models\User;
+use Models\User;
 
 try {
     User::createClass();

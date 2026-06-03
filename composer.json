@@ -1,4 +1,12 @@
 {
     "name": "dimal/eventx",
-    "require": {}
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Routes\\": "Routes/",
+            "Controllers\\": "src/Controllers/",
+            "Services\\": "src/Services/",
+            "Models\\": "src/Models/"
+        }
+    }
 }
