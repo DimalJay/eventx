@@ -40,4 +40,11 @@ class Database
         $stmt->execute($params);
         return $stmt->fetch();
     }
+
+    public function queryAll($sql, $params = [])
+    {
+         $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
 }

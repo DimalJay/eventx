@@ -1,6 +1,6 @@
 <?php
 
-namespace app\Models;
+namespace Models;
 
 require "./database/SchemaGenerator.php";
 require "./database/database.php";
@@ -34,7 +34,7 @@ abstract class BaseModel {
         $schema = new SchemaGenerator(static::class);
         $db = new Database();
         $q = $schema->selectAll();
-        return $db->query($q);
+        return $db->queryAll($q);
     }
 
     public static function where(array $conditions) {

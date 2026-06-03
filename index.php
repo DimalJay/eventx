@@ -1,30 +1,12 @@
 <?php
 
-require "app/Models/User.php";
-use app\Models\User;
+require_once __DIR__ . '/vendor/autoload.php';
 
+use Routes\Router;
 
-// $user = new User(
-//     "test@example.com",
-//     "John",
-//     "Doe",
-//     "password123",
-//     "profile.jpg"
-// );
-// User::updateRecord([
-//     "email" => "test@example.com"
-// ], [
-//     "firstName" => "Jane"
-// ]);
+$router = new Router("api/v1");
 
-// User::selectAll();
-// User::where(["email" => "test@example.com"]);
+require_once __DIR__ . '/routes/users.php';
 
-// $email = "test@example.com";
-// $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
-// $stmt->execute([$email]);
-// $user = $stmt->fetch();
-// print_r($user);
-
-$all = User::selectAll();
-print_r($all);
+$router->dispatch();
+?>
