@@ -1,6 +1,6 @@
 <?php
 require 'vendor/autoload.php';
-require "app/Models/User.php";
+require "src/Models/User.php";
 
 use Models\User;
 
