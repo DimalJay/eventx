@@ -23,11 +23,13 @@ class UserController
 
     public function getUserDetails()
     {
-        $id = $_GET['id'] ?? null;
+        $id = $_SERVER["uid"];
+        $user = $this->userService->get_user($id);
+
         return [
             "success" => true,
             "message" => "User details for ID: " . $id,
-            "data" => null,
+            "data" => $user,
         ];
     }
 

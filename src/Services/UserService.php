@@ -19,4 +19,10 @@ class UserService
     {
         return $user->save();
     }
+
+    public function get_user(String $id)
+    {
+        $users = User::where(["id" => $id]);
+        return count($users) > 0 ? $users[0] : null;
+    }
 }
