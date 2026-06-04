@@ -1,9 +1,12 @@
 <?php
 require 'vendor/autoload.php';
-require "src/Models/User.php";
-require "src/Models/Team.php";
+require 'src/Models/User.php';
+require 'src/Models/Team.php';
+require 'src/Models/Payment.php';
 
 use Models\User;
+use Models\Team;
+use Models\Payment;
 
 try {
     User::createClass();
@@ -12,11 +15,16 @@ try {
     echo "Error creating table: " . $e->getMessage();
 }
 
-use Models\Team;
-
 try {
     Team::createClass();
     echo "Team Table created successfully.";
+} catch (Exception $e) {
+    echo "Error creating table: " . $e->getMessage();
+}
+
+try {
+    Payment::createClass();
+    echo "Payment Table created successfully.";
 } catch (Exception $e) {
     echo "Error creating table: " . $e->getMessage();
 }
