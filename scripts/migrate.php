@@ -7,6 +7,7 @@ require 'src/Models/Payment.php';
 use Models\User;
 use Models\Team;
 use Models\Payment;
+use Models\Event;
 
 try {
     User::createClass();
@@ -15,9 +16,10 @@ try {
     echo "Error creating table: " . $e->getMessage();
 }
 
+
 try {
-    Team::createClass();
-    echo "Team Table created successfully.";
+    Event::createClass();
+    echo "Event Table created successfully.";
 } catch (Exception $e) {
     echo "Error creating table: " . $e->getMessage();
 }
@@ -25,6 +27,13 @@ try {
 try {
     Payment::createClass();
     echo "Payment Table created successfully.";
+} catch (Exception $e) {
+    echo "Error creating table: " . $e->getMessage();
+}
+
+try {
+    Team::createClass();
+    echo "Team Table created successfully.";
 } catch (Exception $e) {
     echo "Error creating table: " . $e->getMessage();
 }
