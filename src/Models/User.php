@@ -52,7 +52,8 @@ class User extends BaseModel
     #[Column(type: 'DATETIME', nullable: true)]
     protected ?DateTime $lastLogin = null;
 
-    public function __construct($email, $firstName, $lastName, $password, $profilePicture, $loginType = 'standard', $role = 'user') {
+    public function __construct($email, $firstName, $lastName, $password, $profilePicture, $loginType = 'standard', $role = 'user')
+    {
         $this->email = $email;
         $this->firstName = $firstName;
         $this->lastName = $lastName;
@@ -66,7 +67,8 @@ class User extends BaseModel
         parent::__construct();
     }
 
-    public static function empty() : self {
+    public static function empty(): self
+    {
         return new self("", "", "", "", "");
     }
 }
