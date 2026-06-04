@@ -1,6 +1,8 @@
 {
     "name": "dimal/eventx",
-    "require": {},
+    "require": {
+        "firebase/php-jwt": "*"
+    },
     "autoload": {
         "psr-4": {
             "Routes\\": "Routes/",

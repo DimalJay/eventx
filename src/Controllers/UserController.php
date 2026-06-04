@@ -33,15 +33,14 @@ class UserController
 
     public function createUser()
     {
-        $json_data = file_get_contents("php://input");
-        $data = json_decode($json_data, true);
-        $user = new User(
-            $data['email'],
-            $data['first_name'],
-            $data['last_name'],
-            $data['password'],
-            $data['profile_picture'] ?? null,
-        );
+        $data = json_decode(file_get_contents("php://input"), true);
+        $email = $data['email'] ?? '';
+        $password = $data['password'] ?? '';
+        $fName = $data['first_name'] ?? '';
+        $lName = $data['last_name'] ?? '';
+
+        $user = new User($email, $fName, $lName, $password, null);
+
         $response = $this->userService->create_user($user);
         return [
             "success" => true,
