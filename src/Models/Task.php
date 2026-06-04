@@ -2,8 +2,6 @@
 
 namespace Models;
 
-require 'BaseModel.php';
-
 use Models\BaseModel;
 use database\Column;
 use database\Table;
@@ -52,9 +50,10 @@ class Task extends BaseModel
         $this->assignedTo = $assignedTo;
         $this->assignedBy = $assignedBy;
         $this->createddAt = new DateTime();
-        $this->assignedDate = new DateTime($assignedDate);
+        $this->assignedDate = new DateTime();
         $this->dueDate = new DateTime($dueDate);
         $this->updatedAt = new DateTime();
+        $this->status = $status;
 
         parent::__construct();
     }
