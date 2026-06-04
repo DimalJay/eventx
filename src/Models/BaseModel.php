@@ -41,7 +41,7 @@ abstract class BaseModel {
         $schema = new SchemaGenerator(static::class);
         $db = new Database();
         $q = $schema->where($conditions);
-        return $db->query($q);
+        return $db->queryAll($q);
     }
 
     public static function updateRecord($field, $value){

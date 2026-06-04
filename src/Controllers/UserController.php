@@ -23,25 +23,46 @@ class UserController
 
     public function getUserDetails()
     {
-        $id = $_GET['id'] ?? null;
+        $id = $_SERVER["uid"];
+        $user = $this->userService->get_user($id);
+
         return [
             "success" => true,
             "message" => "User details for ID: " . $id,
-            "data" => null,
+            "data" => $user,
         ];
     }
 
     public function createUser()
     {
-        $json_data = file_get_contents("php://input");
-        $data = json_decode($json_data, true);
-        $user = new User(
-            $data['email'],
-            $data['first_name'],
-            $data['last_name'],
-            $data['password'],
-            $data['profile_picture'] ?? null,
-        );
+        $data = json_decode(file_get_contents("php://input"), true);
+        $email = $data['email'] ?? '';
+        $password = $data['password'] ?? '';
+        $fName = $data['first_name'] ?? '';
+        $lName = $data['last_name'] ?? '';
+
+
+        // Basic validation
+        if(empty($email) || empty($password) || empty($fName) || empty($lName)) {
+            return [
+                "success" => false,
+                "message" => "All fields are required",
+                "data" => null,
+            ];
+        }
+
+        // Check if email already exists
+        $ret = User::where(["email" => $email]);
+        if(count($ret) > 0) {
+            return [
+                "success" => false,
+                "message" => "Email already exists",
+                "data" => null,
+            ];
+        } 
+
+        $user = new User($email, $fName, $lName, $password, null);
+
         $response = $this->userService->create_user($user);
         return [
             "success" => true,
