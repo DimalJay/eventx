@@ -39,6 +39,23 @@ class UserController
         $fName = $data['first_name'] ?? '';
         $lName = $data['last_name'] ?? '';
 
+        if(empty($email) || empty($password) || empty($fName) || empty($lName)) {
+            return [
+                "success" => false,
+                "message" => "All fields are required",
+                "data" => null,
+            ];
+        }
+        print_r(User::where(["email" => $email]));
+        // $ret = User::where(["email" => $email])->first() ?? null;
+        // if($ret === null) {
+        //     return [
+        //         "success" => false,
+        //         "message" => "Email already exists",
+        //         "data" => null,
+        //     ];
+        // }
+
         $user = new User($email, $fName, $lName, $password, null);
 
         $response = $this->userService->create_user($user);
