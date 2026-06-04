@@ -1,7 +1,7 @@
 <?php
 namespace Models;
 
-require 'BaseModel.php';
+// require 'BaseModel.php';
 
 use Models\BaseModel;
 use database\Column;

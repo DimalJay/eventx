@@ -1,9 +1,8 @@
 <?php
 require 'vendor/autoload.php';
-require "src/Models/User.php";
-require "src/Models/Team.php";
 
 use Models\User;
+use Models\Team;
 
 try {
     User::createClass();
@@ -12,7 +11,6 @@ try {
     echo "Error creating table: " . $e->getMessage();
 }
 
-use Models\Team;
 
 try {
     Team::createClass();
