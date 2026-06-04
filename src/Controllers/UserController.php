@@ -39,6 +39,8 @@ class UserController
         $fName = $data['first_name'] ?? '';
         $lName = $data['last_name'] ?? '';
 
+
+        // Basic validation
         if(empty($email) || empty($password) || empty($fName) || empty($lName)) {
             return [
                 "success" => false,
@@ -46,15 +48,16 @@ class UserController
                 "data" => null,
             ];
         }
-        print_r(User::where(["email" => $email]));
-        // $ret = User::where(["email" => $email])->first() ?? null;
-        // if($ret === null) {
-        //     return [
-        //         "success" => false,
-        //         "message" => "Email already exists",
-        //         "data" => null,
-        //     ];
-        // }
+
+        // Check if email already exists
+        $ret = User::where(["email" => $email]);
+        if(count($ret) > 0) {
+            return [
+                "success" => false,
+                "message" => "Email already exists",
+                "data" => null,
+            ];
+        } 
 
         $user = new User($email, $fName, $lName, $password, null);
 

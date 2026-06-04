@@ -16,21 +16,27 @@ class AuthController
     public function login()
     {
         $data = json_decode(file_get_contents('php://input'), true);
-        $username = $data['username'] ?? '';
+        $email = $data['email'] ?? '';
         $password = $data['password'] ?? '';
 
-        if (empty($username) || empty($password)) {
+        if (empty($email) || empty($password)) {
             return [
-                'status' => 'error',
-                'message' => 'Username and password are required'
+                'success' => false,
+                'message' => 'Email and password are required'
             ];
         }
 
-        $response = $this->authService->login($username, $password);
+        $response = $this->authService->login($email, $password);
+        if ($response) {
+            return [
+                "success" => true,
+                "message" => "Login successful",
+                "data" => $response
+            ];
+        }
         return [
-            "success" => true,
-            "message" => "Login successful",
-            "data" => $response
+            "success" => false,
+            "message" => "Invalid email or password"
         ];
     }
 }
