@@ -1,8 +1,6 @@
 <?php
 namespace Models;
 
-// require 'BaseModel.php';
-
 use Models\BaseModel;
 use database\Column;
 use database\Table;
@@ -41,17 +39,5 @@ class Team extends BaseModel
   public static function empty() : self {
     return new self(0,"",0,0);
   }
-  
-
-
-
-
-
-
-
-
-
-
-
 }
-?>
+

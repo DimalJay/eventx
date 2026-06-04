@@ -4,7 +4,7 @@ namespace config;
 
 return [
     "db" => [
-        "host" => "127.0.0.1",
+        "host" => "localhost",
         "dbname" => "test",
         "username" => "root",
         "password" => "",
