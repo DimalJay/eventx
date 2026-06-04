@@ -6,6 +6,7 @@ require 'src/Models/Payment.php';
 require 'src/Models/Ticket.php';
 require 'src/Models/Event.php';
 require 'src/Models/Registration.php';
+require 'src/Models/Checkin.php';
 
 
 use Models\User;
@@ -14,6 +15,7 @@ use Models\Payment;
 use Models\Event;
 use Models\Ticket;
 use Models\Registration;
+use Models\Checkin;
 
 try {
     User::createClass();
@@ -54,6 +56,13 @@ try {
 try {
     Registration::createClass();
     echo "Registration Table created successfully.";
+} catch (Exception $e) {
+    echo "Error creating table: " . $e->getMessage();
+}
+
+try {
+    Checkin::createClass();
+    echo "Checkin Table created successfully.";
 } catch (Exception $e) {
     echo "Error creating table: " . $e->getMessage();
 }
