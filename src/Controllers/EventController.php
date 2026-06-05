@@ -89,6 +89,39 @@ class EventController
         ];
     }
 
+    public function deleteEvent()
+    {
+        $jsonData = file_get_contents('php://input');
+        $data = json_decode($jsonData, true);
+
+        $id = trim($data["id"]) ?? "";
+        if (empty($id)) {
+            return [
+                "success" => false,
+                "message" => "Event ID is required"
+            ];
+        }
+        try {
+            $ret = $this->eventService->deleteEvent($id);
+            if ($ret > 0) {
+                return [
+                    "success" => true,
+                    "message" => "Event deleted successfully"
+                ];
+            } else {
+                return [
+                    "success" => false,
+                    "message" => "Event not found or could not be deleted"
+                ];
+            }
+        } catch (\Throwable $th) {
+            return [
+                "success" => false,
+                "message" => "Error deleting event: " . $th->getMessage()
+            ];
+        }
+    }
+
     public function updateEvent()
     {
         $jsonData = file_get_contents('php://input');
