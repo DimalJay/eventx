@@ -1,4 +1,5 @@
 <?php
+
 namespace Models;
 
 use Models\BaseModel;
@@ -15,29 +16,26 @@ class Team extends BaseModel
   #[Column(type: 'INT', nullable: false)]
   protected int $eventId;
 
-  #[Column(type: 'VARCHAR', length: 150, nullable: false)]
-  protected string $teamName;
-
   #[Column(type: 'INT', nullable: false)]
-  protected int $managedBy;
+  protected int $userId;
 
   #[Column(type: 'DATETIME', default: 'CURRENT_TIMESTAMP')]
-  protected DateTime $createdAt;
+  protected DateTime $joinedAt;
 
-  #[Column(type: 'INT', nullable: false)]
-  protected DateTime $createdBy;
+  #[Column(type: 'VARCHAR', length: 100, nullable: false)]
+  protected string $role;
 
-  public function __construct($eventId, $teamName, $managedBy, $createdBy) {
+  public function __construct($eventId, $userId, $role)
+  {
     $this->eventId = $eventId;
-    $this->teamName = $teamName;
-    $this->managedBy = $managedBy;
-    $this->createdBy = $createdBy;
-    $this->createdAt = new DateTime();
+    $this->userId = $userId;
+    $this->role = $role;
+    $this->joinedAt = new DateTime();
     parent::__construct();
-  } 
-  
-  public static function empty() : self {
-    return new self(0,"",0,0);
+  }
+
+  public static function empty(): self
+  {
+    return new self(0, 0, "");
   }
 }
-
