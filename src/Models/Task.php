@@ -23,12 +23,15 @@ class Task extends BaseModel
     protected ?string $description = null;
 
     #[Column(type: 'INT', nullable: false)]
+    protected int $createdBy;
+
+    #[Column(type: 'INT', nullable: false)]
     protected int $assignedTo;
 
     #[Column(type: 'INT', nullable: false)]
     protected int $assignedBy;
 
-    #[Column(type: 'DATETIME', nullable: true)]
+    #[Column(type: 'DATETIME', nullable: false, default: 'CURRENT_TIMESTAMP')]
     protected ?DateTime $createddAt = null;
 
     #[Column(type: 'DATETIME', nullable: true)]
@@ -37,16 +40,17 @@ class Task extends BaseModel
     #[Column(type: 'DATETIME', nullable: true)]
     protected ?DateTime $dueDate = null;
 
-    #[Column(type: 'DATETIME', nullable: true)]
+    #[Column(type: 'DATETIME', nullable: false, default: 'CURRENT_TIMESTAMP')]
     protected ?DateTime $updatedAt = null;
 
-    #[Column(type: 'VARCHAR', length: 255, nullable: false, default: "TODO")]
+    #[Column(type: 'VARCHAR', length: 255, nullable: false, default: "'TODO'")]
     protected string $status = "TODO";
 
-    public function __construct($eventId, $title, $description, $assignedTo, $assignedBy, $dueDate,$status = 'TODO') {
+    public function __construct($eventId, $title, $description, $createdBy, $assignedTo, $assignedBy, $dueDate,$status = 'TODO') {
         $this->eventId = $eventId;
         $this->title = $title;
         $this->description = $description;
+        $this->createdBy = $createdBy;
         $this->assignedTo = $assignedTo;
         $this->assignedBy = $assignedBy;
         $this->createddAt = new DateTime();
@@ -59,6 +63,6 @@ class Task extends BaseModel
     }
 
     public static function empty() : self {
-        return new self("", "", "", "", "", "");
+        return new self("", "", "", "", "", "", "");
     }
 }
