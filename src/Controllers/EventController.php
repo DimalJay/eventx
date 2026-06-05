@@ -90,7 +90,7 @@ class EventController
         ];
     }
 
-    public function updatEvent()
+    public function updateEvent()
     {
         $jsonData = file_get_contents('php://input');
         $data = json_decode($jsonData, true);
@@ -158,7 +158,7 @@ class EventController
         if (!empty($agenda)) {
             $eventData["agenda"] = $agenda;
         }
-        If (!empty($imageUrl)) {
+        if (!empty($imageUrl)) {
             $eventData["imageUrl"] = $imageUrl;
         }
 
