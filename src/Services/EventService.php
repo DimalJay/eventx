@@ -33,8 +33,8 @@ class EventService
         return false;
     }
 
-    public function updateEvent(String $id, Event $event)
+    public function updateEvent(String $id, array $eventData)
     {
-        return Event::updateRecord(["id" => $id], $event->toArray());
+        return Event::updateRecord(["id" => $id], $eventData);
     }
 }

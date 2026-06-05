@@ -26,7 +26,7 @@ class EventController
     public function getEventDetails()
     {
         $id = $_GET["id"];
-        $event = $this->eventService->get_event($id);
+        $event = $this->eventService->getEvent($id);
 
         return [
             "success" => true,
@@ -106,12 +106,14 @@ class EventController
             if ($ret > 0) {
                 return [
                     "success" => true,
-                    "message" => "Event deleted successfully"
+                    "message" => "Event deleted successfully",
+                    "data" => null
                 ];
             } else {
                 return [
                     "success" => false,
-                    "message" => "Event not found or could not be deleted"
+                    "message" => "Event not found",
+                    "data" => null
                 ];
             }
         } catch (\Throwable $th) {
