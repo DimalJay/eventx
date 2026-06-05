@@ -59,30 +59,35 @@ class Event extends BaseModel
   protected ?string $agenda = null;
 
   #[Column(type: 'BOOLEAN', nullable: false, default: false)]
-  protected bool $waitlistEnable = false;
+  protected bool $waitlistEnabled = false;
 
-  public function __construct($title, $eventCategory, $description, $startDate, $endDate, $location, $organizerId, $imageUrl, $isPublic, $capacity, $ticketPrice, $registrationDeadline, $agenda) {
-    $this->title = $title;
-    $this->eventCategory = $eventCategory;
-    $this->description = $description;
-    $this->startDate = new DateTime($startDate);
-    $this->endDate = new DateTime($endDate);
-    $this->location = $location;
-    $this->organizerId = $organizerId;
-    $this->imageUrl = $imageUrl;
-    $this->isPublic = $isPublic;
-    $this->capacity = $capacity;
-    $this->ticketPrice = $ticketPrice;
-    if ($registrationDeadline) {
-      $this->registrationDeadline = new DateTime($registrationDeadline);
-    }
-    $this->agenda = $agenda;
-    $this->createdAt = new DateTime();
-    $this->updatedAt = new DateTime();
-    parent::__construct();
+  #[Column(type: 'BOOLEAN', nullable: false, default: false)]
+  protected bool $isPaid = false;
+
+    public function __construct($title, $eventCategory, $description, $startDate, $endDate, $location, $organizerId, $imageUrl, $isPublic, $capacity, $ticketPrice, $registrationDeadline, $agenda, $waitlistEnabled = false, $isPaid = false) {
+      $this->title = $title;
+      $this->eventCategory = $eventCategory;
+      $this->description = $description;
+      $this->startDate = new DateTime($startDate);
+      $this->endDate = new DateTime($endDate);
+      $this->location = $location;
+      $this->organizerId = $organizerId;
+      $this->imageUrl = $imageUrl;
+      $this->isPublic = $isPublic;
+      $this->capacity = $capacity;
+      $this->ticketPrice = $ticketPrice;
+      if ($registrationDeadline) {
+        $this->registrationDeadline = new DateTime($registrationDeadline);
+      }
+      $this->agenda = $agenda;
+      $this->waitlistEnabled = $waitlistEnabled;
+      $this->isPaid = $isPaid;
+      $this->createdAt = new DateTime();
+      $this->updatedAt = new DateTime();
+      parent::__construct();
   }
 
   public static function empty() : self {
-    return new self("", "", "", "2024-01-01 00:00:00", "2024-01-01 00:00:00", "", 0, "", true, 0, 0.00, null, null);
+    return new self("", "", "", "2024-01-01 00:00:00", "2024-01-01 00:00:00", "", 0, "", true, 0, 0.00, null, null, false, false);
   }
 }
