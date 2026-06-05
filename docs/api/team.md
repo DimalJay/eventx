@@ -100,7 +100,7 @@ Request Body
 ```json
 {
   "id": 1,
-  "role": "Coordinator"
+  "role": "MEMBER"
 }
 ```
 

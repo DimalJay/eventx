@@ -1,4 +1,5 @@
 <?php
+
 namespace Models;
 
 use Models\BaseModel;
@@ -24,16 +25,17 @@ class TeamAccess extends BaseModel
   #[Column(type: 'DATETIME', default: 'CURRENT_TIMESTAMP')]
   protected DateTime $joinedAt;
 
-  public function __construct(int $userId, int $eventId, int $role) {
+  public function __construct($userId, $eventId, $role)
+  {
     $this->userId = $userId;
     $this->eventId = $eventId;
     $this->role = $role;
     $this->joinedAt = new DateTime();
     parent::__construct();
-  } 
-  
-  public static function empty() : self {
-    return new self(0,0,0);
+  }
+
+  public static function empty(): self
+  {
+    return new self(0, 0, 0);
   }
 }
-

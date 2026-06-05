@@ -30,23 +30,21 @@ class TeamAccessController
                 "message" => "Missing required fields"
             ];
         }
-echo "Creating team access with userId: $userId, eventId: $eventId, role: $role";
-        $team = new TeamAccess($userId, $eventId, $role);
+
         try {
-            $this->teamService->addMember($team);
+            $this->teamService->addMember($userId, $eventId, $role);
+
+            return [
+                "success" => true,
+                "message" => "Member added to the team succesfully",
+                "data" => null
+            ];
         } catch (Exception $e) {
-            http_response_code(500);
             return [
                 "success" => false,
                 "message" => "Error adding member to the team: " . $e->getMessage()
             ];
         }
-
-        return [
-            "success" => true,
-            "message" => "Member added to the team succesfully",
-            "data" => null
-        ];
     }
 
     public function removeMember() // Logic to remove a member from team
@@ -65,6 +63,11 @@ echo "Creating team access with userId: $userId, eventId: $eventId, role: $role"
 
         try {
             $this->teamService->removeMember($id);
+            return [
+                "success" => true,
+                "message" => "Member removed from the team succesfully",
+                "data" => null
+            ];
         } catch (Exception $e) {
             http_response_code(500);
             return [
@@ -72,20 +75,11 @@ echo "Creating team access with userId: $userId, eventId: $eventId, role: $role"
                 "message" => "Error removing member from the team: " . $e->getMessage()
             ];
         }
-
-        return [
-            "success" => true,
-            "message" => "Member removed from the team succesfully",
-            "data" => null
-        ];
     }
 
     public function getMembers() // Logic to get team members for an event
     {
-        $jsonData = file_get_contents('php://input');
-        $data = json_decode($jsonData, true);
-
-        $eventId = $data["eventId"] ?? "";
+        $eventId = $_GET["eventId"] ?? "";
 
         if (empty($eventId)) {
             return [
@@ -111,33 +105,33 @@ echo "Creating team access with userId: $userId, eventId: $eventId, role: $role"
     }
 
     public function updateMemberRole() // Logic to update a team member's role
-        {
-            $jsonData = file_get_contents('php://input');
-            $data = json_decode($jsonData, true);
-    
-            $id = $data["id"] ?? "";
-            $role = trim($data["role"]) ?? "";
-    
-            if (empty($id) || empty($role)) {
-                return [
-                    "success" => false,
-                    "message" => "Missing required fields"
-                ];
-            }
-    
-            try {
-                $this->teamService->updateMemberRole($id, $role);
-                return [
-                    "success" => true,
-                    "message" => "Team member updated succesfully",
-                    "data" => null
-                ];
-            } catch (Exception $e) {
-                http_response_code(500);
-                return [
-                    "success" => false,
-                    "message" => "Error updating team member: " . $e->getMessage()
-                ];
-            }
-}
+    {
+        $jsonData = file_get_contents('php://input');
+        $data = json_decode($jsonData, true);
+
+        $id = $data["id"] ?? "";
+        $role = trim($data["role"]) ?? "";
+
+        if (empty($id) || empty($role)) {
+            return [
+                "success" => false,
+                "message" => "Missing required fields"
+            ];
+        }
+
+        try {
+            $this->teamService->updateMemberRole($id, $role);
+            return [
+                "success" => true,
+                "message" => "Team member updated succesfully",
+                "data" => null
+            ];
+        } catch (Exception $e) {
+            http_response_code(500);
+            return [
+                "success" => false,
+                "message" => "Error updating team member: " . $e->getMessage()
+            ];
+        }
+    }
 }
