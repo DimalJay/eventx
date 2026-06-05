@@ -10,11 +10,12 @@ Request Body
 {
   "title": "This is a sample task title",
   "description" : "This is a sample description",
-  "eventID" : 1,
+  "eventId" : 1,
+  "createdBy": 1,
   "assignedTo" : 1,
   "assignedBy" : 1,
-  "assigdate" : "2025-09-08",
-  "duedate" : "2025-09-08"
+  "assignedDate" : "2025-09-08",
+  "dueDate" : "2025-09-08"
 }
 ```
 
@@ -27,11 +28,12 @@ Response Body `200 OK`
     "id": 1,
     "title": "This is a sample task title",
     "description" : "This is a sample description",
-    "eventID" : 1,
+    "eventId" : 1,
+    "createdBy" : 1,
     "assignedTo" : 1,
     "assignedBy" : 1,
-    "assigdate" : "2025-09-08",
-    "duedate" : "2025-09-08",
+    "assignedDate" : "2025-09-08",
+    "dueDate" : "2025-09-08",
     "updatedAt": "2025-09-08",
     "createdAt": "2025-09-08",
   }
@@ -52,6 +54,10 @@ Task not found
 ### Get all tasks
 `GET /tasks`
 
+`/tasks?eventId={id}` <br>
+
+uses query parameters to get the event id
+
 Response Body
 ```json
 {
@@ -59,13 +65,33 @@ Response Body
   "message": "Tasks Retrieved Successfully",
   "data": [
     {
-      "taskID" : 1,
+      "id" : 1,
       "title": "This is a sample task title",
       "description" : "This is a sample description",
-      "eventID" : 1,
+      "eventId" : 1,
+      "createdBy" : 1,
       "assignedTo" : {
         "userId": 2,
-        "username": "Kumara"
+        "name": "Kumara"
+      },
+      "assignedBy" : {
+        "userId": 2,
+        "name": "Kumara"
+      },
+      "assignedDate" : "2025-09-08",
+      "dueDate" : "2025-09-08",
+      "updatedAt" : "2025-09-08",
+      "status" : "in-progress"
+    },
+    {
+      "id" : 2,
+      "title": "This is a sample task title",
+      "description" : "This is a sample description",
+      "eventId" : 1,
+      "createdBy" : 1,
+      "assignedTo" : {
+        "userId": 2,
+        "name": "Kumara"
       },
       "assignedBy" : {
         "userId": 2,
@@ -77,38 +103,21 @@ Response Body
       "status" : "in-progress"
     },
     {
-      "taskID" : 2,
+      "id" : 3,
       "title": "This is a sample task title",
       "description" : "This is a sample description",
-      "eventID" : 1,
+      "eventId" : 1,
+      "createdBy" : 1,
       "assignedTo" : {
         "userId": 2,
-        "username": "Kumara"
+        "name": "Kumara"
       },
       "assignedBy" : {
         "userId": 2,
         "userName": "Kumara"
       },
-      "assigdate" : "2025-09-08",
-      "duedate" : "2025-09-08",
-      "updatedAt" : "2025-09-08",
-      "status" : "in-progress"
-    },
-    {
-      "taskID" : 3,
-      "title": "This is a sample task title",
-      "description" : "This is a sample description",
-      "eventID" : 1,
-      "assignedTo" : {
-        "userId": 2,
-        "username": "Kumara"
-      },
-      "assignedBy" : {
-        "userId": 2,
-        "userName": "Kumara"
-      },
-      "assigdate" : "2025-09-08",
-      "duedate" : "2025-09-08",
+      "assignedDate" : "2025-09-08",
+      "dueDate" : "2025-09-08",
       "updatedAt" : "2025-09-08",
       "status" : "in-progress"
     }
@@ -126,20 +135,21 @@ Response Body
   "success": true,
   "message": "Task Retrieved Successfully",
   "data": {
-    "taskID" : 1,
+    "id" : 1,
     "title": "This is a sample task title",    
     "description" : "This is a sample description",
-    "eventID" : 1,
+    "eventId" : 1,
+    "createdBy" : 1,
     "assignedTo" : {
       "userId": 2,
-      "username": "Kumara"
+      "name": "Kumara"
     },
     "assignedBy" : {
       "userId": 2,
-      "userName": "Kumara"
+      "name": "Kumara"
     },
-    "assigdate" : "2025-09-08",
-    "duedate" : "2025-09-08",
+    "assignedDate" : "2025-09-08",
+    "dueDate" : "2025-09-08",
     "updatedAt" : "2025-09-08",
     "status" : "in-progress"
   }
@@ -181,10 +191,10 @@ Task not found
 Request Body
 ```json
 {
-  "taskID" : 1,
+  "id" : 1,
   "title": "This is a sample task title",
   "description" : "This is a sample description",
-  "duedate" : "2025-09-08",
+  "dueDate" : "2025-09-08",
   "status" : "in-progress"
 }
 ```
@@ -214,46 +224,6 @@ Response Body `200 OK`
 {
   "success": true,
   "message": "Task Status Updated Successfully",
-  "data": null
-}
-```
--------------
-### Reassign task
-`PUT /tasks`
-
-Request Body
-```json
-{
-  "taskID" : 1,
-  "newAssignedId" : 1,
-  "reason" : "Current member unavailable"
-}
-```
-Response Body `200 OK`
-```json
-{
-  "success": true,
-  "message": "Task Reassigned Successfully",
-  "data": null
-}
-```
--------------
-### Extend task deadline
-`PUT /tasks`
-
-Request Body
-```json
-{
-  "taskID" : 1,
-  "newDueDate" : "2025-09-08",
-  "reason" : "Deadline Extended"
-}
-```
-Response Body `200 OK`
-```json
-{
-  "success": true,
-  "message": "Deadline Extended Successfully",
   "data": null
 }
 ```

@@ -38,8 +38,8 @@ class UserController
         $data = json_decode(file_get_contents("php://input"), true);
         $email = $data['email'] ?? '';
         $password = $data['password'] ?? '';
-        $fName = $data['first_name'] ?? '';
-        $lName = $data['last_name'] ?? '';
+        $fName = $data['firstName'] ?? '';
+        $lName = $data['lastName'] ?? '';
 
 
         // Basic validation
