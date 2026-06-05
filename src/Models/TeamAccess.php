@@ -6,7 +6,7 @@ use database\Column;
 use database\Table;
 use DateTime;
 
-#[Table(name: 'TeamAccess')]
+#[Table(name: 'team_access')]
 class TeamAccess extends BaseModel
 {
   #[Column(type: 'INT', nullable: false, primaryKey: true, autoIncrement: true)]

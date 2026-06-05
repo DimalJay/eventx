@@ -2,7 +2,7 @@
 
 Base Url `/api/v1`<br>
 
-### Add User to Team
+### Add Member to Team
 
 `POST /team`<br>
 

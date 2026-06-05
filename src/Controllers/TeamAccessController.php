@@ -6,7 +6,7 @@ use Models\TeamAccess;
 use Services\TeamAccessService;
 use Exception;
 
-class TeamController
+class TeamAccessController
 {
 
     private TeamAccessService $teamService;
@@ -30,7 +30,7 @@ class TeamController
                 "message" => "Missing required fields"
             ];
         }
-
+echo "Creating team access with userId: $userId, eventId: $eventId, role: $role";
         $team = new TeamAccess($userId, $eventId, $role);
         try {
             $this->teamService->addMember($team);
@@ -110,7 +110,7 @@ class TeamController
         }
     }
 
-    public function updateUserRole() // Logic to update a team member's role
+    public function updateMemberRole() // Logic to update a team member's role
         {
             $jsonData = file_get_contents('php://input');
             $data = json_decode($jsonData, true);

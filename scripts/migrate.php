@@ -1,7 +1,6 @@
 <?php
 require 'vendor/autoload.php';
 require 'src/Models/User.php';
-require 'src/Models/Team.php';
 require 'src/Models/Payment.php';
 require 'src/Models/Ticket.php';
 require 'src/Models/Event.php';
