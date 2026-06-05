@@ -20,13 +20,13 @@ class TaskController
         $jsonData = file_get_contents('php://input');
         $data = json_decode($jsonData, true);
 
-        $eventId = $data["eventId"] ?? "";
-        $title = $data["title"] ?? "";
-        $description = $data["description"] ?? "";
-        $createdBy = $data["createdBy"] ?? "";
-        $assignedTo = $data["assignedTo"] ?? "";
-        $assignedBy = $data["assignedBy"] ?? "";
-        $dueDate = $data["dueDate"] ?? "";
+        $eventId = trim($data["eventId"]) ?? "";
+        $title = trim($data["title"]) ?? "";
+        $description = trim($data["description"]) ?? "";
+        $createdBy = trim($data["createdBy"]) ?? "";
+        $assignedTo = trim($data["assignedTo"]) ?? "";
+        $assignedBy = trim($data["assignedBy"]) ?? "";
+        $dueDate = trim($data["dueDate"]) ?? "";
 
         if (empty($eventId) || empty($title) || empty($createdBy) || empty($assignedTo) || empty($assignedBy) || empty($dueDate)) {
             return [
@@ -57,11 +57,11 @@ class TaskController
         $jsonData = file_get_contents('php://input');
         $data = json_decode($jsonData, true);
 
-        $id = $data["id"] ?? "";
-        $title = $data["title"] ?? "";
-        $description = $data["description"] ?? "";
-        $dueDate = $data["dueDate"] ?? "";
-        $status = $data["status"] ?? "";
+        $id = trim($data["id"]) ?? "";
+        $title = trim($data["title"]) ?? "";
+        $description = trim($data["description"]) ?? "";
+        $dueDate = trim($data["dueDate"]) ?? "";
+        $status = trim($data["status"]) ?? "";
 
         if (empty($id)) {
             return [
@@ -105,7 +105,7 @@ class TaskController
         $jsonData = file_get_contents('php://input');
         $data = json_decode($jsonData, true);
 
-        $id = $data["id"] ?? "";
+        $id = trim($data["id"]) ?? "";
         if (empty($id)) {
             return [
                 "success" => false,
@@ -133,8 +133,7 @@ class TaskController
 
     public function getTasks() // Logic to view all tasks
     {
-        $id = $_GET["eventId"] ?? "";
-        echo $id;
+        $id = trim($_GET["eventId"]) ?? "";
         try {
             $tasks = $this->taskService->getTasks($id);
             return [
@@ -153,7 +152,7 @@ class TaskController
 
     public function getTask() // Logic to view a single task
     {
-        $id = $_GET["id"] ?? "";
+        $id = trim($_GET["id"]) ?? "";
         if (empty($id)) {
             return [
                 "success" => false,

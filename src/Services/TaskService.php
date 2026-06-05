@@ -3,6 +3,8 @@
 namespace Services;
 
 use Models\Task;
+use Models\Event;
+use Exception;
 
 class TaskService
 {
@@ -24,6 +26,10 @@ class TaskService
 
     public function getTasks(int $eventId)
     {
+        $ret = Event::where(["id" => $eventId]);
+        if (count($ret) < 1) {
+            throw new Exception("Event does not exist");
+        }
         return Task::where(["eventId" => $eventId]);
     }
 
