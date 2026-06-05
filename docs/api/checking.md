@@ -1,4 +1,4 @@
-## Checking Endpoint
+## CheckIn Endpoint
 
 Base Url `/api/v1`
 
