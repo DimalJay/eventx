@@ -21,8 +21,8 @@ class FeedBackController
     $organizationRating = $data['organizationRating'] ?? null;
     $contentRating = $data['contentRating'] ?? null;
     $experienceRating = $data['experienceRating'] ?? null;
-    $comment = $data['comment'] ?? '';
-    $sentiment = $data['sentiment'] ?? 'Pending';
+    $comment = trim($data['comment']) ?? '';
+    $sentiment = trim($data['sentiment']) ?? 'Pending';
 
     //Basic validation
 
