@@ -17,6 +17,7 @@ use Models\Ticket;
 use Models\Registration;
 use Models\Checkin;
 use Models\Feedback;
+use Models\Task;
 
 try {
     User::createClass();
@@ -75,3 +76,16 @@ try {
     echo "Error creating table: " . $e->getMessage();
 }
 
+try {
+    Feedback::createClass();
+    echo "Feedback Table created successfully.";
+} catch (Exception $e) {
+    echo "Error creating table: " . $e->getMessage();
+}
+
+try {
+    Task::createClass();
+    echo "Task Table created successfully.";
+} catch (Exception $e) {
+    echo "Error creating table: " . $e->getMessage();
+}

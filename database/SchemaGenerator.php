@@ -71,9 +71,13 @@ class SchemaGenerator
             if ($property->isInitialized($modelInstance)) {
                 $value = $property->getValue($modelInstance);
             } else {
-                $value = null; // අගයක් ලබා දී නැත්නම් null ලෙස සලකන්න
+                $value = null;
             }
             $columnName = $property->getName();
+            $autoIncrement = $property->getAttributes(Column::class)[0]->newInstance()->autoIncrement ?? false;
+            if ($autoIncrement) {
+                continue;
+            }
 
             $data[$columnName] = $value;
 
