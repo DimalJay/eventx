@@ -56,7 +56,7 @@ class FeedBackController
       "data" => $response
     ];
   }
-  public function getAllFeedbacks()
+  public function getFeedbacks()
   {
     $eventId = $_GET["eventId"];
 
@@ -69,7 +69,7 @@ class FeedBackController
       ];
     }
 
-    $feedbacks = $this->feedBackService->getAllFeedbacks($eventId);
+    $feedbacks = $this->feedBackService->getFeedbacks($eventId);
 
     if (empty($feedbacks)) {
 
@@ -86,11 +86,20 @@ class FeedBackController
       "data" => $feedbacks,
     ];
   }
-  public function getFeedbackById()
+  public function getFeedback()
   {
-    $id= $_GET["id"];
+    $id = $_GET["id"] ?? null;
 
-    $feedback = $this->feedBackService->getFeedbackById($id);
+    if (empty($id)) {
+
+      return [
+        "success" => false,
+        "message" => "Feedback ID is required to fetch feedback details.",
+        "data" => null,
+      ];
+    }
+
+    $feedback = $this->feedBackService->getFeedback($id);
 
     if (!$feedback) {
 
