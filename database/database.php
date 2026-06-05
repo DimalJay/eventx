@@ -42,6 +42,13 @@ class Database
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    public function execute($sql, $params = [])
+    {
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt;
+    }
+
     public function queryAll($sql, $params = [])
     {
         $stmt = $this->pdo->prepare($sql);
