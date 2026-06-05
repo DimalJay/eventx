@@ -89,4 +89,92 @@ class EventController
             "data" => $response,
         ];
     }
+
+    public function updatEvent()
+    {
+        $jsonData = file_get_contents('php://input');
+        $data = json_decode($jsonData, true);
+
+        $id = trim($data["id"]) ?? "";
+        $title = trim($data["title"]) ?? "";
+        $description = trim($data["description"]) ?? "";
+        $location = trim($data["location"]) ?? "";
+        $startDate = trim($data["startDate"]) ?? "";
+        $endDate = trim($data["endDate"]) ?? "";
+        $agenda = trim($data["agenda"]) ?? "";
+        $capacity = trim($data["capacity"]) ?? "";
+        $eventCategory = trim($data["eventCategory"]) ?? "";
+        $registrationDeadline = trim($data["registrationDeadline"]) ?? "";
+        $ticketPrice = trim($data["ticketPrice"]) ?? "";
+        $isPaid = trim($data["isPaid"]) ?? "";
+        $isPublic = trim($data["isPublic"]) ?? "";
+        $waitlistEnabled = trim($data["waitlistEnabled"]) ?? "";
+        $imageUrl = trim($data["imageUrl"]) ?? "";
+
+        if(empty($id)) {
+            return [
+                "success" => false,
+                "message" => "Event ID is required"
+            ];
+        }
+
+        $eventData = [];
+        if (!empty($title)) {
+            $eventData["title"] = $title;
+        }
+        if (!empty($startDate)) {
+            $eventData["startDate"] = $startDate;
+        }
+        if (!empty($endDate)) {
+            $eventData["endDate"] = $endDate;
+        }
+        if (!empty($capacity)) {
+            $eventData["capacity"] = $capacity;
+        }
+        if (!empty($eventCategory)) {
+            $eventData["eventCategory"] = $eventCategory;
+        }
+        if (!empty($ticketPrice)) {
+            $eventData["ticketPrice"] = $ticketPrice;
+        }
+        if (!empty($isPublic)) {
+            $eventData["isPublic"] = $isPublic;
+        }
+        if (!empty($isPaid)) {
+            $eventData["isPaid"] = $isPaid;
+        }
+        if (!empty($registrationDeadline)){
+            $eventData["registrationDeadline"] = $registrationDeadline;
+        }
+        if (!empty($waitlistEnabled)){
+            $eventData["waitlistEnabled"] = $waitlistEnabled;
+        }
+        if (!empty($description)) {
+            $eventData["description"] = $description;
+        }
+        if (!empty($location)) {
+            $eventData["location"] = $location;
+        }
+        if (!empty($agenda)) {
+            $eventData["agenda"] = $agenda;
+        }
+        If (!empty($imageUrl)) {
+            $eventData["imageUrl"] = $imageUrl;
+        }
+
+        try {
+            $this->eventService->update_event($id, $eventData);
+        } catch (\Throwable $th) {
+            return [
+                "success" => false,
+                "message" => "Error updating event: " . $th->getMessage()
+            ];
+        }
+
+        return [
+            "success" => true,
+            "message" => "Event updated successfully",
+            "data" => null
+        ];
+    }
 }

@@ -35,6 +35,6 @@ class EventService
 
     public function update_event(String $id, Event $event)
     {
-        
+        return Event::updateRecord(["id" => $id], $event->toArray());
     }
 }
