@@ -9,7 +9,7 @@ use Exception;
 class TaskController
 {
 
-    private $taskService;
+    private TaskService $taskService;
     public function __construct()
     {
         $this->taskService = new TaskService();
@@ -114,12 +114,11 @@ class TaskController
         }
         try {
             $ret = $this->taskService->deleteTask($id);
-            echo count($ret);
-            if ($ret) {
+            if ($ret > 0) {
                 return [
                     "success" => true,
                     "message" => "Task deleted successfully",
-                    "data" => $ret
+                    "data" => null
                 ];
             } else {
                 throw new Exception("Task not found");
@@ -138,8 +137,8 @@ class TaskController
         $data = json_decode($jsonData, true);
 
         $id = $data["id"] ?? "";
-        
-        
+
+
     }
 
     public function getTask() // Logic to view a single task
