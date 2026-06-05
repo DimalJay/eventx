@@ -94,28 +94,15 @@ class EventController
         $jsonData = file_get_contents('php://input');
         $data = json_decode($jsonData, true);
 
-        $id = trim($data["id"]) ?? "";
-        if (empty($id)) {
-            return [
-                "success" => false,
-                "message" => "Event ID is required"
-            ];
-        }
+        $id = trim($data["id"] ?? "");
+       
         try {
             $ret = $this->eventService->deleteEvent($id);
-            if ($ret > 0) {
-                return [
-                    "success" => true,
-                    "message" => "Event deleted successfully",
-                    "data" => null
-                ];
-            } else {
-                return [
-                    "success" => false,
-                    "message" => "Event not found",
-                    "data" => null
-                ];
-            }
+            return [
+                "success" => true,
+                "message" => "Event deleted successfully",
+                "data" => $ret
+            ];
         } catch (\Throwable $th) {
             return [
                 "success" => false,

@@ -26,11 +26,14 @@ class EventService
 
     public function deleteEvent(String $id)
     {
-        $event = $this->getEvent($id);
-        if($event) {
-            return $event->delete();
+        if (empty($id)) {
+           throw new \Exception("Event ID is required");
         }
-        return false;
+        $event = $this->getEvent($id);
+        if(!$event) {
+            throw new \Exception("Event not found");
+        }
+        return Event::deleteRecord(["id" => $id]);
     }
 
     public function updateEvent(String $id, array $eventData)
