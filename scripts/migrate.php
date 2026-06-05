@@ -14,6 +14,7 @@ use Models\Event;
 use Models\Ticket;
 use Models\Registration;
 use Models\Checkin;
+use Models\Feedback;
 use Models\Task;
 use Models\TeamAccess;
 
@@ -63,6 +64,20 @@ try {
 try {
     Checkin::createClass();
     echo "Checkin Table created successfully.";
+} catch (Exception $e) {
+    echo "Error creating table: " . $e->getMessage();
+}
+
+try {
+    Feedback::createClass();
+    echo "Feedback Table created successfully.";
+} catch (Exception $e) {
+    echo "Error creating table: " . $e->getMessage();
+}
+
+try {
+    Feedback::createClass();
+    echo "Feedback Table created successfully.";
 } catch (Exception $e) {
     echo "Error creating table: " . $e->getMessage();
 }
