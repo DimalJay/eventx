@@ -20,7 +20,7 @@ class UserController
             "data" => $users
         ];
     }
-
+ 
     public function getUserDetails()
     {
         $id = $_SERVER["uid"];
