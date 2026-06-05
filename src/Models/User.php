@@ -2,8 +2,6 @@
 
 namespace Models;
 
-require 'BaseModel.php';
-
 use Models\BaseModel;
 use database\Column;
 use database\Table;
