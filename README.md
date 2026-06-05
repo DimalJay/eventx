@@ -25,3 +25,8 @@ Contributors
 composer install
 composer dump-autoload
 ```
+
+# generate tables
+```cmd
+php scripts/migrate.php
+```
