@@ -39,6 +39,7 @@ class TaskController
         try {
             $this->taskService->addTask($task);
         } catch (Exception $e) {
+            http_response_code(500);
             return [
                 "success" => false,
                 "message" => "Error creating task: " . $e->getMessage()
@@ -121,6 +122,7 @@ class TaskController
                     "data" => null
                 ];
             } else {
+                http_response_code(404);
                 throw new Exception("Task not found");
             }
         } catch (\Throwable $th) {
