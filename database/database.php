@@ -7,7 +7,8 @@ use PDOException;
 class Database
 {
     private PDO $pdo;
-    public function __construct(){
+    public function __construct()
+    {
         $this->pdo = $this->connect();
     }
 
@@ -30,7 +31,7 @@ class Database
             $pdo = new PDO($dsn, $username, $password, $options);
             return $pdo;
         } catch (PDOException $e) {
-            throw new PDOException($e->getMessage(), (int)$e->getCode());
+            throw new PDOException($e->getMessage(), (int) $e->getCode());
         }
     }
 
@@ -43,7 +44,7 @@ class Database
 
     public function queryAll($sql, $params = [])
     {
-         $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
