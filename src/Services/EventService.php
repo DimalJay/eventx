@@ -8,32 +8,32 @@ class EventService
     {
     }
 
-    public function get_all_events()
+    public function getEvents()
     {
         return Event::selectAll();
     }
 
-    public function get_event(String $id)
+    public function getEvent(String $id)
     {
         $events = Event::where(["id" => $id]);
         return count($events) > 0 ? $events[0] : null;
     }
 
-    public function create_event(Event $event)
+    public function createEvent(Event $event)
     {
         return $event->save();
     }
 
-    public function delete_event(String $id)
+    public function deleteEvent(String $id)
     {
-        $event = $this->get_event($id);
+        $event = $this->getEvent($id);
         if($event) {
             return $event->delete();
         }
         return false;
     }
 
-    public function update_event(String $id, Event $event)
+    public function updateEvent(String $id, Event $event)
     {
         return Event::updateRecord(["id" => $id], $event->toArray());
     }

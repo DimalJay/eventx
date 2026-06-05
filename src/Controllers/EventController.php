@@ -15,10 +15,10 @@ class EventController
 
     public function listEvents()
     {
-        $events = $this->eventService->get_all_events();
+        $events = $this->eventService->getEvents();
         return [
             "success" => true,
-            "message" => "List of events",
+            "message" => "Events Retrieved Successfully",
             "data" => $events
         ];
     }
@@ -30,7 +30,7 @@ class EventController
 
         return [
             "success" => true,
-            "message" => "Event details for ID: " . $id,
+            "message" => "Event details retrieved successfully",
             "data" => $event,
         ];
     }
@@ -38,20 +38,20 @@ class EventController
     public function createEvent()
     {
         $data = json_decode(file_get_contents("php://input"), true);
-        $title = $data['title'] ?? '';
-        $description = $data['description'] ?? '';
-        $location = $data['location'] ?? '';
-        $startDate = $data['startDate'] ?? '';
-        $endDate = $data['endDate'] ?? '';
-        $agenda = $data['agenda'] ?? '';
+        $title = trim($data["title"]) ?? "";
+        $description = trim($data['description']) ?? '';
+        $location = trim($data['location']) ?? '';
+        $startDate = trim($data['startDate']) ?? '';
+        $endDate = trim($data['endDate']) ?? '';
+        $agenda = trim($data['agenda']) ?? '';
         $capacity = $data['capacity'] ?? 0;
-        $eventCategory = $data['eventCategory'] ?? '';
-        $registrationDeadline = $data['registrationDeadline'] ?? '';
+        $eventCategory = trim($data['eventCategory']) ?? '';
+        $registrationDeadline = trim($data['registrationDeadline']) ?? '';
         $ticketPrice = $data['ticketPrice'] ?? 0.0;
         $isPaid = $data['isPaid'] ?? false;
-        $isPublic = $data['isPublic'] ?? 'public';
+        $isPublic = $data['isPublic'] ?? false;
         $waitlistEnabled = $data['waitlistEnabled'] ?? false;
-        $imageUrl = $data['imageUrl'] ?? '';
+        $imageUrl = trim($data['imageUrl']) ?? '';
         $organizerId = $data['organizerId'] ?? 1;
 
         // Basic validation
@@ -81,7 +81,7 @@ class EventController
             $isPaid
         );
 
-        $response = $this->eventService->create_event($event);
+        $response = $this->eventService->createEvent($event);
         return [
             "success" => true,
             "message" => "Event created successfully",
@@ -105,9 +105,9 @@ class EventController
         $eventCategory = trim($data["eventCategory"]) ?? "";
         $registrationDeadline = trim($data["registrationDeadline"]) ?? "";
         $ticketPrice = trim($data["ticketPrice"]) ?? "";
-        $isPaid = trim($data["isPaid"]) ?? "";
-        $isPublic = trim($data["isPublic"]) ?? "";
-        $waitlistEnabled = trim($data["waitlistEnabled"]) ?? "";
+        $isPaid = $data["isPaid"] ?? false;
+        $isPublic = $data["isPublic"] ?? false;
+        $waitlistEnabled = $data["waitlistEnabled"] ?? false;
         $imageUrl = trim($data["imageUrl"]) ?? "";
 
         if(empty($id)) {
@@ -162,7 +162,7 @@ class EventController
         }
 
         try {
-            $this->eventService->update_event($id, $eventData);
+            $this->eventService->updateEvent($id, $eventData);
         } catch (\Throwable $th) {
             return [
                 "success" => false,
