@@ -134,17 +134,50 @@ class TaskController
 
     public function getTasks() // Logic to view all tasks
     {
-        $jsonData = file_get_contents('php://input');
-        $data = json_decode($jsonData, true);
-
-        $id = $data["id"] ?? "";
-        
-        
+        $id = $_GET["eventId"] ?? "";
+        echo $id;
+        try {
+            $tasks = $this->taskService->getTasks($id);
+            return [
+                "success" => true,
+                "message" => "Tasks retrieved successfully",
+                "data" => $tasks
+            ];
+        } catch (\Throwable $th) {
+            return [
+                "success" => false,
+                "message" => "Error retrieving tasks: " . $th->getMessage(),
+                "data" => null
+            ];
+        }
     }
 
     public function getTask() // Logic to view a single task
     {
-        $jsonData = file_get_contents('php://input');
-        $data = json_decode($jsonData, true);
+        $id = $_GET["id"] ?? "";
+        if (empty($id)) {
+            return [
+                "success" => false,
+                "message" => "Task ID is required"
+            ];
+        }
+        try {
+            $task = $this->taskService->getTask($id);
+            if ($task) {
+                return [
+                    "success" => true,
+                    "message" => "Task retrieved successfully",
+                    "data" => $task
+                ];
+            } else {
+                throw new Exception("Task not found");
+            }
+        } catch (\Throwable $th) {
+            return [
+                "success" => false,
+                "message" => "Error retrieving task: " . $th->getMessage(),
+                "data" => null
+            ];
+        }
     }
 }

@@ -11,10 +11,11 @@ Request Body
   "title": "This is a sample task title",
   "description" : "This is a sample description",
   "eventId" : 1,
+  "createdBy": 1,
   "assignedTo" : 1,
   "assignedBy" : 1,
-  "assigdate" : "2025-09-08",
-  "duedate" : "2025-09-08"
+  "assignedDate" : "2025-09-08",
+  "dueDate" : "2025-09-08"
 }
 ```
 
@@ -52,6 +53,10 @@ Task not found
 
 ### Get all tasks
 `GET /tasks`
+
+`/tasks?eventId={id}` <br>
+
+uses query parameters to get the event id
 
 Response Body
 ```json
@@ -219,46 +224,6 @@ Response Body `200 OK`
 {
   "success": true,
   "message": "Task Status Updated Successfully",
-  "data": null
-}
-```
--------------
-### Reassign task
-`PUT /tasks`
-
-Request Body
-```json
-{
-  "taskID" : 1,
-  "newAssignedId" : 1,
-  "reason" : "Current member unavailable"
-}
-```
-Response Body `200 OK`
-```json
-{
-  "success": true,
-  "message": "Task Reassigned Successfully",
-  "data": null
-}
-```
--------------
-### Extend task deadline
-`PUT /tasks`
-
-Request Body
-```json
-{
-  "taskID" : 1,
-  "newDueDate" : "2025-09-08",
-  "reason" : "Deadline Extended"
-}
-```
-Response Body `200 OK`
-```json
-{
-  "success": true,
-  "message": "Deadline Extended Successfully",
   "data": null
 }
 ```

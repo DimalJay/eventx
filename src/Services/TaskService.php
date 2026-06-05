@@ -22,13 +22,14 @@ class TaskService
         return Task::deleteRecord(["id" => $taskId]);
     }
 
-    public function getTasks()
+    public function getTasks(int $eventId)
     {
-        // Logic to view all tasks
+        return Task::where(["eventId" => $eventId]);
     }
 
-    public function getTask($taskId)
+    public function getTask(int $taskId)
     {
-        // Logic to view a single task
+        $tasks = Task::where(["id" => $taskId]);
+        return count($tasks) > 0 ? $tasks[0] : null;
     }
 }
