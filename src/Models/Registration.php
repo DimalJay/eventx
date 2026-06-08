@@ -18,10 +18,6 @@ class Registration extends BaseModel
   #[Column(type: 'INT', nullable: false)]
   protected int $userId;
 
-<<<<<<< Updated upstream
-  #[Column(type: 'DATETIME', default: 'CURRENT_TIMESTAMP')]
-  protected DateTime $registeredAt;
-=======
   #[Column(type: 'VARCHAR', length: 50, nullable: false)]
   protected string $status;
 
@@ -31,57 +27,41 @@ class Registration extends BaseModel
   #[Column(type: 'DATETIME', default: 'CURRENT_TIMESTAMP')]
   protected DateTime $updatedAt;
 
-  public function __construct(int $eventId, int $userId, string $status = 'pending')
-  {
+  #[Column(type: 'BOOLEAN', nullable: false, default: false)]
+  protected bool $checkedIn;
+
+  #[Column(type: 'BOOLEAN', nullable: false, default: false)]
+  protected bool $waitlisted;
+
+  #[Column(type: 'INT', nullable: true)]
+  protected ?int $paymentId;
+
+  public function __construct($eventId, $userId, $status = 'registered', $checkedIn = false, $waitlisted = false, $paymentId = null) {
     $this->eventId = $eventId;
     $this->userId = $userId;
     $this->status = $status;
     $this->createdAt = new DateTime();
     $this->updatedAt = new DateTime();
+    $this->checkedIn = $checkedIn;
+    $this->waitlisted = $waitlisted;
+    $this->paymentId = $paymentId;
 
     parent::__construct();
-  }
+  } 
 
   public static function empty(): self
   {
-    return new self(0, 0, "");
+    return new self(0, 0);
   }
-
-}
-  
->>>>>>> Stashed changes
-
-  #[Column(type: 'VARCHAR', length: 255, nullable: false)]
-  protected string $name;
-
-<<<<<<< Updated upstream
-  #[Column(type: 'VARCHAR', length: 255, nullable: false)]
-  protected string $email;
-
-  #[Column(type: 'VARCHAR', length: 100, nullable: false)]
-  protected string $registrationStatus;
-
-  #[Column(type: 'VARCHAR', length: 100, nullable: false)]
-  protected string $registrationType;
-
-  public function __construct($eventId, $userId, $name, $email, $registrationStatus, $registrationType) {
-    $this->eventId = $eventId;
-    $this->userId = $userId;
-    $this->name = $name;
-    $this->email = $email;
-    $this->registrationStatus = $registrationStatus;
-    $this->registrationType = $registrationType;
-    $this->registeredAt = new DateTime();
-    parent::__construct();
-  }
-
-  public static function empty() : self {
-    return new self(0,0,"","","","");
-  }
-}
-=======
 
   
+  
+
+
+
+  
+}
+  
+
 
  
->>>>>>> Stashed changes
