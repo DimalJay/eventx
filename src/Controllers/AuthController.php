@@ -28,12 +28,14 @@ class AuthController
 
         $response = $this->authService->login($email, $password);
         if ($response) {
+            http_response_code(200);
             return [
                 "success" => true,
                 "message" => "Login successful",
                 "data" => $response
             ];
         }
+        http_response_code(401);
         return [
             "success" => false,
             "message" => "Invalid email or password"

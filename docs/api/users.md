@@ -9,8 +9,8 @@ Request Body
 ```json
 {
     "email": "nimal@gmail.com",
-    "fname": "Nimal", 
-    "lname": "Perera",
+    "firstName": "Nimal", 
+    "lastName": "Perera",
     "password": "12345",
     "loginType": "EMAIL",
 }
