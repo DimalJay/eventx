@@ -54,12 +54,7 @@ class Registration extends BaseModel
     return new self(0, 0);
   }
 
-  
-  
 
-
-
-  
 }
   
 
