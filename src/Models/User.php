@@ -30,7 +30,7 @@ class User extends BaseModel
     protected string $loginType;
 
     #[Column(type: 'BOOLEAN', nullable: false, default: true)]
-    protected bool $isVerified;
+    protected bool $isVerified = false;
 
     #[Column(type: 'VARCHAR', length: 50, nullable: false)]
     protected string $role;

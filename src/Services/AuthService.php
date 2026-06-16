@@ -31,4 +31,14 @@ class AuthService
         }
         return null;
     }
+
+    public function logout() {
+        setcookie("auth_token", "", [
+            "expires" => time() - 3600,
+            "path" => "/",
+            "secure" => false,
+            "httponly" => false,
+            "samesite" => "Lax"
+        ]);
+    }
 }
