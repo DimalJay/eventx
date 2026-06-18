@@ -17,7 +17,7 @@ class AuthService
                 "path" => "/",
                 "secure" => true,
                 "httponly" => true,
-                "samesite" => "None"
+                "samesite" => "Lax"
             ]);
             return [
                 "token" => $jwt,
