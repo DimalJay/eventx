@@ -14,8 +14,10 @@ class Database
 
     private function connect()
     {
-        $dotenv = Dotenv::createImmutable('./');
-        $dotenv->load();
+        if (file_exists(dirname(__DIR__) . '/.env')) {
+            $dotenv = Dotenv::createImmutable(dirname(__DIR__) . '/');
+            $dotenv->load();
+        }
 
         $host = $_ENV['DB_HOST'];
         $db = $_ENV['DB_NAME'];
