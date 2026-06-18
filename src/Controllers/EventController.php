@@ -52,7 +52,7 @@ class EventController
                 
                 $targetFilePath = $uploadDir . $fileName;
                 move_uploaded_file($_FILES['coverImage']['tmp_name'], $targetFilePath);
-                $data['coverImage'] = '/uploads/' . $fileName; // Store relative path
+                $data['coverImage'] = '/uploads/event-covers/' . $fileName; // Store relative path
             } else {
                 $data['coverImage'] = null; // No image uploaded
                 echo "No image uploaded or there was an upload error.";
