@@ -17,7 +17,7 @@ class AuthService
                 "path" => "/",
                 "secure" => true,
                 "httponly" => true,
-                "samesite" => "none"
+                "samesite" => "None"
             ]);
             return [
                 "token" => $jwt,
@@ -36,9 +36,9 @@ class AuthService
         setcookie("auth_token", "", [
             "expires" => time() - 3600,
             "path" => "/",
-            "secure" => false,
-            "httponly" => false,
-            "samesite" => "Lax"
+            "secure" => true,
+            "httponly" => true,
+            "samesite" => "None"
         ]);
     }
 }
