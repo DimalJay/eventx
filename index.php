@@ -9,6 +9,8 @@ $router = new Router("api/v1");
 $dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
+echo getenv('DB_HOST');
+
 require_once __DIR__ . '/Routes/users.php';
 require_once __DIR__ . '/Routes/auth.php';
 require_once __DIR__ . '/Routes/feedbacks.php';
