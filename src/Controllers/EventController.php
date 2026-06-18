@@ -37,56 +37,47 @@ class EventController
 
     public function createEvent()
     {
-        $data = json_decode(file_get_contents("php://input"), true);
-        $title = trim($data["title"]) ?? "";
-        $description = trim($data['description']) ?? '';
-        $location = trim($data['location']) ?? '';
-        $startDate = trim($data['startDate']) ?? '';
-        $endDate = trim($data['endDate']) ?? '';
-        $agenda = trim($data['agenda']) ?? '';
-        $capacity = $data['capacity'] ?? 0;
-        $eventCategory = trim($data['eventCategory']) ?? '';
-        $registrationDeadline = trim($data['registrationDeadline']) ?? '';
-        $ticketPrice = $data['ticketPrice'] ?? 0.0;
-        $isPaid = $data['isPaid'] ?? false;
-        $isPublic = $data['isPublic'] ?? false;
-        $waitlistEnabled = $data['waitlistEnabled'] ?? false;
-        $imageUrl = trim($data['imageUrl']) ?? '';
-        $organizerId = $data['organizerId'] ?? 1;
+        try {
+            $id = $_SERVER["uid"];
+            $data = json_decode(file_get_contents("php://input"), true);
 
-        // Basic validation
-        if (empty($title) || empty($startDate) || empty($endDate) || empty($capacity) || empty($eventCategory) || empty($ticketPrice) || empty($isPublic)) {
+
+            if (empty($data["title"]) || empty($data["startDate"]) || empty($data["endDate"])) {
+                return [
+                    "success" => false,
+                    "message" => "All fields are required",
+                    "data" => null,
+                ];
+            }
+            $event = new Event(
+                trim($data["title"]),
+                trim($data["eventType"]),
+                trim($data["description"]),
+                $data["startDate"],
+                $data["endDate"],
+                trim($data["location"]),
+                $id,
+                $data["coverImage"] ?? null,
+                $data["isPublic"] ?? false,
+                $data["capacity"] ?? 0,
+                $data["ticketPrice"] ?? 0.0,
+                $data["regDeadline"] ?? null,
+                $data["agenda"] ?? null,
+                $data["waitlistEnabled"] ?? false,
+            );
+
+            $this->eventService->createEvent($event);
+            return [
+                "success" => true,
+                "message" => "Event created successfully",
+            ];
+        } catch (\Throwable $th) {
             return [
                 "success" => false,
-                "message" => "All fields are required",
+                "message" => "Error creating event: " . $th->getMessage(),
                 "data" => null,
             ];
         }
-
-        $event = new Event(
-            $title, 
-            $eventCategory, 
-            $description, 
-            $startDate, 
-            $endDate, 
-            $location, 
-            $organizerId, 
-            $imageUrl, 
-            $isPublic, 
-            $capacity, 
-            $ticketPrice, 
-            $registrationDeadline, 
-            $agenda, 
-            $waitlistEnabled, 
-            $isPaid
-        );
-
-        $response = $this->eventService->createEvent($event);
-        return [
-            "success" => true,
-            "message" => "Event created successfully",
-            "data" => $response,
-        ];
     }
 
     public function updateEvent()
@@ -110,7 +101,7 @@ class EventController
         $waitlistEnabled = $data["waitlistEnabled"] ?? false;
         $imageUrl = trim($data["imageUrl"]) ?? "";
 
-        if(empty($id)) {
+        if (empty($id)) {
             return [
                 "success" => false,
                 "message" => "Event ID is required"
@@ -142,10 +133,10 @@ class EventController
         if (!empty($isPaid)) {
             $eventData["isPaid"] = $isPaid;
         }
-        if (!empty($registrationDeadline)){
+        if (!empty($registrationDeadline)) {
             $eventData["registrationDeadline"] = $registrationDeadline;
         }
-        if (!empty($waitlistEnabled)){
+        if (!empty($waitlistEnabled)) {
             $eventData["waitlistEnabled"] = $waitlistEnabled;
         }
         if (!empty($description)) {
