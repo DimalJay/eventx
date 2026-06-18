@@ -16,8 +16,8 @@ class Event extends BaseModel
   #[Column(type: 'VARCHAR', length: 255, nullable: false)]
   protected string $title;
 
-  #[Column(type: 'VARCHAR', length: 100, nullable: false)]
-  protected string $eventCategory;
+  #[Column(type: 'VARCHAR', length: 100, nullable: false, default: "'online'")]
+  protected string $eventType;
 
   #[Column(type: 'TEXT', nullable: true)]
   protected ?string $description = null;
@@ -35,7 +35,7 @@ class Event extends BaseModel
   protected int $organizerId;
 
   #[Column(type: 'VARCHAR', length: 255, nullable: true)]
-  protected ?string $imageUrl = null;
+  protected ?string $coverImage = null;
 
   #[Column(type: 'BOOLEAN', nullable: false, default: true)]
   protected bool $isPublic = true;
@@ -53,7 +53,7 @@ class Event extends BaseModel
   protected float $ticketPrice = 0.00;
 
   #[Column(type: 'DATETIME', nullable: true)]
-  protected ?DateTime $registrationDeadline = null;
+  protected ?DateTime $regDeadline = null;
 
   #[Column(type: 'TEXT', nullable: true)]
   protected ?string $agenda = null;
@@ -61,33 +61,30 @@ class Event extends BaseModel
   #[Column(type: 'BOOLEAN', nullable: false, default: false)]
   protected bool $waitlistEnabled = false;
 
-  #[Column(type: 'BOOLEAN', nullable: false, default: false)]
-  protected bool $isPaid = false;
 
-    public function __construct($title, $eventCategory, $description, $startDate, $endDate, $location, $organizerId, $imageUrl, $isPublic, $capacity, $ticketPrice, $registrationDeadline, $agenda, $waitlistEnabled = false, $isPaid = false) {
+    public function __construct($title, $eventType, $description, $startDate, $endDate, $location, $organizerId, $coverImage, $isPublic, $capacity, $ticketPrice, $regDeadline, $agenda, $waitlistEnabled = false) {
       $this->title = $title;
-      $this->eventCategory = $eventCategory;
+      $this->eventType = $eventType;
       $this->description = $description;
       $this->startDate = new DateTime($startDate);
       $this->endDate = new DateTime($endDate);
       $this->location = $location;
       $this->organizerId = $organizerId;
-      $this->imageUrl = $imageUrl;
+      $this->coverImage = $coverImage;
       $this->isPublic = $isPublic;
       $this->capacity = $capacity;
       $this->ticketPrice = $ticketPrice;
-      if ($registrationDeadline) {
-        $this->registrationDeadline = new DateTime($registrationDeadline);
+      if ($regDeadline) {
+        $this->regDeadline = new DateTime($regDeadline);
       }
       $this->agenda = $agenda;
       $this->waitlistEnabled = $waitlistEnabled;
-      $this->isPaid = $isPaid;
       $this->createdAt = new DateTime();
       $this->updatedAt = new DateTime();
       parent::__construct();
   }
 
   public static function empty() : self {
-    return new self("", "", "", "2024-01-01 00:00:00", "2024-01-01 00:00:00", "", 0, "", true, 0, 0.00, null, null, false, false);
+    return new self(null, null, null, null, null, null, 0, null, false, 0, 0.0, null, null);
   }
 }

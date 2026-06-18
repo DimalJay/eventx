@@ -3,7 +3,7 @@ namespace database;
 
 use PDO;
 use PDOException;
-
+use Dotenv\Dotenv;
 class Database
 {
     private PDO $pdo;
@@ -14,14 +14,17 @@ class Database
 
     private function connect()
     {
-        $config = require __DIR__ . '/../config/config.php';
-        $host = $config["db"]["host"];
-        $db = $config["db"]["dbname"];
-        $username = $config["db"]["username"];
-        $password = $config["db"]["password"];
-        $charset = $config["db"]["charset"];
+        $dotenv = Dotenv::createImmutable('./');
+        $dotenv->load();
 
-        $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+        $host = $_ENV['DB_HOST'];
+        $db = $_ENV['DB_NAME'];
+        $port = $_ENV['DB_PORT'] ?? 3306;
+        $username = $_ENV['DB_USERNAME'];
+        $password = $_ENV['DB_PASSWORD'];
+        $charset = $_ENV['DB_CHARSET'] ?? 'utf8mb4';
+
+        $dsn = "mysql:host=$host;port=$port;dbname=$db;charset=$charset";
         $options = [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
