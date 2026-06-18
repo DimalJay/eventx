@@ -39,8 +39,24 @@ class EventController
     {
         try {
             $id = $_SERVER["uid"];
-            $data = json_decode(file_get_contents("php://input"), true);
-
+            $data = $_POST;
+            
+            if(isset($_FILES['coverImage']) && $_FILES['coverImage']['error'] === UPLOAD_ERR_OK) {
+                echo "File uploaded successfully.";
+                $uploadDir = __DIR__ . '/../../uploads/event-covers/';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0777, true);
+                }
+                $fileName = basename($_FILES['coverImage']['name']);
+                $fileName = "cover_" . time() . "_" . $fileName;
+                
+                $targetFilePath = $uploadDir . $fileName;
+                move_uploaded_file($_FILES['coverImage']['tmp_name'], $targetFilePath);
+                $data['coverImage'] = '/uploads/' . $fileName; // Store relative path
+            } else {
+                $data['coverImage'] = null; // No image uploaded
+                echo "No image uploaded or there was an upload error.";
+            }
 
             if (empty($data["title"]) || empty($data["startDate"]) || empty($data["endDate"])) {
                 return [
