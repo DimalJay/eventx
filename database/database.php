@@ -19,8 +19,7 @@ class Database
             $dotenv = Dotenv::createImmutable(dirname(__DIR__) . '/');
             $dotenv->load();
         }
-
-
+        
         $host = $_ENV['DB_HOST'] ?? getenv('DB_HOST');
         $db = $_ENV['DB_NAME'] ?? getenv('DB_NAME');
         $port = $_ENV['DB_PORT'] ?? getenv('DB_PORT') ?? 3306;
