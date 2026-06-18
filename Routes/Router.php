@@ -9,7 +9,8 @@ class Router
     public function __construct($baseUrl = "api/v1")
     {
         $allowedOrigins = [
-            "http://localhost:3000"
+            "http://localhost:3000",
+            "https://eventx-mega.vercel.app"
         ];
 
         $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
@@ -27,10 +28,11 @@ class Router
             http_response_code(200);
             exit;
         }
+        $request_uri = $_SERVER['REQUEST_URI'] ?? '/';
+        $parsed_url = parse_url($request_uri, PHP_URL_PATH);
+        $baseUrl = '/' . trim($baseUrl, '/');
 
-        $request_url = isset($_GET['request']) ? trim($_GET['request'], '/') : '';
-
-        $url_segments = explode($baseUrl, $request_url);
+        $url_segments = explode($baseUrl, $parsed_url);
         $raw_path = isset($url_segments[1]) ? $url_segments[1] : '';
         $this->current_path = '/' . trim($raw_path, '/');
     }

@@ -17,6 +17,10 @@ use Models\Checkin;
 use Models\Feedback;
 use Models\Task;
 use Models\TeamAccess;
+use Dotenv\Dotenv;
+
+$dotenv = Dotenv::createImmutable('./');
+$dotenv->load();
 
 try {
     User::createClass();
