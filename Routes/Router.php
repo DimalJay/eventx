@@ -12,7 +12,7 @@ class Router
             "http://localhost:3000",
             "https://eventx-mega.vercel.app"
         ];
-
+        
         $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
         if (in_array($origin, $allowedOrigins, true)) {
             header("Access-Control-Allow-Origin: {$origin}");

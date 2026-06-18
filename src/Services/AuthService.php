@@ -15,9 +15,8 @@ class AuthService
             setcookie("auth_token", $jwt, [
                 "expires" => time() + (60 * 60 * 24),
                 "path" => "/",
-                "domain" => $_SERVER['HTTP_HOST'],
                 "secure" => true,
-                "httponly" => false,
+                "httponly" => true,
                 "samesite" => "None"
             ]);
             return [
