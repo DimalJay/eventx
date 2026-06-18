@@ -24,7 +24,6 @@ class UserController
     public function getUserDetails()
     {
         $id = $_SERVER["uid"];
-        echo "Fetching details for user ID: " . $id;
         $user = $this->userService->get_user($id);
 
         return [
