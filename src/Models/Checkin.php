@@ -6,7 +6,7 @@ use database\Column;
 use database\Table;
 use DateTime;
 
-#[Table(name: 'Checkin')]
+#[Table(name: 'checkin')]
 class Checkin extends BaseModel
 {
   #[Column(type: 'INT', nullable: false, primaryKey: true, autoIncrement: true)]

@@ -41,4 +41,14 @@ class AuthController
             "message" => "Invalid email or password"
         ];
     }
+
+    // logout function
+    public function logout()
+    {
+        $this->authService->logout();
+        return [
+            "success" => true,
+            "message" => "User Logged out"
+        ];
+    }
 }

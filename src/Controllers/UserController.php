@@ -44,6 +44,7 @@ class UserController
 
         // Basic validation
         if(empty($email) || empty($password) || empty($fName) || empty($lName)) {
+            http_response_code(400);
             return [
                 "success" => false,
                 "message" => "All fields are required",
@@ -54,6 +55,7 @@ class UserController
         // Check if email already exists
         $ret = User::where(["email" => $email]);
         if(count($ret) > 0) {
+            http_response_code(400);
             return [
                 "success" => false,
                 "message" => "Email already exists",
