@@ -15,16 +15,8 @@ class AuthService
             setcookie("auth_token", $jwt, [
                 "expires" => time() + (60 * 60 * 24),
                 "path" => "/",
-                "secure" => true,
-                "httponly" => true,
-                "samesite" => "None"
-            ]);
-
-            setcookie("authx", "true", [
-                "expires" => time() + (60 * 60 * 24),
-                "path" => "/",
-                "secure" => true,
-                "httponly" => false, // මේක false කළොත් තමයි Next.js Middleware එකට පේන්නේ!
+                "secure" => false,
+                "httponly" => false,
                 "samesite" => "Lax"
             ]);
 
