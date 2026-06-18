@@ -19,13 +19,13 @@ class Database
             $dotenv = Dotenv::createImmutable(dirname(__DIR__) . '/');
             $dotenv->load();
         }
-        
+
         $host = $_ENV['DB_HOST'] ?? getenv('DB_HOST');
         $db = $_ENV['DB_NAME'] ?? getenv('DB_NAME');
         $port = $_ENV['DB_PORT'] ?? getenv('DB_PORT') ?? 3306;
         $username = $_ENV['DB_USERNAME'] ?? getenv('DB_USERNAME');
         $password = $_ENV['DB_PASSWORD'] ?? getenv('DB_PASSWORD');
-        $charset = $_ENV['DB_CHARSET'] ?? getenv('DB_CHARSET') ?? 'utf8mb4';
+        $charset = $_ENV['DB_CHARSET']  ?? 'utf8mb4';
 
         $dsn = "mysql:host=$host;port=$port;dbname=$db;charset=$charset";
         $options = [
