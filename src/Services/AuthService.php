@@ -15,6 +15,7 @@ class AuthService
             setcookie("auth_token", $jwt, [
                 "expires" => time() + (60 * 60 * 24),
                 "path" => "/",
+                "domain" => "eventx-mega.vercel.app",
                 "secure" => true,
                 "httponly" => false,
                 "samesite" => "None"
