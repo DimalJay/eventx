@@ -17,25 +17,27 @@ class TaskController
 
     public function addTask() // Logic to add a task
     {
+        $id = $_SERVER["uid"];
+
         $jsonData = file_get_contents('php://input');
         $data = json_decode($jsonData, true);
 
-        $eventId = trim($data["eventId"]) ?? "";
-        $title = trim($data["title"]) ?? "";
-        $description = trim($data["description"]) ?? "";
-        $createdBy = trim($data["createdBy"]) ?? "";
-        $assignedTo = trim($data["assignedTo"]) ?? "";
-        $assignedBy = trim($data["assignedBy"]) ?? "";
-        $dueDate = trim($data["dueDate"]) ?? "";
-
-        if (empty($eventId) || empty($title) || empty($createdBy) || empty($assignedTo) || empty($assignedBy) || empty($dueDate)) {
+        if (empty($data["eventId"]) || empty($data["title"]) || empty($data["assignedTo"]) || empty($data["assignedBy"]) || empty($data["dueDate"])) {
             return [
                 "success" => false,
                 "message" => "Missing required fields"
             ];
         }
 
-        $task = new Task($eventId, $title, $description, $createdBy, $assignedTo, $assignedBy, $dueDate);
+        $task = new Task(
+            $data["eventId"], 
+            trim($data["title"]) ?? "",
+            trim($data["description"]) ?? "", 
+            $id, 
+            $data["assignedTo"], 
+            $data["assignedBy"], 
+            $data["dueDate"]
+            );
         try {
             $this->taskService->addTask($task);
         } catch (Exception $e) {
