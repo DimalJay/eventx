@@ -10,17 +10,21 @@ class UserService
     {
     }
 
-    public function get_all_users()
+    public function getAllUsers()
     {
-        return User::selectAll();
+        $users = User::selectAll();
+        return array_map(function ($user) {
+            unset($user['password']);
+            return $user;
+        }, $users);
     }
 
-    public function create_user(User $user)
+    public function createUser(User $user)
     {
         return $user->save();
     }
 
-    public function get_user(String $id)
+    public function getUser(String $id)
     {
         $users = User::where(["id" => $id]);
         return count($users) > 0 ? $users[0] : null;

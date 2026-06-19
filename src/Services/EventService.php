@@ -19,6 +19,11 @@ class EventService
         return count($events) > 0 ? $events[0] : null;
     }
 
+    public function getEventWithUserId(String $userId, String $eventId)
+    {
+        return Event::where(["id" => $eventId, "organizerId" => $userId]);
+    }
+
     public function createEvent(Event $event)
     {
         return $event->save();

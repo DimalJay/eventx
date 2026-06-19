@@ -2,17 +2,22 @@
 
 namespace Controllers;
 
-use Models\TeamAccess;
 use Services\TeamAccessService;
+use Services\UserService;
+use Services\EventService;
 use Exception;
 
 class TeamAccessController
 {
 
     private TeamAccessService $teamService;
+    private UserService $userService;
+    private EventService $eventService;
     public function __construct()
     {
         $this->teamService = new TeamAccessService();
+        $this->userService = new UserService();
+        $this->eventService = new EventService();
     }
 
     public function addMember() // Logic to add a team
@@ -79,17 +84,35 @@ class TeamAccessController
 
     public function getMembers() // Logic to get team members for an event
     {
+        $userId = $_SERVER["uid"];
         $eventId = $_GET["eventId"] ?? "";
 
-        if (empty($eventId)) {
+        $user = $this->userService->getUser($userId);
+        $event = $this->eventService->getEventWithUserId($userId, $eventId);
+        if (!$user) {
             return [
                 "success" => false,
-                "message" => "Missing required fields"
+                "message" => "User not found"
+            ];
+        }
+
+        if (!$event) {
+            return [
+                "success" => false,
+                "message" => "Event not found"
             ];
         }
 
         try {
-            $members = $this->teamService->getMembers($eventId);
+            // $members = $this->teamService->getMembers($eventId);
+            $members = $this->userService->getAllUsers();
+            $members = array_map(function($member) {
+                return [
+                    "id" => $member["id"],
+                    "firstName" => $member["firstName"],
+                    "lastName" => $member["lastName"],
+                ];
+            }, $members);
             return [
                 "success" => true,
                 "message" => "Team members fetched succesfully",
