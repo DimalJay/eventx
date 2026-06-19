@@ -15,10 +15,11 @@ class AuthService
             setcookie("auth_token", $jwt, [
                 "expires" => time() + (60 * 60 * 24),
                 "path" => "/",
-                "secure" => false,
+                "secure" => true,
                 "httponly" => false,
-                "samesite" => "Lax"
+                "samesite" => "None"
             ]);
+
             return [
                 "token" => $jwt,
                 "user" => [
@@ -36,8 +37,8 @@ class AuthService
         setcookie("auth_token", "", [
             "expires" => time() - 3600,
             "path" => "/",
-            "secure" => false,
-            "httponly" => false,
+            "secure" => true,
+            "httponly" => true,
             "samesite" => "Lax"
         ]);
     }
