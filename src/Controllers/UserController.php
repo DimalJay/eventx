@@ -20,7 +20,7 @@ class UserController
             "data" => $users
         ];
     }
-
+ 
     public function getUserDetails()
     {
         $id = $_SERVER["uid"];
@@ -38,12 +38,13 @@ class UserController
         $data = json_decode(file_get_contents("php://input"), true);
         $email = $data['email'] ?? '';
         $password = $data['password'] ?? '';
-        $fName = $data['first_name'] ?? '';
-        $lName = $data['last_name'] ?? '';
+        $fName = $data['firstName'] ?? '';
+        $lName = $data['lastName'] ?? '';
 
 
         // Basic validation
         if(empty($email) || empty($password) || empty($fName) || empty($lName)) {
+            http_response_code(400);
             return [
                 "success" => false,
                 "message" => "All fields are required",
@@ -54,6 +55,7 @@ class UserController
         // Check if email already exists
         $ret = User::where(["email" => $email]);
         if(count($ret) > 0) {
+            http_response_code(400);
             return [
                 "success" => false,
                 "message" => "Email already exists",

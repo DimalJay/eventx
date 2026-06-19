@@ -1,2 +1,7 @@
 /vendor/
 .VSCodeCounter
+/uploads/*
+.env
+
+.env.*
+!.env.example

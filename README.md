@@ -19,9 +19,16 @@ Contributors
 - Pramod
 - Irudini
 
+# Setup Env
+rename .env.example to .env and fill the database credentials
 
 # Installation
 ```cmd
 composer install
 composer dump-autoload
+```
+
+# generate tables
+```cmd
+php scripts/migrate.php
 ```

@@ -12,7 +12,14 @@ class AuthService
         $user = User::where(["email" => $email])[0] ?? null;
         if ($user && password_verify($password, $user['password'])) {
             $jwt = AuthMiddleware::generateToken($user['id']);
-            setcookie("auth_token", $jwt, time() + (60 * 60 * 24), "/", "", false, true);
+            setcookie("auth_token", $jwt, [
+                "expires" => time() + (60 * 60 * 24),
+                "path" => "/",
+                "secure" => true,
+                "httponly" => false,
+                "samesite" => "None"
+            ]);
+
             return [
                 "token" => $jwt,
                 "user" => [
@@ -24,5 +31,15 @@ class AuthService
             ];
         }
         return null;
+    }
+
+    public function logout() {
+        setcookie("auth_token", "", [
+            "expires" => time() - 3600,
+            "path" => "/",
+            "secure" => true,
+            "httponly" => true,
+            "samesite" => "Lax"
+        ]);
     }
 }

@@ -2,7 +2,7 @@
 
 Base Url `/api/v1`<br>
 
-### Create Team
+### Add Member to Team
 
 `POST /team`<br>
 
@@ -10,31 +10,29 @@ Request Body
 
 ```json
 {
-  "teamName": "Registration Team",
-  "managedBy": 5,
-  "createdBy": 2
-}
+  "userId": 15,
+  "eventId": 3,
+  "role": "MEMBER"
+  }
 ```
 
-Response Body `201 Created`
-
+Response Body `201 SUCCESS`
 ```json
 {
   "success": true,
-  "message": "Team Created Successfully",
+  "message": "User added to team successfully.",
   "data": {
-    "teamID": 1,
-    "eventID": 1,
-    "teamName": "Registration Team",
-    "managedBy": 5,
-    "createdBy": 2,
-    "createdAt": "2026-06-02 10:30:00"
+    "id": 101,
+    "userId": 15,
+    "eventId": 3,
+    "role": "MEMBER",
+    "joinedAt": "2026-06-05 10:30:00"
   }
+
 }
 ```
 
 Response Body `400 Bad Request`
-
 ```json
 {
   "success": false,
@@ -43,95 +41,18 @@ Response Body `400 Bad Request`
 }
 ```
 
----
-
-### Get All Teams
-
-`GET /team`<br>
-
-Response Body `200 OK`
-
-```json
-{
-  "success": true,
-  "message": "Teams Retrieved Successfully",
-  "data": [
-    {
-      "teamID": 1,
-      "eventID": 1,
-      "teamName": "Registration Team",
-      "managedBy": 5,
-      "createdBy": 2,
-      "createdAt": "2026-06-02 10:30:00"
-    },
-    {
-      "teamID": 2,
-      "eventID": 1,
-      "teamName": "Marketing Team",
-      "managedBy": 6,
-      "createdBy": 2,
-      "createdAt": "2026-06-02 11:00:00"
-    }
-  ]
-}
-```
-
-Response Body `404 Not Found`
-
+Response Body `400 ERROR`
 ```json
 {
   "success": false,
-  "message": "No teams found",
-  "data": null
+  "message": "User is already assigned to this team."
 }
 ```
-
----
-
-### Get Team By ID
-
-`GET /team/{teamID}`<br>
-
-Example
-
-`GET /team/1`
-
-Response Body `200 OK`
-
-```json
-{
-  "success": true,
-  "message": "Team Retrieved Successfully",
-  "data": {
-    "teamID": 1,
-    "eventID": 1,
-    "teamName": "Registration Team",
-    "managedBy": 5,
-    "createdBy": 2,
-    "createdAt": "2026-06-02 10:30:00"
-  }
-}
-```
-
-Response Body `404 Not Found`
-
-```json
-{
-  "success": false,
-  "message": "Team not found",
-  "data": null
-}
-```
-
----
+----
 
 ### Get Teams By Event
 
-`GET /team/event/{eventID}`<br>
-
-Example
-
-`GET /team/event/1`
+`GET /team/event?id={eventId}`<br>
 
 Response Body `200 OK`
 
@@ -141,20 +62,18 @@ Response Body `200 OK`
   "message": "Event Teams Retrieved Successfully",
   "data": [
     {
-      "teamID": 1,
-      "eventID": 1,
-      "teamName": "Registration Team",
-      "managedBy": 5,
-      "createdBy": 2,
-      "createdAt": "2026-06-02 10:30:00"
+      "id":1,
+     "userId": 15,
+      "firstName": "John",
+      "lastName": "Silva",
+      "role": "MEMBER"
     },
     {
-      "teamID": 2,
-      "eventID": 1,
-      "teamName": "Marketing Team",
-      "managedBy": 6,
-      "createdBy": 2,
-      "createdAt": "2026-06-02 11:00:00"
+      "id": 1,
+      "userId": 18,
+      "firstName": "Nimal",
+      "lastName": "Perera",
+      "role": "MEMBER"
     }
   ]
 }
@@ -172,36 +91,33 @@ Response Body `404 Not Found`
 
 ---
 
-### Update Team
+### Update User Role in Team
 
-`PUT /team/{teamID}`<br>
-
-Example
-
-`PUT /team/1`
+`PUT /team`<br>
 
 Request Body
 
 ```json
 {
-  "teamName": "Updated Registration Team",
-  "managedBy": 8
+  "id": 1,
+  "role": "MEMBER"
 }
 ```
 
-Response Body `200 OK`
+Response Body `201 SUCCESS`
 
 ```json
 {
   "success": true,
-  "message": "Team Updated Successfully",
+  "message": "User Role Updated Successfully",
   "data": {
-    "teamID": 1,
-    "eventID": 1,
-    "teamName": "Updated Registration Team",
-    "managedBy": 8,
-    "createdBy": 2,
-    "createdAt": "2026-06-02 10:30:00"
+    "id": 1,
+    "eventId": 1,
+    "userId": 1,
+    "firstName": "Nimal",
+    "lastName": "Perera",
+    "role": "MEMBER",
+    "joinedAt": "2026-06-02 10:30:00"
   }
 }
 ```
@@ -211,27 +127,30 @@ Response Body `404 Not Found`
 ```json
 {
   "success": false,
-  "message": "Team not found",
+  "message": "Error occured while updating user role",
   "data": null
 }
 ```
 
 ---
 
-### Delete Team
+### Delete User from Team
 
-`DELETE /team/{teamID}`<br>
+`DELETE /team`<br>
 
-Example
-
-`DELETE /team/1`
+Request Body 
+```json
+{
+  "id": 1
+}
+```
 
 Response Body `200 OK`
 
 ```json
 {
   "success": true,
-  "message": "Team Deleted Successfully",
+  "message": "User removed from team Successfully",
   "data": null
 }
 ```
@@ -241,22 +160,16 @@ Response Body `404 Not Found`
 ```json
 {
   "success": false,
-  "message": "Team not found",
+  "message": "Error occured while removing user from team",
   "data": null
 }
 ```
 
 ---
 
-## Team Object Structure
+## Team Member Types
 
-```json
-{
-  "teamID": 1,
-  "eventID": 1,
-  "teamName": "Registration Team",
-  "managedBy": 5,
-  "createdBy": 2,
-  "createdAt": "2026-06-02 10:30:00"
-}
-```
+ORGANIZER
+COORDINATOR
+MEMBER
+

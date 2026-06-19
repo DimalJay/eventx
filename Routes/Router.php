@@ -8,14 +8,31 @@ class Router
     private $routes = [];
     public function __construct($baseUrl = "api/v1")
     {
-        header("Access-Control-Allow-Origin: *");
+        $allowedOrigins = [
+            "http://localhost:3000",
+            "https://eventx-mega.vercel.app"
+        ];
+        
+        $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+        if (in_array($origin, $allowedOrigins, true)) {
+            header("Access-Control-Allow-Origin: {$origin}");
+            header("Access-Control-Allow-Credentials: true");
+            header("Vary: Origin");
+        }
+
         header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
         header("Access-Control-Allow-Headers: Content-Type, Authorization");
         header("Content-Type: application/json; charset=UTF-8");
 
-        $request_url = isset($_GET['request']) ? trim($_GET['request'], '/') : '';
+        if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            http_response_code(200);
+            exit;
+        }
+        $request_uri = $_SERVER['REQUEST_URI'] ?? '/';
+        $parsed_url = parse_url($request_uri, PHP_URL_PATH);
+        $baseUrl = '/' . trim($baseUrl, '/');
 
-        $url_segments = explode($baseUrl, $request_url);
+        $url_segments = explode($baseUrl, $parsed_url);
         $raw_path = isset($url_segments[1]) ? $url_segments[1] : '';
         $this->current_path = '/' . trim($raw_path, '/');
     }
