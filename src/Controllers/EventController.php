@@ -26,7 +26,7 @@ class EventController
     public function getEventDetails()
     {
         $id = $_GET["id"];
-        $event = $this->eventService->get_event($id);
+        $event = $this->eventService->getEvent($id);
 
         return [
             "success" => true,
