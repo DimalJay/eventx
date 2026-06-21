@@ -13,7 +13,7 @@ class UserController
     }
     public function listUsers()
     {
-        $users = $this->userService->get_all_users();
+        $users = $this->userService->getAllUsers();
         return [
             "success" => true,
             "message" => "List of users",
@@ -24,7 +24,7 @@ class UserController
     public function getUserDetails()
     {
         $id = $_SERVER["uid"];
-        $user = $this->userService->get_user($id);
+        $user = $this->userService->getUser($id);
 
         return [
             "success" => true,
@@ -65,7 +65,7 @@ class UserController
 
         $user = new User($email, $fName, $lName, $password, null);
 
-        $response = $this->userService->create_user($user);
+        $response = $this->userService->createUser($user);
         return [
             "success" => true,
             "message" => "User created successfully",
