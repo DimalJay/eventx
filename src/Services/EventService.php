@@ -40,6 +40,6 @@ class EventService
 
     public function getPublicEvents()
     {
-        return Event::where(["isPublic" => 1]);
+        return Event::where(["isPublic" => true]);
     }
 }
