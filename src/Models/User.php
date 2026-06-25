@@ -44,6 +44,9 @@ class User extends BaseModel
     #[Column(type: 'DATETIME', default: 'CURRENT_TIMESTAMP')]
     protected DateTime $createdAt;
 
+    #[Column(type: 'TEXT', nullable: true)]
+    protected ?string $phoneNumber = null;
+
     #[Column(type: 'DATETIME', nullable: true)]
     protected DateTime $updatedAt;
 
