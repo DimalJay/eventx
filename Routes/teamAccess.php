@@ -1,9 +1,10 @@
 <?php
 use Controllers\TeamAccessController;
+use Middlewares\AuthMiddleware;
 
 $teamAccessController = new TeamAccessController();
 
-$router->get("/team-access", [$teamAccessController, "getMembers"]);
-$router->post("/team-access", [$teamAccessController, "addMember"]);
-$router->put("/team-access", [$teamAccessController, "updateMemberRole"]);
-$router->delete("/team-access", [$teamAccessController, "removeMember"]);
+$router->get("/team-access", [$teamAccessController, "getMembers"], [AuthMiddleware::class]);
+$router->post("/team-access", [$teamAccessController, "addMember"], [AuthMiddleware::class]);
+$router->put("/team-access", [$teamAccessController, "updateMemberRole"], [AuthMiddleware::class]);
+$router->delete("/team-access", [$teamAccessController, "removeMember"], [AuthMiddleware::class]);
