@@ -15,7 +15,7 @@ class AuthService
             setcookie("auth_token", $jwt, [
                 "expires" => time() + (60 * 60 * 24),
                 "path" => "/",
-                "domain" => ".eventx.teskill.com",
+                "domain" => getenv('DOMAIN'),
                 "secure" => true,
                 "httponly" => true,
                 "samesite" => "Lax"
