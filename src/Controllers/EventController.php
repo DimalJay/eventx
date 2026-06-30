@@ -22,6 +22,17 @@ class EventController
             "data" => $events
         ];
     }
+    public function getPublicEvents()
+    {
+        $events = $this->eventService->getPublicEvents();
+
+        return [
+            "success" => true,
+            "message" => "Public events retrieved successfully",
+            "data" => $events
+        ];
+    }
+
 
     public function getEventDetails()
     {
@@ -40,8 +51,8 @@ class EventController
         try {
             $id = $_SERVER["uid"];
             $data = $_POST;
-            
-            if(isset($_FILES['coverImage']) && $_FILES['coverImage']['error'] === UPLOAD_ERR_OK) {
+
+            if (isset($_FILES['coverImage']) && $_FILES['coverImage']['error'] === UPLOAD_ERR_OK) {
                 echo "File uploaded successfully.";
                 $uploadDir = __DIR__ . '/../../uploads/event-covers/';
                 if (!is_dir($uploadDir)) {
@@ -49,7 +60,7 @@ class EventController
                 }
                 $fileName = basename($_FILES['coverImage']['name']);
                 $fileName = "cover_" . time() . "_" . $fileName;
-                
+
                 $targetFilePath = $uploadDir . $fileName;
                 move_uploaded_file($_FILES['coverImage']['tmp_name'], $targetFilePath);
                 $data['coverImage'] = '/uploads/event-covers/' . $fileName; // Store relative path
