@@ -15,9 +15,10 @@ class AuthService
             setcookie("auth_token", $jwt, [
                 "expires" => time() + (60 * 60 * 24),
                 "path" => "/",
+                "domain" => getenv('DOMAIN'),
                 "secure" => true,
-                "httponly" => false,
-                "samesite" => "None"
+                "httponly" => true,
+                "samesite" => "Lax"
             ]);
 
             return [
@@ -41,5 +42,57 @@ class AuthService
             "httponly" => true,
             "samesite" => "Lax"
         ]);
+    }
+
+    public function googleLogin($credential)
+    {
+        $url = "https://oauth2.googleapis.com/tokeninfo?id_token=" . urlencode($credential);
+        $response = @file_get_contents($url);
+        if (!$response) {
+            return null;
+        }
+
+        $payload = json_decode($response, true);
+        if (!isset($payload['email'])) {
+            return null;
+        }
+
+        $email = $payload['email'];
+        $firstName = $payload['given_name'] ?? 'Google';
+        $lastName = $payload['family_name'] ?? 'User';
+        $profilePicture = $payload['picture'] ?? null;
+
+        $user = User::where(["email" => $email])[0] ?? null;
+        if (!$user) {
+            $randomPassword = bin2hex(random_bytes(16));
+            $userObj = new User($email, $firstName, $lastName, $randomPassword, $profilePicture, 'google');
+            $userObj->save();
+            $user = User::where(["email" => $email])[0] ?? null;
+        }
+
+        if ($user) {
+            $jwt = AuthMiddleware::generateToken($user['id']);
+            setcookie("auth_token", $jwt, [
+                "expires" => time() + (60 * 60 * 24),
+                "path" => "/",
+                "domain" => getenv('DOMAIN'),
+                "secure" => true,
+                "httponly" => true,
+                "samesite" => "Lax"
+            ]);
+
+            return [
+                "token" => $jwt,
+                "user" => [
+                    "id" => $user['id'],
+                    "email" => $user['email'],
+                    "firstName" => $user['firstName'],
+                    "lastName" => $user['lastName'],
+                    "loginType" => $user['loginType'] ?? 'google',
+                    "profilePicture" => $user['profilePicture'] ?? null
+                ]
+            ];
+        }
+        return null;
     }
 }
