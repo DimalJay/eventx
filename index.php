@@ -12,7 +12,7 @@ require_once __DIR__ . '/Routes/feedbacks.php';
 require_once __DIR__ . '/Routes/events.php';
 require_once __DIR__ . '/Routes/tasks.php';
 require_once __DIR__ . '/Routes/teamAccess.php';
-require_once __DIR__ . '/Routes/discoverEvents.php';
+// require_once __DIR__ . '/Routes/discoverEvents.php';
 
 $router->dispatch();
 ?>
