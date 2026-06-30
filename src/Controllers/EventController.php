@@ -22,11 +22,22 @@ class EventController
             "data" => $events
         ];
     }
+    public function getPublicEvents()
+    {
+        $events = $this->eventService->getPublicEvents();
+
+        return [
+            "success" => true,
+            "message" => "Public events retrieved successfully",
+            "data" => $events
+        ];
+    }
+
 
     public function getEventDetails()
     {
         $id = $_GET["id"];
-        $event = $this->eventService->get_event($id);
+        $event = $this->eventService->getEvent($id);
 
         return [
             "success" => true,
@@ -40,8 +51,8 @@ class EventController
         try {
             $id = $_SERVER["uid"];
             $data = $_POST;
-            
-            if(isset($_FILES['coverImage']) && $_FILES['coverImage']['error'] === UPLOAD_ERR_OK) {
+
+            if (isset($_FILES['coverImage']) && $_FILES['coverImage']['error'] === UPLOAD_ERR_OK) {
                 echo "File uploaded successfully.";
                 $uploadDir = __DIR__ . '/../../uploads/event-covers/';
                 if (!is_dir($uploadDir)) {
@@ -49,7 +60,7 @@ class EventController
                 }
                 $fileName = basename($_FILES['coverImage']['name']);
                 $fileName = "cover_" . time() . "_" . $fileName;
-                
+
                 $targetFilePath = $uploadDir . $fileName;
                 move_uploaded_file($_FILES['coverImage']['tmp_name'], $targetFilePath);
                 $data['coverImage'] = '/uploads/event-covers/' . $fileName; // Store relative path
@@ -102,20 +113,21 @@ class EventController
         $data = json_decode($jsonData, true);
 
         $id = trim($data["id"]) ?? "";
-        $title = trim($data["title"]) ?? "";
-        $description = trim($data["description"]) ?? "";
-        $location = trim($data["location"]) ?? "";
-        $startDate = trim($data["startDate"]) ?? "";
-        $endDate = trim($data["endDate"]) ?? "";
-        $agenda = trim($data["agenda"]) ?? "";
-        $capacity = trim($data["capacity"]) ?? "";
-        $eventCategory = trim($data["eventCategory"]) ?? "";
-        $registrationDeadline = trim($data["registrationDeadline"]) ?? "";
-        $ticketPrice = trim($data["ticketPrice"]) ?? "";
+
+        $title = $data["title"] ?? "";
+        $description = $data["description"] ?? "";
+        $location = $data["location"] ?? "";
+        $startDate = $data["startDate"] ?? "";
+        $endDate = $data["endDate"] ?? "";
+        $agenda = $data["agenda"] ?? "";
+        $capacity = $data["capacity"] ?? "";
+        $eventCategory = $data["eventCategory"] ?? "";
+        $registrationDeadline = $data["registrationDeadline"] ?? "";
+        $ticketPrice = $data["ticketPrice"] ?? "";
         $isPaid = $data["isPaid"] ?? false;
         $isPublic = $data["isPublic"] ?? false;
         $waitlistEnabled = $data["waitlistEnabled"] ?? false;
-        $imageUrl = trim($data["imageUrl"]) ?? "";
+        $imageUrl = $data["imageUrl"] ?? "";
 
         if (empty($id)) {
             return [
@@ -126,46 +138,46 @@ class EventController
 
         $eventData = [];
         if (!empty($title)) {
-            $eventData["title"] = $title;
+            $eventData["title"] = trim($title);
         }
         if (!empty($startDate)) {
-            $eventData["startDate"] = $startDate;
+            $eventData["startDate"] = trim($startDate);
         }
         if (!empty($endDate)) {
-            $eventData["endDate"] = $endDate;
+            $eventData["endDate"] = trim($endDate);
         }
         if (!empty($capacity)) {
-            $eventData["capacity"] = $capacity;
+            $eventData["capacity"] = trim($capacity);
         }
         if (!empty($eventCategory)) {
-            $eventData["eventCategory"] = $eventCategory;
+            $eventData["eventCategory"] = trim($eventCategory);
         }
         if (!empty($ticketPrice)) {
-            $eventData["ticketPrice"] = $ticketPrice;
+            $eventData["ticketPrice"] = trim($ticketPrice);
         }
         if (!empty($isPublic)) {
-            $eventData["isPublic"] = $isPublic;
+            $eventData["isPublic"] = trim($isPublic);
         }
         if (!empty($isPaid)) {
-            $eventData["isPaid"] = $isPaid;
+            $eventData["isPaid"] = trim($isPaid);
         }
         if (!empty($registrationDeadline)) {
-            $eventData["registrationDeadline"] = $registrationDeadline;
+            $eventData["registrationDeadline"] = trim($registrationDeadline);
         }
         if (!empty($waitlistEnabled)) {
-            $eventData["waitlistEnabled"] = $waitlistEnabled;
+            $eventData["waitlistEnabled"] = trim($waitlistEnabled);
         }
         if (!empty($description)) {
-            $eventData["description"] = $description;
+            $eventData["description"] = trim($description);
         }
         if (!empty($location)) {
-            $eventData["location"] = $location;
+            $eventData["location"] = trim($location);
         }
         if (!empty($agenda)) {
-            $eventData["agenda"] = $agenda;
+            $eventData["agenda"] = trim($agenda);
         }
         if (!empty($imageUrl)) {
-            $eventData["imageUrl"] = $imageUrl;
+            $eventData["imageUrl"] = trim($imageUrl);
         }
 
         try {
