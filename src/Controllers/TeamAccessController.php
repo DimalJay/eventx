@@ -6,13 +6,15 @@ use Services\TeamAccessService;
 use Services\UserService;
 use Services\EventService;
 use Exception;
+use Models\User;
+use database\Database;
 
 class TeamAccessController
 {
-
     private TeamAccessService $teamService;
     private UserService $userService;
     private EventService $eventService;
+    
     public function __construct()
     {
         $this->teamService = new TeamAccessService();
@@ -20,16 +22,17 @@ class TeamAccessController
         $this->eventService = new EventService();
     }
 
-    public function addMember() // Logic to add a team
+        public function addMember() // Logic to add a team
     {
         $jsonData = file_get_contents('php://input');
         $data = json_decode($jsonData, true);
 
         $userId = $data["userId"] ?? "";
+        $email = $data["email"] ?? "";
         $eventId = $data["eventId"] ?? "";
         $role = trim($data["role"]) ?? "";
 
-        if (empty($userId) || empty($eventId) || empty($role)) {
+        if (empty($eventId) || empty($role) || (empty($userId) && empty($email))) {
             return [
                 "success" => false,
                 "message" => "Missing required fields"
@@ -37,11 +40,23 @@ class TeamAccessController
         }
 
         try {
+        
+            if (empty($userId) && !empty($email)) {
+                $user = User::where(["email" => $email]);
+                if (count($user) === 0) {
+                    return [
+                        "success" => false,
+                        "message" => "Email Not Found."
+                    ];
+                }
+                $userId = $user[0]["id"];
+            }
+
             $this->teamService->addMember($userId, $eventId, $role);
 
             return [
                 "success" => true,
-                "message" => "Member added to the team succesfully",
+                "message" => "Member added to the team successfully",
                 "data" => null
             ];
         } catch (Exception $e) {
@@ -51,6 +66,7 @@ class TeamAccessController
             ];
         }
     }
+
 
     public function removeMember() // Logic to remove a member from team
     {
@@ -70,7 +86,7 @@ class TeamAccessController
             $this->teamService->removeMember($id);
             return [
                 "success" => true,
-                "message" => "Member removed from the team succesfully",
+                "message" => "Member removed from the team successfully",
                 "data" => null
             ];
         } catch (Exception $e) {
@@ -89,6 +105,7 @@ class TeamAccessController
 
         $user = $this->userService->getUser($userId);
         $event = $this->eventService->getEventWithUserId($userId, $eventId);
+        
         if (!$user) {
             return [
                 "success" => false,
@@ -104,19 +121,33 @@ class TeamAccessController
         }
 
         try {
-            // $members = $this->teamService->getMembers($eventId);
-            $members = $this->userService->getAllUsers();
-            $members = array_map(function($member) {
+            $db = new Database();
+            // team_access සහ users tables JOIN කර අවශ්‍ය දත්ත ලබා ගැනීම
+            $sql = "SELECT 
+                        ta.id, 
+                        ta.role, 
+                        ta.joinedAt, 
+                        u.email, 
+                        CONCAT(u.firstName, ' ', u.lastName) as name 
+                    FROM team_access ta
+                    JOIN users u ON ta.userId = u.id
+                    WHERE ta.eventId = :eventId";
+
+            $members = $db->queryAll($sql, [":eventId" => $eventId]);
+
+            $formattedMembers = array_map(function($member) {
                 return [
                     "id" => $member["id"],
-                    "firstName" => $member["firstName"],
-                    "lastName" => $member["lastName"],
+                    "name" => $member["name"],
+                    "email" => $member["email"],
+                    "role" => ucfirst(strtolower($member["role"])),
                 ];
             }, $members);
+
             return [
                 "success" => true,
-                "message" => "Team members fetched succesfully",
-                "data" => $members
+                "message" => "Team members fetched successfully",
+                "data" => $formattedMembers
             ];
         } catch (Exception $e) {
             http_response_code(500);
@@ -146,7 +177,7 @@ class TeamAccessController
             $this->teamService->updateMemberRole($id, $role);
             return [
                 "success" => true,
-                "message" => "Team member updated succesfully",
+                "message" => "Team member updated successfully",
                 "data" => null
             ];
         } catch (Exception $e) {
