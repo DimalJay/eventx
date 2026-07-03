@@ -11,7 +11,7 @@ class Router
         $allowedOrigins = [
             "http://localhost:3000",
             "https://eventx-mega.vercel.app",
-            "https://eventx.teskill.com"
+            "https://eventx.dimaljay.com"
         ];
         
         $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
