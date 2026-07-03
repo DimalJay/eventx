@@ -9,3 +9,4 @@ $router->get("/events", [$eventController, "listEvents"]);
 $router->get("/event", [$eventController, "getEventDetails"]);
 $router->post("/event", [$eventController, "createEvent"], [AuthMiddleware::class]);
 $router->get("/discover-events", [$eventController, "getPublicEvents"]);
+$router->put("/event", [$eventController, "updateEvent"], [AuthMiddleware::class]);
