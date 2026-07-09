@@ -1,175 +1,118 @@
-## Team Endpoint
+# Team Access Endpoint
 
-Base Url `/api/v1`<br>
+Base URL `/api/v1`
 
-### Add Member to Team
+All team access routes require `AuthMiddleware` (requires `auth_token` cookie).
 
-`POST /team`<br>
+---
 
-Request Body
+## Get Team Members
 
+`GET /team-access?eventId={eventId}`
+
+### Response Body `200 OK`
 ```json
 {
-  "userId": 15,
-  "eventId": 3,
-  "role": "MEMBER"
-  }
+    "success": true,
+    "message": "Team members fetched successfully",
+    "data": [
+        {
+            "id": 1,
+            "name": "John Silva",
+            "email": "john@gmail.com",
+            "role": "Organizer"
+        },
+        {
+            "id": 2,
+            "name": "Nimal Perera",
+            "email": "nimal@gmail.com",
+            "role": "Member"
+        }
+    ]
+}
 ```
 
-Response Body `201 SUCCESS`
+---
+
+## Add Team Member
+
+`POST /team-access`
+
+### Request Body
 ```json
 {
-  "success": true,
-  "message": "User added to team successfully.",
-  "data": {
-    "id": 101,
-    "userId": 15,
+    "email": "nimal@gmail.com",
     "eventId": 3,
-    "role": "MEMBER",
-    "joinedAt": "2026-06-05 10:30:00"
-  }
-
+    "role": "MEMBER"
 }
 ```
 
-Response Body `400 Bad Request`
+### Response Body `200 OK`
 ```json
 {
-  "success": false,
-  "message": "Invalid input data",
-  "data": null
+    "success": true,
+    "message": "Member added to the team successfully",
+    "data": null
 }
 ```
 
-Response Body `400 ERROR`
+### Response Body `400 ERROR`
 ```json
 {
-  "success": false,
-  "message": "User is already assigned to this team."
-}
-```
-----
-
-### Get Teams By Event
-
-`GET /team/event?id={eventId}`<br>
-
-Response Body `200 OK`
-
-```json
-{
-  "success": true,
-  "message": "Event Teams Retrieved Successfully",
-  "data": [
-    {
-      "id":1,
-     "userId": 15,
-      "firstName": "John",
-      "lastName": "Silva",
-      "role": "MEMBER"
-    },
-    {
-      "id": 1,
-      "userId": 18,
-      "firstName": "Nimal",
-      "lastName": "Perera",
-      "role": "MEMBER"
-    }
-  ]
-}
-```
-
-Response Body `404 Not Found`
-
-```json
-{
-  "success": false,
-  "message": "No teams found for this event",
-  "data": null
+    "success": false,
+    "message": "Missing required fields"
 }
 ```
 
 ---
 
-### Update User Role in Team
+## Update Member Role
 
-`PUT /team`<br>
+`PUT /team-access`
 
-Request Body
-
+### Request Body
 ```json
 {
-  "id": 1,
-  "role": "MEMBER"
-}
-```
-
-Response Body `201 SUCCESS`
-
-```json
-{
-  "success": true,
-  "message": "User Role Updated Successfully",
-  "data": {
     "id": 1,
-    "eventId": 1,
-    "userId": 1,
-    "firstName": "Nimal",
-    "lastName": "Perera",
-    "role": "MEMBER",
-    "joinedAt": "2026-06-02 10:30:00"
-  }
+    "role": "COORDINATOR"
 }
 ```
 
-Response Body `404 Not Found`
-
+### Response Body `200 OK`
 ```json
 {
-  "success": false,
-  "message": "Error occured while updating user role",
-  "data": null
+    "success": true,
+    "message": "Team member updated successfully",
+    "data": null
 }
 ```
 
 ---
 
-### Delete User from Team
+## Remove Team Member
 
-`DELETE /team`<br>
+`DELETE /team-access`
 
-Request Body 
+### Request Body
 ```json
 {
-  "id": 1
+    "id": 1
 }
 ```
 
-Response Body `200 OK`
-
+### Response Body `200 OK`
 ```json
 {
-  "success": true,
-  "message": "User removed from team Successfully",
-  "data": null
-}
-```
-
-Response Body `404 Not Found`
-
-```json
-{
-  "success": false,
-  "message": "Error occured while removing user from team",
-  "data": null
+    "success": true,
+    "message": "Member removed from the team successfully",
+    "data": null
 }
 ```
 
 ---
 
-## Team Member Types
+## Team Roles
 
-ORGANIZER
-COORDINATOR
-MEMBER
-
+- `ORGANIZER`
+- `COORDINATOR`
+- `MEMBER`
