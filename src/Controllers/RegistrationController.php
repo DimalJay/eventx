@@ -154,4 +154,51 @@ class RegistrationController
         }
     }
 
+    public function scanTicket()
+    {
+        $userId = $_SERVER["uid"];
+        $jsonData = file_get_contents('php://input');
+        $data = json_decode($jsonData, true);
+
+        $ticketCode = $data["ticketCode"] ?? "";
+
+        if (empty($ticketCode)) {
+            return [
+                "success" => false,
+                "message" => "Missing required fields"
+            ];
+        }
+
+        $registration = $this->registrationService->getRegistrationByTicketCode($ticketCode);
+        if (!$registration) {
+            return [
+                "success" => false,
+                "message" => "Invalid ticket code"
+            ];
+        }
+
+        $eventId = $registration["eventId"];
+        $hasAccess = $this->teamAccessService->hasTeamAccess($userId, $eventId);
+        if (!$hasAccess) {
+            return [
+                "success" => false,
+                "message" => "Unauthorized: User does not have access to scan tickets for this event"
+            ];
+        }
+
+        try {
+            return [
+                "success" => true,
+                "message" => "Ticket Details retrieved successfully",
+                "data" => $registration
+            ];
+        } catch (\Throwable $th) {
+            return [
+                "success" => false,
+                "message" => "Error scanning ticket: " . $th->getMessage(),
+                "data" => null
+            ];
+        }
+    }
+
 }

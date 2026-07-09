@@ -63,6 +63,16 @@ class RegistrationService
         if (count($registrations) < 1) {
             throw new Exception("Registration not found");
         }
-        Registration::updateRecord(["id" => $registrationId], ["status" => $status]);
+        $updateData =  ["status" => $status];
+        if($status == 'GOING') {
+            $updateData['chekingTime'] = (new \DateTime())->format('Y-m-d H:i:s');
+        }
+        Registration::updateRecord(["id" => $registrationId], $updateData);
+    }
+
+    public function getRegistrationByTicketCode($ticketCode)
+    {
+        $registrations = Registration::where(["ticketCode" => $ticketCode]);
+        return count($registrations) > 0 ? $registrations[0] : null;
     }
 }
