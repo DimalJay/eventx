@@ -35,4 +35,9 @@ class UserService
         $users = User::where(["email" => $email]);
         return count($users) > 0 ? $users[0] : null;
     }
+
+    public function updateUser(String $id, array $data)
+    {
+        return User::updateRecord(["id" => $id], $data);
+    }
 }

@@ -72,5 +72,63 @@ class UserController
             "data" => $response,
         ];
     }
+
+    public function updateUser()
+    {
+        $id = $_SERVER["uid"];
+        $jsonData = file_get_contents('php://input');
+        $data = json_decode($jsonData, true);
+
+        if (empty($data)) {
+            http_response_code(400);
+            return [
+                "success" => false,
+                "message" => "No data provided",
+                "data" => null,
+            ];
+        }
+
+        $userData = [];
+
+        if (!empty($data["firstName"])) {
+            $userData["firstName"] = trim($data["firstName"]);
+        }
+        if (!empty($data["lastName"])) {
+            $userData["lastName"] = trim($data["lastName"]);
+        }
+        if (!empty($data["phoneNumber"])) {
+            $userData["phoneNumber"] = trim($data["phoneNumber"]);
+        }
+        if (!empty($data["profilePicture"])) {
+            $userData["profilePicture"] = trim($data["profilePicture"]);
+        }
+
+        if (empty($userData)) {
+            http_response_code(400);
+            return [
+                "success" => false,
+                "message" => "No valid fields to update",
+                "data" => null,
+            ];
+        }
+
+        try {
+            $this->userService->updateUser($id, $userData);
+        } catch (\Throwable $th) {
+            http_response_code(500);
+            return [
+                "success" => false,
+                "message" => "Error updating user: " . $th->getMessage(),
+                "data" => null,
+            ];
+        }
+
+        $updatedUser = $this->userService->getUser($id);
+        return [
+            "success" => true,
+            "message" => "User updated successfully",
+            "data" => $updatedUser,
+        ];
+    }
 }
 
