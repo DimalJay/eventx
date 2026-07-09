@@ -32,9 +32,6 @@ class User extends BaseModel
     #[Column(type: 'BOOLEAN', nullable: false, default: true)]
     protected bool $isVerified = false;
 
-    #[Column(type: 'VARCHAR', length: 50, nullable: false)]
-    protected string $role;
-
     #[Column(type: 'TEXT', nullable: true)]
     protected ?string $profilePicture = null;
 
@@ -53,7 +50,7 @@ class User extends BaseModel
     #[Column(type: 'DATETIME', nullable: true)]
     protected ?DateTime $lastLogin = null;
 
-    public function __construct($email, $firstName, $lastName, $password, $profilePicture, $loginType = 'standard', $role = 'user')
+    public function __construct($email, $firstName, $lastName, $password, $profilePicture, $loginType = 'standard')
     {
         $this->email = $email;
         $this->firstName = $firstName;
@@ -61,7 +58,6 @@ class User extends BaseModel
         $this->password = password_hash($password, PASSWORD_BCRYPT);
         $this->profilePicture = $profilePicture;
         $this->loginType = $loginType;
-        $this->role = $role;
         $this->createdAt = new DateTime();
         $this->updatedAt = new DateTime();
         $this->lastLogin = new DateTime();

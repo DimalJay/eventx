@@ -22,17 +22,38 @@ class Registration extends BaseModel
   protected DateTime $registeredAt;
 
   #[Column(type: 'VARCHAR', length: 100, nullable: false)]
-  protected string $status;
+  protected string $ticketCode;
 
-  public function __construct($eventId, $userId, $status) {
+  #[Column(type: 'BOOLEAN', nullable: false, default: false)]
+  protected bool $inWaitlist = false;
+
+  #[Column(type: 'VARCHAR', length: 100, nullable: false, default: "'PENDING'")]
+  protected string $status = 'PENDING';
+
+  #[Column(type: 'DATETIME', nullable: true)]
+  protected DateTime $chekingTime;
+
+  public function __construct($eventId, $userId) {
     $this->eventId = $eventId;
     $this->userId = $userId;
-    $this->status = $status;
+    $this->ticketCode = $ticketCode ?? uniqid();
     $this->registeredAt = new DateTime();
     parent::__construct();
   }
 
   public static function empty() : self {
-    return new self(0,0,"");
+    return new self(0,0);
+  }
+
+  public function getInWaitlist() : bool {
+    return $this->inWaitlist;
+  }
+
+  public function setInWaitlist(bool $inWaitlist) : void {
+    $this->inWaitlist = $inWaitlist;
+  }
+
+  public function getEventId() : int {
+    return $this->eventId;
   }
 }

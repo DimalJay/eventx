@@ -29,4 +29,10 @@ class UserService
         $users = User::where(["id" => $id]);
         return count($users) > 0 ? $users[0] : null;
     }
+
+    public function getUserByEmail(String $email)
+    {
+        $users = User::where(["email" => $email]);
+        return count($users) > 0 ? $users[0] : null;
+    }
 }
