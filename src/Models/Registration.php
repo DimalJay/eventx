@@ -24,9 +24,6 @@ class Registration extends BaseModel
   #[Column(type: 'VARCHAR', length: 100, nullable: false)]
   protected string $ticketCode;
 
-  #[Column(type: 'BOOLEAN', nullable: false, default: false)]
-  protected bool $inWaitlist = false;
-
   #[Column(type: 'VARCHAR', length: 100, nullable: false, default: "'PENDING'")]
   protected string $status = 'PENDING';
 
@@ -45,12 +42,8 @@ class Registration extends BaseModel
     return new self(0,0);
   }
 
-  public function getInWaitlist() : bool {
-    return $this->inWaitlist;
-  }
-
-  public function setInWaitlist(bool $inWaitlist) : void {
-    $this->inWaitlist = $inWaitlist;
+  public function setInWaitlist() : void {
+    $this->status = "WAITLIST";
   }
 
   public function getEventId() : int {

@@ -22,6 +22,9 @@ class TeamAccess extends BaseModel
   #[Column(type: 'VARCHAR', length: 20, nullable: false)]
   protected string $role;
 
+  #[Column(type: 'VARCHAR', length: 20, nullable: false, default: "'PENDING'")]
+  protected string $status = 'PENDING';
+
   #[Column(type: 'DATETIME', default: 'CURRENT_TIMESTAMP')]
   protected DateTime $joinedAt;
 

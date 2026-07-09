@@ -21,7 +21,7 @@ class RegistrationService
             $registrationCount = count($this->getRegistrationsByEventId($registration->getEventId()));
             if($registrationCount >= $capacity) {
                 if($event['waitlistEnabled'] ?? false) {
-                    $registration->setInWaitlist(true);
+                    $registration->setInWaitlist();
                 } else {
                     throw new Exception("Event is full and waitlist is not enabled");
                 }
@@ -50,6 +50,19 @@ class RegistrationService
 
     public function getRegistrationsList($eventId)
     {
-        return Registration::where(["eventId" => $eventId]);
+        return Registration::query('SELECT r.*, u.firstName, u.lastName, u.email
+            FROM Registrations r
+            JOIN Users u ON r.userId = u.id
+            WHERE r.eventId = :eventId', ['eventId' => $eventId]);
+        
+    }
+
+    public function updateRegistrationStatus($registrationId, $status)
+    {
+        $registrations = Registration::where(["id" => $registrationId]);
+        if (count($registrations) < 1) {
+            throw new Exception("Registration not found");
+        }
+        Registration::updateRecord(["id" => $registrationId], ["status" => $status]);
     }
 }

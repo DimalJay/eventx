@@ -5,6 +5,7 @@ namespace Controllers;
 use Services\RegistrationService;
 use Services\UserService;
 use Services\EventService;
+use Services\TeamAccessService;
 use Models\Registration;
 use Models\User;
 
@@ -13,11 +14,13 @@ class RegistrationController
     private RegistrationService $registrationService;
     private EventService $eventService;
     private UserService $userService;
+    private TeamAccessService $teamAccessService;
     public function __construct()
     {
         $this->registrationService = new RegistrationService();
         $this->userService = new UserService();
         $this->eventService = new EventService();
+        $this->teamAccessService = new TeamAccessService();
     }
 
     public function joinEvent()
@@ -100,6 +103,55 @@ class RegistrationController
             "message" => "List of registrations for event ID: " . $eventId,
             "data" => $registrations
         ];
+    }
+
+    public function updateRegistrationStatus()
+    {
+        $userId = $_SERVER["uid"];
+        $jsonData = file_get_contents('php://input');
+        $data = json_decode($jsonData, true);
+
+        $registrationId = $data["id"] ?? "";
+        $status = $data["status"] ?? "";
+
+        if (empty($registrationId) || empty($status)) {
+            return [
+                "success" => false,
+                "message" => "Missing required fields"
+            ];
+        }
+
+        $registration = $this->registrationService->getRegistrationById($registrationId);
+        if (!$registration) {
+            return [
+                "success" => false,
+                "message" => "Registration not found"
+            ];
+        }
+
+        $eventId = $registration["eventId"];
+        $hasAccess = $this->teamAccessService->hasTeamAccess($userId, $eventId);
+        if (!$hasAccess) {
+            return [
+                "success" => false,
+                "message" => "Unauthorized: User does not have access to update registration status for this event"
+            ];
+        }
+
+        try {
+            $this->registrationService->updateRegistrationStatus($registrationId, $status);
+            return [
+                "success" => true,
+                "message" => "Registration status updated successfully",
+                "data" => null
+            ];
+        } catch (\Throwable $th) {
+            return [
+                "success" => false,
+                "message" => "Error updating registration status: " . $th->getMessage(),
+                "data" => null
+            ];
+        }
     }
 
 }
