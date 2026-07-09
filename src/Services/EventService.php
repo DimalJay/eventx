@@ -13,6 +13,10 @@ class EventService
         return Event::selectAll();
     }
 
+    public function getEventForUserId(String $userId){
+        return Event::where(["organizerId" => $userId]);
+    }
+
     public function getEvent(String $id)
     {
         $events = Event::where(["id" => $id]);
