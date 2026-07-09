@@ -1,6 +1,0 @@
-[dependencies]
-"wasmer/php" = "8.*"
-
-[fs]
-"/app" = "." 
-"/uploads" = "uploads"
