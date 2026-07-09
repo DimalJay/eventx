@@ -1,8 +1,6 @@
 RewriteEngine On
 
-# File ekak hari folder ekak hari physical thiyenawa nam eka load wenna danna
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 
-# Anith hama URL request ekakma index.php ekata parameter ekak widihata pass karanna
 RewriteRule ^(.*)$ index.php?request=$1 [QSA,NC,L]

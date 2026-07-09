@@ -15,4 +15,3 @@ require_once __DIR__ . '/Routes/teamAccess.php';
 require_once __DIR__ . '/Routes/registration.php';
 
 $router->dispatch();
-?>

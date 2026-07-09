@@ -54,7 +54,6 @@ class EventController
             $data = $_POST;
 
             if (isset($_FILES['coverImage']) && $_FILES['coverImage']['error'] === UPLOAD_ERR_OK) {
-                echo "File uploaded successfully.";
                 $uploadDir = __DIR__ . '/../../uploads/event-covers/';
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0777, true);
@@ -67,7 +66,6 @@ class EventController
                 $data['coverImage'] = '/uploads/event-covers/' . $fileName; // Store relative path
             } else {
                 $data['coverImage'] = null; // No image uploaded
-                echo "No image uploaded or there was an upload error.";
             }
 
             if (empty($data["title"]) || empty($data["startDate"]) || empty($data["endDate"])) {
@@ -94,10 +92,12 @@ class EventController
                 $data["waitlistEnabled"] ?? false,
             );
 
-            $this->eventService->createEvent($event);
+            $lastId = $this->eventService->createEvent($event);
+            $res = $this->eventService->getEvent($lastId);
             return [
                 "success" => true,
                 "message" => "Event created successfully",
+                "data" => $res
             ];
         } catch (\Throwable $th) {
             return [

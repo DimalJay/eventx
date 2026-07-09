@@ -27,7 +27,8 @@ abstract class BaseModel {
     public function save() {
         $db = new Database();
         $q = $this->schemaGenerator->insertRecord($this);
-        return $db->queryAll($q);
+        $db->execute($q);
+        return $db->lastInsertId();
     }
 
     public static function selectAll() {
