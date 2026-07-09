@@ -1,3 +1,11 @@
+[dependencies]
+"wasmer/php" = "8.*"
+
 [fs]
 "/app" = "." 
-"/uploads" = "uploads"  # මේ පේළිය අලුතින් එකතු කරන්න
+"/uploads" = "uploads"
+
+[[commands]]
+name = "run"
+runner = "wasi"
+annotations = { wasi = { main-args = ["-t", ".", "-S", "0.0.0.0:8080", "router.php"] } }
