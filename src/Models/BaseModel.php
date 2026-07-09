@@ -27,7 +27,7 @@ abstract class BaseModel {
     public function save() {
         $db = new Database();
         $q = $this->schemaGenerator->insertRecord($this);
-        return $db->query($q);
+        return $db->queryAll($q);
     }
 
     public static function selectAll() {
@@ -56,6 +56,11 @@ abstract class BaseModel {
         $db = new Database();
         $q = $schema->deleteRecord($field);
         return $db->execute($q)->rowCount();
+    }
+
+    public static function query($query, $params = []) {
+        $db = new Database();
+        return $db->queryAll($query, $params);
     }
 
 }

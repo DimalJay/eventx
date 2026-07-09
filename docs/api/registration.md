@@ -1,179 +1,111 @@
-## Registrations Endpoint
+# Registrations Endpoint
 
-Base Url `/api/v1`<br>
+Base URL `/api/v1`
 
-### Create Registration
+All registration routes require `AuthMiddleware` (requires `auth_token` cookie).
 
-`POST /registration`<br>
+---
 
-Request Body
+## Get All Registrations
 
+`GET /registrations?eventId={eventId}`
+
+### Response Body `200 OK`
 ```json
 {
-  "eventId": 1,
-  "userId": 5
+    "success": true,
+    "message": "List of registrations for event ID: 1",
+    "data": [
+        {
+            "id": 1,
+            "eventId": 1,
+            "user": {
+                "userId": 5,
+                "name": "Kumara"
+            },
+            "ticketCode": "TICKET-ABC123",
+            "registeredAt": "2026-08-01 10:30:00",
+            "status": "registered"
+        },
+        {
+            "id": 2,
+            "eventId": 1,
+            "user": {
+                "userId": 7,
+                "name": "Nimal"
+            },
+            "ticketCode": "TICKET-DEF456",
+            "registeredAt": "2026-08-01 11:00:00",
+            "status": "waitlisted"
+        }
+    ]
 }
 ```
 
 ---
 
-Response Body `200 OK`
-
-```json
-{
-  "success": true,
-  "message": "Registration Created Successfully",
-  "data": {
-    "id": 1,
-    "eventId": 1,
-    "userId": 5,
-    "registeredAt": "2026-08-01 10:30:00",
-    "status": "registered"
-  }
-}
-```
-
-Response Body `404`<br>
-
-```json
-{
-  "success": false,
-  "message": "Event or User not found",
-  "data": null
-}
-```
-
----
-
-### Get All Registrations
-
-`GET /registrations`
-
-Response Body
-
-```json
-{
-  "success": true,
-  "message": "Registrations Retrieved Successfully",
-  "data": [
-    {
-      "id": 1,
-      "eventId": 1,
-      "user": {
-        "userId": 5,
-        "name": "Kumara"
-      },
-      "registeredAt": "2026-08-01 10:30:00",
-      "status": "registered"
-    },
-    {
-      "id": 2,
-      "eventId": 1,
-      "user": {
-        "userId": 7,
-        "name": "Nimal"
-      },
-      "registeredAt": "2026-08-01 11:00:00",
-      "status": "waitlisted"
-    }
-  ]
-}
-```
-
-### Get One Registration
-
-`GET /registration`
-
-Response Body
-
-```json
-{
-  "success": true,
-  "message": "Registration Retrieved Successfully",
-  "data": {
-    "id": 1,
-    "eventId": 1,
-    "user": {
-      "userId": 5,
-      "name": "Kumara"
-    },
-    "registeredAt": "2026-08-01 10:30:00",
-    "status": "registered"
-  }
-}
-```
-
-Response Body `404`<br>
-
-```json
-{
-  "success": false,
-  "message": "Registration not found",
-  "data": null
-}
-```
-
-### Update Registration Status
+## Update Registration Status
 
 `PUT /registration/status`
 
-Request Body
-
+### Request Body
 ```json
 {
-  "id": 1,
-  "status": "attended"
+    "id": 1,
+    "status": "attended"
 }
 ```
 
-Response Body `200 OK`
-
+### Response Body `200 OK`
 ```json
 {
-  "success": true,
-  "message": "Registration Status Updated Successfully",
-  "data": null
+    "success": true,
+    "message": "Registration status updated successfully",
+    "data": null
 }
 ```
 
-Response Body `404`<br>
-
+### Response Body `404 ERROR`
 ```json
 {
-  "success": false,
-  "message": "Registration not found",
-  "data": null
+    "success": false,
+    "message": "Registration not found"
 }
 ```
 
-### Cancel Registration
+---
 
-`DELETE /registration`
+## Scan Ticket
 
-Request Body
+`POST /registration/scan`
 
+### Request Body
 ```json
 {
-  "id": 1
+    "ticketCode": "TICKET-ABC123"
 }
 ```
 
-Response Body `200 OK`
-
+### Response Body `200 OK`
 ```json
 {
-  "success": true,
-  "message": "Registration Cancelled Successfully",
-  "data": null
+    "success": true,
+    "message": "Ticket Details retrieved successfully",
+    "data": {
+        "id": 1,
+        "eventId": 1,
+        "userId": 5,
+        "ticketCode": "TICKET-ABC123",
+        "status": "registered",
+        "registeredAt": "2026-08-01 10:30:00"
+    }
 }
 ```
 
-Response Body `404`<br>
-
+### Response Body `404 ERROR`
 ```json
 {
-  "success": false,
-  "message": "Registration not found",
-  "data": null
+    "success": false,
+    "message": "Invalid ticket code"
 }
 ```

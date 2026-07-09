@@ -21,7 +21,7 @@ class Payment extends BaseModel
  #[Column(type: 'DECIMAL(10,2)', nullable: false)]
   protected float $amount;
 
- #[Column(type: 'DATE',default: 'CURRENT_TIMESTAMP' )]
+ #[Column(type: 'DATETIME', default: 'CURRENT_TIMESTAMP' )]
   protected DateTime $paymentAt;
 
   public function __construct($userId, $registerId, $amount) {

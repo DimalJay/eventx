@@ -2,16 +2,16 @@
 
 namespace Controllers;
 
-use Services\FeedBackService;
+use Services\FeedbackService;
 use Models\FeedBack;
 
-class FeedBackController
+class FeedbackController
 {
 
-  private FeedBackService $feedBackService;
+  private FeedbackService $feedBackService;
   public function __construct()
   {
-    $this->feedBackService = new FeedBackService();
+    $this->feedBackService = new FeedbackService();
   }
   public function submitFeedback()
   {

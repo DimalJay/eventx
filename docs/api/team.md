@@ -1,262 +1,118 @@
-## Team Endpoint
+# Team Access Endpoint
 
-Base Url `/api/v1`<br>
+Base URL `/api/v1`
 
-### Create Team
+All team access routes require `AuthMiddleware` (requires `auth_token` cookie).
 
-`POST /team`<br>
+---
 
-Request Body
+## Get Team Members
 
+`GET /team-access?eventId={eventId}`
+
+### Response Body `200 OK`
 ```json
 {
-  "teamName": "Registration Team",
-  "managedBy": 5,
-  "createdBy": 2
-}
-```
-
-Response Body `201 Created`
-
-```json
-{
-  "success": true,
-  "message": "Team Created Successfully",
-  "data": {
-    "teamID": 1,
-    "eventID": 1,
-    "teamName": "Registration Team",
-    "managedBy": 5,
-    "createdBy": 2,
-    "createdAt": "2026-06-02 10:30:00"
-  }
-}
-```
-
-Response Body `400 Bad Request`
-
-```json
-{
-  "success": false,
-  "message": "Invalid input data",
-  "data": null
+    "success": true,
+    "message": "Team members fetched successfully",
+    "data": [
+        {
+            "id": 1,
+            "name": "John Silva",
+            "email": "john@gmail.com",
+            "role": "Organizer"
+        },
+        {
+            "id": 2,
+            "name": "Nimal Perera",
+            "email": "nimal@gmail.com",
+            "role": "Member"
+        }
+    ]
 }
 ```
 
 ---
 
-### Get All Teams
+## Add Team Member
 
-`GET /team`<br>
+`POST /team-access`
 
-Response Body `200 OK`
-
+### Request Body
 ```json
 {
-  "success": true,
-  "message": "Teams Retrieved Successfully",
-  "data": [
-    {
-      "teamID": 1,
-      "eventID": 1,
-      "teamName": "Registration Team",
-      "managedBy": 5,
-      "createdBy": 2,
-      "createdAt": "2026-06-02 10:30:00"
-    },
-    {
-      "teamID": 2,
-      "eventID": 1,
-      "teamName": "Marketing Team",
-      "managedBy": 6,
-      "createdBy": 2,
-      "createdAt": "2026-06-02 11:00:00"
-    }
-  ]
+    "email": "nimal@gmail.com",
+    "eventId": 3,
+    "role": "MEMBER"
 }
 ```
 
-Response Body `404 Not Found`
-
+### Response Body `200 OK`
 ```json
 {
-  "success": false,
-  "message": "No teams found",
-  "data": null
+    "success": true,
+    "message": "Member added to the team successfully",
+    "data": null
+}
+```
+
+### Response Body `400 ERROR`
+```json
+{
+    "success": false,
+    "message": "Missing required fields"
 }
 ```
 
 ---
 
-### Get Team By ID
+## Update Member Role
 
-`GET /team/{teamID}`<br>
+`PUT /team-access`
 
-Example
-
-`GET /team/1`
-
-Response Body `200 OK`
-
+### Request Body
 ```json
 {
-  "success": true,
-  "message": "Team Retrieved Successfully",
-  "data": {
-    "teamID": 1,
-    "eventID": 1,
-    "teamName": "Registration Team",
-    "managedBy": 5,
-    "createdBy": 2,
-    "createdAt": "2026-06-02 10:30:00"
-  }
+    "id": 1,
+    "role": "COORDINATOR"
 }
 ```
 
-Response Body `404 Not Found`
-
+### Response Body `200 OK`
 ```json
 {
-  "success": false,
-  "message": "Team not found",
-  "data": null
+    "success": true,
+    "message": "Team member updated successfully",
+    "data": null
 }
 ```
 
 ---
 
-### Get Teams By Event
+## Remove Team Member
 
-`GET /team/event/{eventID}`<br>
+`DELETE /team-access`
 
-Example
-
-`GET /team/event/1`
-
-Response Body `200 OK`
-
+### Request Body
 ```json
 {
-  "success": true,
-  "message": "Event Teams Retrieved Successfully",
-  "data": [
-    {
-      "teamID": 1,
-      "eventID": 1,
-      "teamName": "Registration Team",
-      "managedBy": 5,
-      "createdBy": 2,
-      "createdAt": "2026-06-02 10:30:00"
-    },
-    {
-      "teamID": 2,
-      "eventID": 1,
-      "teamName": "Marketing Team",
-      "managedBy": 6,
-      "createdBy": 2,
-      "createdAt": "2026-06-02 11:00:00"
-    }
-  ]
+    "id": 1
 }
 ```
 
-Response Body `404 Not Found`
-
+### Response Body `200 OK`
 ```json
 {
-  "success": false,
-  "message": "No teams found for this event",
-  "data": null
+    "success": true,
+    "message": "Member removed from the team successfully",
+    "data": null
 }
 ```
 
 ---
 
-### Update Team
+## Team Roles
 
-`PUT /team/{teamID}`<br>
-
-Example
-
-`PUT /team/1`
-
-Request Body
-
-```json
-{
-  "teamName": "Updated Registration Team",
-  "managedBy": 8
-}
-```
-
-Response Body `200 OK`
-
-```json
-{
-  "success": true,
-  "message": "Team Updated Successfully",
-  "data": {
-    "teamID": 1,
-    "eventID": 1,
-    "teamName": "Updated Registration Team",
-    "managedBy": 8,
-    "createdBy": 2,
-    "createdAt": "2026-06-02 10:30:00"
-  }
-}
-```
-
-Response Body `404 Not Found`
-
-```json
-{
-  "success": false,
-  "message": "Team not found",
-  "data": null
-}
-```
-
----
-
-### Delete Team
-
-`DELETE /team/{teamID}`<br>
-
-Example
-
-`DELETE /team/1`
-
-Response Body `200 OK`
-
-```json
-{
-  "success": true,
-  "message": "Team Deleted Successfully",
-  "data": null
-}
-```
-
-Response Body `404 Not Found`
-
-```json
-{
-  "success": false,
-  "message": "Team not found",
-  "data": null
-}
-```
-
----
-
-## Team Object Structure
-
-```json
-{
-  "teamID": 1,
-  "eventID": 1,
-  "teamName": "Registration Team",
-  "managedBy": 5,
-  "createdBy": 2,
-  "createdAt": "2026-06-02 10:30:00"
-}
-```
+- `ORGANIZER`
+- `COORDINATOR`
+- `MEMBER`

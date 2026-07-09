@@ -16,7 +16,8 @@ class TaskService
 
     public function updateTask(int $taskId, array $taskData)
     {
-        Task::updateRecord(["id" => $taskId], $taskData);
+        if(empty($taskData)) return null;
+        return Task::updateRecord(["id" => $taskId], $taskData);
     }
 
     public function deleteTask(int $taskId)
@@ -26,10 +27,6 @@ class TaskService
 
     public function getTasks(int $eventId)
     {
-        $ret = Event::where(["id" => $eventId]);
-        if (count($ret) < 1) {
-            throw new Exception("Event does not exist");
-        }
         return Task::where(["eventId" => $eventId]);
     }
 

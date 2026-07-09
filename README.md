@@ -19,6 +19,8 @@ Contributors
 - Pramod
 - Irudini
 
+# Setup Env
+rename .env.example to .env and fill the database credentials
 
 # Installation
 ```cmd

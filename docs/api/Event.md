@@ -1,319 +1,210 @@
 # Events Endpoint
 
-Base Url `/api/v1`<br>
+Base URL `/api/v1`
 
 ---
 
 ## Create Event
 
-`POST /event`<br>
+`POST /event`
 
-### Request Body
+Auth: `AuthMiddleware` (requires `auth_token` cookie)
 
-```json
-{
-  "title": "AI Innovation Summit 2026",
-  "description": "A university event focused on AI technologies.",
-  "location": "Main Auditorium",
-  "startDate": "2026-08-15",
-  "endDate": "2026-08-15",
-  "agenda": "Keynote, Workshops, Networking Session",
-  "capacity": 300,
-  "eventCategory": "Technology",
-  "registrationDeadline": "2026-08-10",
-  "ticketPrice": 1500.00,
-  "isPaid": true,
-  "isPublic": "true",
-  "waitlistEnabled": true,
-  "eventImage": "event-image.jpg",
-  "organizerID": 5
-}
+### Request Body (multipart/form-data)
+```
+title: "AI Innovation Summit 2026"
+eventType: "Conference"
+description: "A university event focused on AI technologies."
+location: "Main Auditorium"
+startDate: "2026-08-15"
+endDate: "2026-08-15"
+agenda: "Keynote, Workshops, Networking Session"
+capacity: 300
+eventCategory: "Technology"
+registrationDeadline: "2026-08-10"
+ticketPrice: 1500.00
+isPaid: true
+isPublic: true
+waitlistEnabled: true
+coverImage: [file]
 ```
 
 ### Response Body `200 OK`
-
 ```json
 {
-  "success": true,
-  "message": "Event Created Successfully",
-  "data": {
-    "eventID": 1,
-    "title": "AI Innovation Summit 2026",
-    "description": "A university event focused on AI technologies.",
-    "venue": "Main Auditorium",
-    "eventDate": "2026-08-15",
-    "eventTime": "09:00:00",
-    "agenda": "Keynote, Workshops, Networking Session",
-    "capacity": 300,
-    "eventCategory": "Technology",
-    "registrationDeadline": "2026-08-10",
-    "ticketPrice": 1500.00,
-    "isPaid": true,
-    "visibility": "public",
-    "waitlistEnable": true,
-    "eventImage": "event-image.jpg",
-    "organizerID": 5,
-    "status": "upcoming",
-    "createdAt": "2026-08-01",
-    "updatedAt": "2026-08-01"
-  }
-}
-```
-
-### Response Body `404`<br>
-
-Organizer not found
-
-```json
-{
-  "success": false,
-  "message": "Organizer not found",
-  "data": null
+    "success": true,
+    "message": "Event created successfully"
 }
 ```
 
 ---
 
-## Get All Events
+## Get All Events (Auth)
 
 `GET /events`
 
-### Response Body
+Auth: `AuthMiddleware` (requires `auth_token` cookie)
 
+### Response Body `200 OK`
 ```json
 {
-  "success": true,
-  "message": "Events Retrieved Successfully",
-  "data": [
-    {
-      "eventID": 1,
-      "title": "AI Innovation Summit 2026",
-      "eventDate": "2026-08-15",
-      "eventTime": "09:00:00",
-      "venue": "Main Auditorium",
-      "capacity": 300,
-      "eventCategory": "Technology",
-      "isPaid": true,
-      "status": "upcoming",
-      "visibility": "public"
-    },
-    {
-      "eventID": 2,
-      "title": "Career Fair 2026",
-      "eventDate": "2026-09-20",
-      "eventTime": "10:00:00",
-      "venue": "Faculty Ground",
-      "capacity": 500,
-      "eventCategory": "Career",
-      "isPaid": false,
-      "status": "upcoming",
-      "visibility": "public"
+    "success": true,
+    "message": "Events Retrieved Successfully",
+    "data": [
+        {
+            "eventID": 1,
+            "title": "AI Innovation Summit 2026",
+            "eventType": "Conference",
+            "description": "A university event focused on AI technologies.",
+            "location": "Main Auditorium",
+            "startDate": "2026-08-15 09:00:00",
+            "endDate": "2026-08-15 17:00:00",
+            "capacity": 300,
+            "ticketPrice": 1500.00,
+            "isPaid": true,
+            "isPublic": true,
+            "waitlistEnabled": true,
+            "coverImage": "/uploads/event-covers/cover_12345.jpg",
+            "status": "upcoming",
+            "organizerID": 1,
+            "createdAt": "2026-07-01 10:00:00",
+            "updatedAt": "2026-07-01 10:00:00"
+        }
+    ]
+}
+```
+
+---
+
+## Get Single Event
+
+`GET /event?id={eventId}`
+
+### Response Body `200 OK`
+```json
+{
+    "success": true,
+    "message": "Event details retrieved successfully",
+    "data": {
+        "eventID": 1,
+        "title": "AI Innovation Summit 2026",
+        "eventType": "Conference",
+        "description": "A university event focused on AI technologies.",
+        "location": "Main Auditorium",
+        "startDate": "2026-08-15 09:00:00",
+        "endDate": "2026-08-15 17:00:00",
+        "capacity": 300,
+        "ticketPrice": 1500.00,
+        "isPaid": true,
+        "isPublic": true,
+        "waitlistEnabled": true,
+        "coverImage": "/uploads/event-covers/cover_12345.jpg",
+        "status": "upcoming",
+        "organizerID": 1,
+        "createdAt": "2026-07-01 10:00:00",
+        "updatedAt": "2026-07-01 10:00:00"
     }
-  ]
 }
 ```
 
 ---
 
-## Get One Event
-
-`GET /event`
-
-### Response Body
-
-```json
-{
-  "success": true,
-  "message": "Event Retrieved Successfully",
-  "data": {
-    "eventID": 1,
-    "title": "AI Innovation Summit 2026",
-    "description": "A university event focused on AI technologies.",
-    "location": "Main Auditorium",
-    "startDate": "2026-08-15 09:00:00",
-    "endDate": "2026-08-15 09:00:00",
-    "agenda": "Keynote, Workshops, Networking Session",
-    "capacity": 300,
-    "eventCategory": "Technology",
-    "registrationDeadline": "2026-08-10",
-    "ticketPrice": 1500.00,
-    "isPaid": true,
-    "isPublic": true,
-    "waitlistEnabled": true,
-    "eventImage": "event-image.jpg",
-    "organizerID": 5,
-    "status": "upcoming",
-    "createdAt": "2026-08-01",
-    "updatedAt": "2026-08-01"
-  }
-}
-```
-
-### Response Body `404`<br>
-
-Event not found
-
-```json
-{
-  "success": false,
-  "message": "Event not found",
-  "data": null
-}
-```
-
----
-
-## Update Event Details
+## Update Event
 
 `PUT /event`
 
-### Request Body
+Auth: `AuthMiddleware` (requires `auth_token` cookie)
 
+### Request Body
 ```json
 {
-  "eventID": 1,
-  "title": "AI Innovation Summit 2026 - Updated",
-  "description": "Updated event description",
-  "venue": "Conference Hall",
-  "eventDate": "2026-08-16",
-  "eventTime": "10:00:00",
-  "agenda": "Updated agenda",
-  "capacity": 350,
-  "eventCategory": "Technology",
-  "registrationDeadline": "2026-08-12",
-  "ticketPrice": 2000.00,
-  "visibility": "public"
+    "id": 1,
+    "title": "AI Innovation Summit 2026 - Updated",
+    "description": "Updated event description",
+    "location": "Conference Hall",
+    "startDate": "2026-08-16",
+    "endDate": "2026-08-16",
+    "capacity": 350,
+    "ticketPrice": 2000.00,
+    "isPublic": true,
+    "isPaid": true,
+    "waitlistEnabled": false,
+    "agenda": "Updated agenda"
 }
 ```
 
 ### Response Body `200 OK`
-
 ```json
 {
-  "success": true,
-  "message": "Event Details Updated Successfully",
-  "data": null
-}
-```
-
-### Response Body `404`<br>
-
-Event not found
-
-```json
-{
-  "success": false,
-  "message": "Event not found",
-  "data": null
+    "success": true,
+    "message": "Event updated successfully",
+    "data": null
 }
 ```
 
 ---
 
-## Delete Event
+## Discover Public Events
 
-`DELETE /event`
-
-### Request Body
-
-```json
-{
-  "eventID": 1
-}
-```
+`GET /discover-events`
 
 ### Response Body `200 OK`
-
 ```json
 {
-  "success": true,
-  "message": "Event Deleted Successfully",
-  "data": null
-}
-```
-
-### Response Body `404`<br>
-
-Event not found
-
-```json
-{
-  "success": false,
-  "message": "Event not found",
-  "data": null
+    "success": true,
+    "message": "Public events retrieved successfully",
+    "data": [
+        {
+            "eventID": 1,
+            "title": "AI Innovation Summit 2026",
+            "description": "A university event focused on AI technologies.",
+            "location": "Main Auditorium",
+            "startDate": "2026-08-15 09:00:00",
+            "endDate": "2026-08-15 17:00:00",
+            "capacity": 300,
+            "ticketPrice": 1500.00,
+            "isPaid": true,
+            "coverImage": "/uploads/event-covers/cover_12345.jpg"
+        }
+    ]
 }
 ```
 
 ---
 
-## Update Event Status
+## Join Event (Public Registration)
 
-`PUT /event/status`
+`POST /join-event`
 
 ### Request Body
-
 ```json
 {
-  "eventID": 1,
-  "status": "completed"
+    "email": "nimal@gmail.com",
+    "firstName": "Nimal",
+    "lastName": "Perera",
+    "eventId": 1
 }
 ```
 
 ### Response Body `200 OK`
-
 ```json
 {
-  "success": true,
-  "message": "Event Status Updated Successfully",
-  "data": null
+    "success": true,
+    "message": "User registered for the event successfully",
+    "data": {
+        "id": 1,
+        "eventId": 1,
+        "userId": 5,
+        "status": "registered",
+        "registeredAt": "2026-08-01 10:30:00"
+    }
 }
 ```
 
-### Response Body `404`<br>
-
-Event not found
-
+### Response Body `400 ERROR`
 ```json
 {
-  "success": false,
-  "message": "Event not found",
-  "data": null
-}
-```
-
----
-
-## Enable / Disable Waitlist
-
-`PUT /event/waitlist`
-
-### Request Body
-
-```json
-{
-  "eventID": 1,
-  "waitlistEnable": true
-}
-```
-
-### Response Body `200 OK`
-
-```json
-{
-  "success": true,
-  "message": "Waitlist Setting Updated Successfully",
-  "data": null
-}
-```
-
-### Response Body `404`<br>
-
-Event not found
-
-```json
-{
-  "success": false,
-  "message": "Event not found",
-  "data": null
+    "success": false,
+    "message": "User is already registered for this event"
 }
 ```

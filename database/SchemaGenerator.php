@@ -57,8 +57,8 @@ class SchemaGenerator
 
     public function updateRecord(array $conditions, array $set): string
     {
-        $setClause = implode(', ', array_map(fn($k, $v) => "`{$k}` = '{$v}'", array_keys($set), $set));
-        $whereClause = implode(' AND ', array_map(fn($k, $v) => "`{$k}` = '{$v}'", array_keys($conditions), $conditions));
+        $setClause = implode(', ', array_map(fn($k, $v) => "`{$k}` = '" . addslashes($v) . "'", array_keys($set), $set ));
+        $whereClause = implode(' AND ', array_map( fn($k, $v) => "`{$k}` = '" . addslashes($v) . "'", array_keys($conditions), $conditions ));
         return "UPDATE `{$this->tableName}` SET {$setClause} WHERE {$whereClause};";
     }
 
@@ -74,7 +74,9 @@ class SchemaGenerator
                 $value = null;
             }
             $columnName = $property->getName();
-            $autoIncrement = $property->getAttributes(Column::class)[0]->newInstance()->autoIncrement ?? false;
+
+            $attributes = $property->getAttributes(Column::class);
+            $autoIncrement = !empty($attributes) ? $attributes[0]->newInstance()->autoIncrement ?? false : false;
             if ($autoIncrement) {
                 continue;
             }
@@ -82,15 +84,22 @@ class SchemaGenerator
             $data[$columnName] = $value;
 
         }
+        $formattedValues = [];
         foreach ($data as $key => $value) {
-           if($value instanceof \DateTime) {
-                $data[$key] = $value->format('Y-m-d H:i:s');
-            } elseif($value === null) {
-                $data[$key] = null;
+            if ($value instanceof \DateTime) {
+                $formattedValues[] = "'" . $value->format('Y-m-d H:i:s') . "'";
+            } elseif ($value === null) {
+                $formattedValues[] = "NULL";
+            } elseif (is_bool($value)) {
+                $formattedValues[] = $value ? "1" : "0"; 
+            } elseif (is_int($value) || is_float($value)) {
+                $formattedValues[] = $value;
+            } else {
+                $formattedValues[] = "'" . addslashes($value) . "'";
             }
         }
         $columns = implode(', ', array_map(fn($k) => "`{$k}`", array_keys($data)));
-        $values = implode(', ', array_map(fn($v) => "'{$v}'", array_values($data)));
+        $values = implode(', ', $formattedValues);
         return "INSERT INTO `{$this->tableName}` ({$columns}) VALUES ({$values});";
     }
 
@@ -110,5 +119,5 @@ class SchemaGenerator
         $whereClause = implode(' AND ', array_map(fn($k, $v) => "`{$k}` = '{$v}'", array_keys($conditions), $conditions));
         return "DELETE FROM `{$this->tableName}` WHERE {$whereClause};";
     }
-    
+
 }
