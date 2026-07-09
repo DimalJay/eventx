@@ -59,4 +59,9 @@ abstract class BaseModel {
         return $db->execute($q)->rowCount();
     }
 
+    public static function query($query, $params = []) {
+        $db = new Database();
+        return $db->queryAll($query, $params);
+    }
+
 }

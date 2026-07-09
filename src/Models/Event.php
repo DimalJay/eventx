@@ -87,4 +87,12 @@ class Event extends BaseModel
   public static function empty() : self {
     return new self(null, null, null, null, null, null, 0, null, false, 0, 0.0, null, null);
   }
+
+  public function getId() : int {
+    return $this->id;
+  }
+
+  public function getCapacity() : int {
+    return $this->capacity;
+  }
 }
