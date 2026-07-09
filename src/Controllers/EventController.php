@@ -85,7 +85,7 @@ class EventController
                 trim($data["location"]),
                 $id,
                 $data["coverImage"] ?? null,
-                $data["isPublic"] ?? false,
+                isset($data["isPublic"]) ? filter_var($data["isPublic"], FILTER_VALIDATE_BOOLEAN) : false,
                 $data["capacity"] ?? 0,
                 $data["ticketPrice"] ?? 0.0,
                 $data["regDeadline"] ?? null,
@@ -155,11 +155,11 @@ class EventController
         if (!empty($ticketPrice)) {
             $eventData["ticketPrice"] = trim($ticketPrice);
         }
-        if (!empty($isPublic)) {
-            $eventData["isPublic"] = trim($isPublic);
+        if (isset($data["isPublic"])) {
+            $eventData["isPublic"] = filter_var($data["isPublic"], FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
         }
-        if (!empty($isPaid)) {
-            $eventData["isPaid"] = trim($isPaid);
+        if (isset($data["isPaid"])) {
+            $eventData["isPaid"] = filter_var($data["isPaid"], FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
         }
         if (!empty($registrationDeadline)) {
             $eventData["registrationDeadline"] = trim($registrationDeadline);
