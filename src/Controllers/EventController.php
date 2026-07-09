@@ -15,7 +15,8 @@ class EventController
 
     public function listEvents()
     {
-        $events = $this->eventService->getEvents();
+        $userId = $_SERVER["uid"];
+        $events = $this->eventService->getEventForUserId($userId);
         return [
             "success" => true,
             "message" => "Events Retrieved Successfully",

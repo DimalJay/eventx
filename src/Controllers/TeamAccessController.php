@@ -14,7 +14,7 @@ class TeamAccessController
     private TeamAccessService $teamService;
     private UserService $userService;
     private EventService $eventService;
-    
+
     public function __construct()
     {
         $this->teamService = new TeamAccessService();
@@ -22,17 +22,16 @@ class TeamAccessController
         $this->eventService = new EventService();
     }
 
-        public function addMember() // Logic to add a team
+    public function addMember() // Logic to add a team
     {
         $jsonData = file_get_contents('php://input');
         $data = json_decode($jsonData, true);
 
-        $userId = $data["userId"] ?? "";
         $email = $data["email"] ?? "";
         $eventId = $data["eventId"] ?? "";
         $role = trim($data["role"]) ?? "";
 
-        if (empty($eventId) || empty($role) || (empty($userId) && empty($email))) {
+        if (empty($eventId) || empty($role) || empty($email)) {
             return [
                 "success" => false,
                 "message" => "Missing required fields"
@@ -40,17 +39,23 @@ class TeamAccessController
         }
 
         try {
-        
-            if (empty($userId) && !empty($email)) {
-                $user = User::where(["email" => $email]);
-                if (count($user) === 0) {
-                    return [
-                        "success" => false,
-                        "message" => "Email Not Found."
-                    ];
-                }
-                $userId = $user[0]["id"];
+
+            if (empty($email)) {
+                return [
+                    "success" => false,
+                    "message" => "Email is required"
+                ];
             }
+
+            $user = User::where(["email" => $email]);
+            if (count($user) === 0) {
+                return [
+                    "success" => false,
+                    "message" => "Email Not Found."
+                ];
+            }
+            $userId = $user[0]["id"];
+
 
             $this->teamService->addMember($userId, $eventId, $role);
 
@@ -105,7 +110,7 @@ class TeamAccessController
 
         $user = $this->userService->getUser($userId);
         $event = $this->eventService->getEventWithUserId($userId, $eventId);
-        
+
         if (!$user) {
             return [
                 "success" => false,
@@ -116,7 +121,7 @@ class TeamAccessController
         if (!$event) {
             return [
                 "success" => false,
-                "message" => "Event not found"
+                "message" => "Event not found $eventId $userId"
             ];
         }
 
@@ -135,7 +140,7 @@ class TeamAccessController
 
             $members = $db->queryAll($sql, [":eventId" => $eventId]);
 
-            $formattedMembers = array_map(function($member) {
+            $formattedMembers = array_map(function ($member) {
                 return [
                     "id" => $member["id"],
                     "name" => $member["name"],
