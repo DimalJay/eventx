@@ -14,52 +14,55 @@ class Notification extends BaseModel
     protected int $id;
 
     #[Column(type: 'VARCHAR', length: 255, nullable: false)]
-    protected string $notificationTitle;
+    protected string $title;
 
     #[Column(type: 'TEXT', nullable: false)]
-    protected string $content;
+    protected string $message;
+
+    #[Column(type: 'VARCHAR', length: 50, nullable: false, default: "'WARN'")]
+    protected string $status = 'WARN';
 
     #[Column(type: 'INT', nullable: false)]
-    protected int $eventId;
+    protected int $userId;
 
-    #[Column(type: 'INT', nullable: false)]
-    protected int $receiverId;
-
-    #[Column(type: 'VARCHAR', length: 50, nullable: false, default: "'General'")]
-    protected string $notificationType= 'General';
-
-    #[Column(type: 'DATETIME', nullable: false)]
-    protected DateTime $notificationTime;
-
-    #[Column(type: 'BOOLEAN', nullable: false, default: false)]
-    protected bool $isRead = false;
-
-    #[Column(type: 'DATETIME', nullable: true)]
-    protected ?DateTime $sentAt = null;
+    #[Column(type: 'VARCHAR', length: 50, nullable: false)]
+    protected string $type;
 
     #[Column(type: 'DATETIME', default: 'CURRENT_TIMESTAMP')]
     protected DateTime $createdAt;
 
     #[Column(type: 'DATETIME', nullable: true)]
-    protected ?DateTime $updatedAt = null;
+    protected ?DateTime $readAt = null;
 
-    public function __construct(string $notificationTitle, string $content, int $eventId, int $receiverId, string $notificationType = 'General', $isRead = false) {
-        $this->notificationTitle = $notificationTitle;
-        $this->content = $content;
-        $this->eventId = $eventId;
-        $this->receiverId = $receiverId;
-        $this->notificationType = $notificationType;
-        $this->notificationTime = new DateTime();
-        $this->updatedAt = new DateTime();
+    #[Column(type: 'BOOLEAN', nullable: false, default: false)]
+    protected bool $isRead = false;
+
+    #[Column(type: 'JSON', nullable: true)]
+    protected ?string $extras = null;
+
+    public function setExtras(mixed $data): void
+    {
+        $this->extras = is_string($data) ? $data : json_encode($data, JSON_UNESCAPED_UNICODE);
+    }
+
+    public function getExtras(): mixed
+    {
+        return $this->extras ? json_decode($this->extras, true) : null;
+    }
+
+    public function __construct(int $userId, string $title, string $message, string $type, mixed $extras = null) {
+        $this->userId = $userId;
+        $this->title = $title;
+        $this->message = $message;
+        $this->type = $type;
+        $this->setExtras($extras);
         $this->createdAt = new DateTime();
-        $this->updatedAt = new DateTime();
-        $this->isRead = $isRead;
 
         parent::__construct();
     }
 
     public static function empty(): self
     {
-        return new self("","","","");
+        return new self(0, "", "", "");
     }
 }

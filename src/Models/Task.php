@@ -46,6 +46,10 @@ class Task extends BaseModel
     #[Column(type: 'VARCHAR', length: 255, nullable: false, default: "'TODO'")]
     protected string $status = "TODO";
 
+    public function getTitle(): string { return $this->title; }
+    public function getAssignedTo(): int { return $this->assignedTo; }
+    public function getEventId(): int { return $this->eventId; }
+
     public function __construct($eventId, $title, $description, $createdBy, $assignedTo, $assignedBy, $dueDate,$status = 'TODO') {
         $this->eventId = $eventId;
         $this->title = $title;
