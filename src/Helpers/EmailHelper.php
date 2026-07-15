@@ -59,7 +59,7 @@ class EmailHelper
     public static function sendWithTemplate(string $to, string $subject, string $template, array $data = []): bool
     {
         $htmlBody = self::renderTemplate($template, $data);
-        // return self::send($to, $subject, $htmlBody);
+        return self::send($to, $subject, $htmlBody);
     }
 
     private static function renderTemplate(string $template, array $data): string
