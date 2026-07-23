@@ -130,5 +130,34 @@ class UserController
             "data" => $updatedUser,
         ];
     }
+
+    public function getUserRegistrations()
+    {
+        $userId = $_GET["userId"] ?? "";
+        if (empty($userId)) {
+            return [
+                "success" => false,
+                "message" => "User ID is required"
+            ];
+        }
+
+        $registrations = \Models\Registration::where(["userId" => $userId]);
+
+        foreach ($registrations as &$reg) {
+            $events = \Models\Event::where(["id" => $reg["eventId"]]);
+            if (count($events) > 0) {
+                $event = $events[0];
+                $reg["eventTitle"] = $event["title"];
+                $reg["startDate"] = $event["startDate"];
+                $reg["eventType"] = $event["eventType"];
+            }
+        }
+
+        return [
+            "success" => true,
+            "message" => "List of registrations for user ID: " . $userId,
+            "data" => $registrations
+        ];
+    }
 }
 
