@@ -2,7 +2,8 @@
     "name": "dimal/eventx",
     "require": {
         "firebase/php-jwt": "*",
-        "vlucas/phpdotenv": "^5.6"
+        "vlucas/phpdotenv": "^5.6",
+        "phpmailer/phpmailer": "*"
     },
     "autoload": {
         "psr-4": {
@@ -10,7 +11,8 @@
             "Controllers\\": "src/Controllers/",
             "Services\\": "src/Services/",
             "Models\\": "src/Models/",
-            "Middlewares\\": "src/Middlewares/"
+            "Middlewares\\": "src/Middlewares/",
+            "Helpers\\": "src/Helpers/"
         }
     }
 }

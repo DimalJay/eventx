@@ -52,7 +52,7 @@ class RegistrationService
     {
         return Registration::query('SELECT r.*, u.firstName, u.lastName, u.email
             FROM Registrations r
-            JOIN Users u ON r.userId = u.id
+            JOIN users u ON r.userId = u.id
             WHERE r.eventId = :eventId', ['eventId' => $eventId]);
         
     }
