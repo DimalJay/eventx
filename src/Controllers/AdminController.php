@@ -68,7 +68,44 @@ class AdminController
                 return $b['timestamp'] - $a['timestamp'];
             });
 
-            // Return counts and activities
+            // Calculate chart data (last 7 days registrations)
+            $chartData = [];
+            $dailyCounts = [];
+            for ($i = 6; $i >= 0; $i--) {
+                $dateStr = date('Y-m-d', strtotime("-$i days"));
+                $label = date('D', strtotime("-$i days"));
+                $dailyCounts[$dateStr] = [
+                    "label" => $label,
+                    "value" => 0
+                ];
+            }
+
+            foreach ($registrations as $r) {
+                if (isset($r['registeredAt'])) {
+                    $regDate = date('Y-m-d', strtotime($r['registeredAt']));
+                    if (array_key_exists($regDate, $dailyCounts)) {
+                        $dailyCounts[$regDate]["value"]++;
+                    }
+                }
+            }
+
+            $maxCount = 0;
+            foreach ($dailyCounts as $day) {
+                if ($day["value"] > $maxCount) {
+                    $maxCount = $day["value"];
+                }
+            }
+
+            foreach ($dailyCounts as $date => $day) {
+                $percentage = $maxCount > 0 ? round(($day["value"] / $maxCount) * 100) : 0;
+                $chartData[] = [
+                    "label" => $day["label"],
+                    "value" => $day["value"],
+                    "percentage" => $percentage
+                ];
+            }
+
+            // Return counts, activities, and chartData
             return [
                 "success" => true,
                 "message" => "Admin dashboard stats retrieved successfully",
@@ -93,7 +130,8 @@ class AdminController
                         "change" => "0.00%",
                         "isPositive" => true
                     ],
-                    "recentActivities" => $activities
+                    "recentActivities" => $activities,
+                    "chartData" => $chartData
                 ]
             ];
         } catch (\Throwable $th) {
