@@ -196,4 +196,28 @@ class EventController
             "data" => null
         ];
     }
+
+    public function getEventRegistrations()
+    {
+        $eventId = $_GET["eventId"] ?? "";
+        if (empty($eventId)) {
+            return [
+                "success" => false,
+                "message" => "Event ID is required"
+            ];
+        }
+
+        $q = "SELECT r.*, u.firstName, u.lastName, u.email, u.profilePicture 
+              FROM Registrations r 
+              JOIN users u ON r.userId = u.id 
+              WHERE r.eventId = ?";
+        
+        $attendees = Event::query($q, [$eventId]);
+
+        return [
+            "success" => true,
+            "message" => "List of attendees for event ID: " . $eventId,
+            "data" => $attendees
+        ];
+    }
 }
