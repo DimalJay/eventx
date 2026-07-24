@@ -13,6 +13,7 @@ use Models\Feedback;
 use Models\Task;
 use Models\TeamAccess;
 use Models\Notification;
+use Models\Admin;
 
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
@@ -28,6 +29,7 @@ $tables = [
     Feedback::class,
     Task::class,
     Notification::class,
+    Admin::class,
 ];
 
 foreach ($tables as $table) {
