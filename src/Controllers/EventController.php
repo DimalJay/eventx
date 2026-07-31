@@ -122,13 +122,11 @@ class EventController
         $endDate = $data["endDate"] ?? "";
         $agenda = $data["agenda"] ?? "";
         $capacity = $data["capacity"] ?? "";
-        $eventCategory = $data["eventCategory"] ?? "";
-        $registrationDeadline = $data["registrationDeadline"] ?? "";
+        $regDeadline = $data["regDeadline"] ?? "";
         $ticketPrice = $data["ticketPrice"] ?? "";
-        $isPaid = $data["isPaid"] ?? false;
         $isPublic = $data["isPublic"] ?? false;
         $waitlistEnabled = $data["waitlistEnabled"] ?? false;
-        $imageUrl = $data["imageUrl"] ?? "";
+        $coverImage = $data["coverImage"] ?? "";
 
         if (empty($id)) {
             return [
@@ -150,20 +148,14 @@ class EventController
         if (!empty($capacity)) {
             $eventData["capacity"] = trim($capacity);
         }
-        if (!empty($eventCategory)) {
-            $eventData["eventCategory"] = trim($eventCategory);
-        }
         if (!empty($ticketPrice)) {
             $eventData["ticketPrice"] = trim($ticketPrice);
         }
         if (isset($data["isPublic"])) {
             $eventData["isPublic"] = filter_var($data["isPublic"], FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
         }
-        if (isset($data["isPaid"])) {
-            $eventData["isPaid"] = filter_var($data["isPaid"], FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
-        }
-        if (!empty($registrationDeadline)) {
-            $eventData["registrationDeadline"] = trim($registrationDeadline);
+        if (!empty($regDeadline)) {
+            $eventData["regDeadline"] = trim($regDeadline);
         }
         if (!empty($waitlistEnabled)) {
             $eventData["waitlistEnabled"] = trim($waitlistEnabled);
@@ -177,8 +169,8 @@ class EventController
         if (!empty($agenda)) {
             $eventData["agenda"] = trim($agenda);
         }
-        if (!empty($imageUrl)) {
-            $eventData["imageUrl"] = trim($imageUrl);
+        if (!empty($coverImage)) {
+            $eventData["coverImage"] = trim($coverImage);
         }
 
         try {
