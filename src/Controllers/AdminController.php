@@ -234,6 +234,57 @@ class AdminController
         }
     }
 
+    public function getAllActivities()
+    {
+        try {
+            $users = User::selectAll();
+            $events = Event::selectAll();
+
+            $activities = [];
+
+            foreach ($users as $u) {
+                $timeSec = isset($u['createdAt']) ? strtotime($u['createdAt']) : time();
+                $activities[] = [
+                    "id" => "user_" . ($u['id'] ?? uniqid()),
+                    "type" => "user",
+                    "title" => "New User Registered: " . ($u['firstName'] ?? '') . " " . ($u['lastName'] ?? ''),
+                    "time" => $this->getRelativeTime($timeSec),
+                    "timestamp" => $timeSec,
+                    "date" => isset($u['createdAt']) ? $u['createdAt'] : date('Y-m-d H:i:s')
+                ];
+            }
+
+            foreach ($events as $e) {
+                $timeSec = isset($e['createdAt']) ? strtotime($e['createdAt']) : time();
+                $activities[] = [
+                    "id" => "event_" . ($e['id'] ?? uniqid()),
+                    "type" => "event",
+                    "title" => "New Event Created: " . ($e['title'] ?? ''),
+                    "time" => $this->getRelativeTime($timeSec),
+                    "timestamp" => $timeSec,
+                    "date" => isset($e['createdAt']) ? $e['createdAt'] : date('Y-m-d H:i:s')
+                ];
+            }
+
+            // Sort all activities by timestamp descending
+            usort($activities, function($a, $b) {
+                return $b['timestamp'] - $a['timestamp'];
+            });
+
+            return [
+                "success" => true,
+                "message" => "All activities retrieved successfully",
+                "data" => $activities
+            ];
+        } catch (\Throwable $th) {
+            http_response_code(500);
+            return [
+                "success" => false,
+                "message" => "Error retrieving activities: " . $th->getMessage()
+            ];
+        }
+    }
+
     private function getRelativeTime($timestamp)
     {
         $diff = time() - $timestamp;
