@@ -6,6 +6,7 @@ use Models\User;
 use Models\Event;
 use Models\Registration;
 use Models\Payment;
+use Models\Admin;
 
 class AdminController
 {
@@ -281,6 +282,67 @@ class AdminController
             return [
                 "success" => false,
                 "message" => "Error retrieving activities: " . $th->getMessage()
+            ];
+        }
+    }
+
+    public function updatePassword()
+    {
+        try {
+            $id = $_SERVER["uid"] ?? null;
+            if (!$id) {
+                http_response_code(401);
+                return [
+                    "success" => false,
+                    "message" => "Unauthorized"
+                ];
+            }
+
+            $data = json_decode(file_get_contents('php://input'), true);
+            $currentPassword = $data['currentPassword'] ?? '';
+            $newPassword = $data['newPassword'] ?? '';
+
+            if (empty($currentPassword) || empty($newPassword)) {
+                http_response_code(400);
+                return [
+                    "success" => false,
+                    "message" => "All fields are required"
+                ];
+            }
+
+            $admin = Admin::where(["id" => $id])[0] ?? null;
+            if (!$admin) {
+                http_response_code(404);
+                return [
+                    "success" => false,
+                    "message" => "Admin user not found"
+                ];
+            }
+
+            // Verify current password
+            if (!password_verify($currentPassword, $admin['password'])) {
+                http_response_code(400);
+                return [
+                    "success" => false,
+                    "message" => "Incorrect current password"
+                ];
+            }
+
+            // Hash new password
+            $hashedPassword = password_hash($newPassword, PASSWORD_BCRYPT);
+
+            // Update database
+            Admin::updateRecord(["id" => $id], ["password" => $hashedPassword]);
+
+            return [
+                "success" => true,
+                "message" => "Password updated successfully"
+            ];
+        } catch (\Throwable $th) {
+            http_response_code(500);
+            return [
+                "success" => false,
+                "message" => "Error updating password: " . $th->getMessage()
             ];
         }
     }
