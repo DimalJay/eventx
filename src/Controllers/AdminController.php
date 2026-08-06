@@ -5,12 +5,15 @@ namespace Controllers;
 use Models\User;
 use Models\Event;
 use Models\Registration;
+use Models\Payment;
 
 class AdminController
 {
     public function getDashboardStats()
     {
         try {
+            $range = $_GET['range'] ?? 'week';
+
             // Count active users
             $users = User::selectAll();
             $activeUsersCount = 0;
@@ -27,6 +30,9 @@ class AdminController
             // Count registrations
             $registrations = Registration::selectAll();
             $registrationsCount = count($registrations);
+
+            // Fetch payments
+            $payments = Payment::selectAll();
 
             // Calculate recent activities
             $activities = [];
@@ -68,40 +74,125 @@ class AdminController
                 return $b['timestamp'] - $a['timestamp'];
             });
 
-            // Calculate chart data (last 7 days registrations)
+            // Calculate chart data based on range
             $chartData = [];
             $dailyCounts = [];
-            for ($i = 6; $i >= 0; $i--) {
-                $dateStr = date('Y-m-d', strtotime("-$i days"));
-                $label = date('D', strtotime("-$i days"));
-                $dailyCounts[$dateStr] = [
-                    "label" => $label,
-                    "value" => 0
-                ];
-            }
 
-            foreach ($registrations as $r) {
-                if (isset($r['registeredAt'])) {
-                    $regDate = date('Y-m-d', strtotime($r['registeredAt']));
-                    if (array_key_exists($regDate, $dailyCounts)) {
-                        $dailyCounts[$regDate]["value"]++;
+            if ($range === 'year') {
+                for ($i = 11; $i >= 0; $i--) {
+                    $dateStr = date('Y-m', strtotime("-$i months"));
+                    $label = date('M', strtotime("-$i months"));
+                    $dailyCounts[$dateStr] = [
+                        "label" => $label,
+                        "registrations" => 0,
+                        "revenue" => 0
+                    ];
+                }
+
+                foreach ($registrations as $r) {
+                    if (isset($r['registeredAt'])) {
+                        $regMonth = date('Y-m', strtotime($r['registeredAt']));
+                        if (array_key_exists($regMonth, $dailyCounts)) {
+                            $dailyCounts[$regMonth]["registrations"]++;
+                        }
+                    }
+                }
+
+                foreach ($payments as $p) {
+                    $paymentTime = isset($p['paymentAt']) ? $p['paymentAt'] : null;
+                    if ($paymentTime) {
+                        $timeStr = ($paymentTime instanceof \DateTime) ? $paymentTime->format('Y-m') : date('Y-m', strtotime($paymentTime));
+                        if (array_key_exists($timeStr, $dailyCounts)) {
+                            $dailyCounts[$timeStr]["revenue"] += (float)$p['amount'];
+                        }
+                    }
+                }
+            } elseif ($range === 'month') {
+                for ($i = 3; $i >= 0; $i--) {
+                    $label = "Week " . (4 - $i);
+                    $dailyCounts[$i] = [
+                        "label" => $label,
+                        "registrations" => 0,
+                        "revenue" => 0,
+                        "start" => strtotime("-" . (($i + 1) * 7) . " days"),
+                        "end" => strtotime("-" . ($i * 7) . " days")
+                    ];
+                }
+
+                foreach ($registrations as $r) {
+                    if (isset($r['registeredAt'])) {
+                        $regTime = strtotime($r['registeredAt']);
+                        foreach ($dailyCounts as $key => $bucket) {
+                            if ($regTime >= $bucket["start"] && $regTime < $bucket["end"]) {
+                                $dailyCounts[$key]["registrations"]++;
+                            }
+                        }
+                    }
+                }
+
+                foreach ($payments as $p) {
+                    $paymentTime = isset($p['paymentAt']) ? $p['paymentAt'] : null;
+                    if ($paymentTime) {
+                        $payTime = ($paymentTime instanceof \DateTime) ? $paymentTime->getTimestamp() : strtotime($paymentTime);
+                        foreach ($dailyCounts as $key => $bucket) {
+                            if ($payTime >= $bucket["start"] && $payTime < $bucket["end"]) {
+                                $dailyCounts[$key]["revenue"] += (float)$p['amount'];
+                            }
+                        }
+                    }
+                }
+            } else {
+                for ($i = 6; $i >= 0; $i--) {
+                    $dateStr = date('Y-m-d', strtotime("-$i days"));
+                    $label = date('D', strtotime("-$i days"));
+                    $dailyCounts[$dateStr] = [
+                        "label" => $label,
+                        "registrations" => 0,
+                        "revenue" => 0
+                    ];
+                }
+
+                foreach ($registrations as $r) {
+                    if (isset($r['registeredAt'])) {
+                        $regDate = date('Y-m-d', strtotime($r['registeredAt']));
+                        if (array_key_exists($regDate, $dailyCounts)) {
+                            $dailyCounts[$regDate]["registrations"]++;
+                        }
+                    }
+                }
+
+                foreach ($payments as $p) {
+                    $paymentTime = isset($p['paymentAt']) ? $p['paymentAt'] : null;
+                    if ($paymentTime) {
+                        $timeStr = ($paymentTime instanceof \DateTime) ? $paymentTime->format('Y-m-d') : date('Y-m-d', strtotime($paymentTime));
+                        if (array_key_exists($timeStr, $dailyCounts)) {
+                            $dailyCounts[$timeStr]["revenue"] += (float)$p['amount'];
+                        }
                     }
                 }
             }
 
-            $maxCount = 0;
+            $maxReg = 0;
+            $maxRev = 0;
             foreach ($dailyCounts as $day) {
-                if ($day["value"] > $maxCount) {
-                    $maxCount = $day["value"];
+                if ($day["registrations"] > $maxReg) {
+                    $maxReg = $day["registrations"];
+                }
+                if ($day["revenue"] > $maxRev) {
+                    $maxRev = $day["revenue"];
                 }
             }
 
-            foreach ($dailyCounts as $date => $day) {
-                $percentage = $maxCount > 0 ? round(($day["value"] / $maxCount) * 100) : 0;
+            foreach ($dailyCounts as $day) {
+                $regPercentage = $maxReg > 0 ? round(($day["registrations"] / $maxReg) * 100) : 0;
+                $revPercentage = $maxRev > 0 ? round(($day["revenue"] / $maxRev) * 100) : 0;
+
                 $chartData[] = [
                     "label" => $day["label"],
-                    "value" => $day["value"],
-                    "percentage" => $percentage
+                    "registrations" => $day["registrations"],
+                    "regPercentage" => $regPercentage,
+                    "revenue" => round($day["revenue"], 2),
+                    "revPercentage" => $revPercentage
                 ];
             }
 
