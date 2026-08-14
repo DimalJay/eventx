@@ -159,5 +159,42 @@ class UserController
             "data" => $registrations
         ];
     }
+
+    public function updateUserStatus()
+    {
+        $data = json_decode(file_get_contents("php://input"), true);
+        $userId = $data['userId'] ?? null;
+        $status = $data['status'] ?? null;
+
+        if (empty($userId) || empty($status)) {
+            http_response_code(400);
+            return [
+                "success" => false,
+                "message" => "User ID and Status are required"
+            ];
+        }
+
+        if (!in_array($status, ['active', 'suspended'])) {
+            http_response_code(400);
+            return [
+                "success" => false,
+                "message" => "Invalid status value"
+            ];
+        }
+
+        try {
+            $this->userService->updateUser($userId, ["accountStatus" => $status]);
+            return [
+                "success" => true,
+                "message" => "User status updated successfully"
+            ];
+        } catch (\Throwable $th) {
+            http_response_code(500);
+            return [
+                "success" => false,
+                "message" => "Error updating status: " . $th->getMessage()
+            ];
+        }
+    }
 }
 
