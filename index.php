@@ -2,6 +2,8 @@
 
 require_once __DIR__ . '/vendor/autoload.php';
 
+date_default_timezone_set('Asia/Colombo');
+
 use Routes\Router;
 
 $router = new Router("api/v1");

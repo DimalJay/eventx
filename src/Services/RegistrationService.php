@@ -65,7 +65,7 @@ class RegistrationService
         }
         $updateData =  ["status" => $status];
         if($status == 'GOING') {
-            $updateData['chekingTime'] = (new \DateTime())->format('Y-m-d H:i:s');
+            $updateData['chekingTime'] = (new \DateTime('now', new \DateTimeZone('Asia/Colombo')))->format('Y-m-d H:i:s');
         }
         Registration::updateRecord(["id" => $registrationId], $updateData);
     }

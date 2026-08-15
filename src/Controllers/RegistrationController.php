@@ -163,6 +163,26 @@ class RegistrationController
 
         try {
             $this->registrationService->updateRegistrationStatus($registrationId, $status);
+
+            if ($status === 'GOING') {
+                $user = $this->userService->getUser($registration['userId']);
+                $event = $this->eventService->getEvent($registration['eventId']);
+                if ($user && $event) {
+                    $domain = $_ENV['DOMAIN'] ?? getenv('DOMAIN') ?? 'localhost';
+                    $checkinTime = (new \DateTime('now', new \DateTimeZone('Asia/Colombo')))->format('g:i A');
+                    $checkinDate = (new \DateTime('now', new \DateTimeZone('Asia/Colombo')))->format('D, M j, Y');
+                    EmailHelper::sendWithTemplate($user['email'], "Attendance Confirmed: " . $event["title"], "attendance", [
+                        "firstName" => $user["firstName"],
+                        "lastName" => $user["lastName"],
+                        "eventTitle" => $event["title"],
+                        "checkinTime" => $checkinTime,
+                        "checkinDate" => $checkinDate,
+                        "eventLocation" => $event["location"] ?? "TBD",
+                        "eventLink" => "http://" . $domain . "/event/" . $event["id"],
+                    ]);
+                }
+            }
+
             return [
                 "success" => true,
                 "message" => "Registration status updated successfully",
