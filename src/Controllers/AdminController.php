@@ -50,7 +50,9 @@ class AdminController
                     "type" => "user",
                     "title" => "New User Registered: " . ($u['firstName'] ?? '') . " " . ($u['lastName'] ?? ''),
                     "time" => $this->getRelativeTime($timeSec),
-                    "timestamp" => $timeSec
+                    "timestamp" => $timeSec,
+                    "email" => $u['email'] ?? null,
+                    "accountStatus" => $u['accountStatus'] ?? 'active'
                 ];
             }
 
@@ -66,7 +68,10 @@ class AdminController
                     "type" => "event",
                     "title" => "New Event Created: " . ($e['title'] ?? ''),
                     "time" => $this->getRelativeTime($timeSec),
-                    "timestamp" => $timeSec
+                    "timestamp" => $timeSec,
+                    "description" => $e['description'] ?? null,
+                    "location" => $e['location'] ?? null,
+                    "ticketPrice" => isset($e['ticketPrice']) ? floatval($e['ticketPrice']) : 0.0
                 ];
             }
 
@@ -251,7 +256,9 @@ class AdminController
                     "title" => "New User Registered: " . ($u['firstName'] ?? '') . " " . ($u['lastName'] ?? ''),
                     "time" => $this->getRelativeTime($timeSec),
                     "timestamp" => $timeSec,
-                    "date" => isset($u['createdAt']) ? $u['createdAt'] : date('Y-m-d H:i:s')
+                    "date" => isset($u['createdAt']) ? $u['createdAt'] : date('Y-m-d H:i:s'),
+                    "email" => $u['email'] ?? null,
+                    "accountStatus" => $u['accountStatus'] ?? 'active'
                 ];
             }
 
@@ -263,7 +270,10 @@ class AdminController
                     "title" => "New Event Created: " . ($e['title'] ?? ''),
                     "time" => $this->getRelativeTime($timeSec),
                     "timestamp" => $timeSec,
-                    "date" => isset($e['createdAt']) ? $e['createdAt'] : date('Y-m-d H:i:s')
+                    "date" => isset($e['createdAt']) ? $e['createdAt'] : date('Y-m-d H:i:s'),
+                    "description" => $e['description'] ?? null,
+                    "location" => $e['location'] ?? null,
+                    "ticketPrice" => isset($e['ticketPrice']) ? floatval($e['ticketPrice']) : 0.0
                 ];
             }
 
