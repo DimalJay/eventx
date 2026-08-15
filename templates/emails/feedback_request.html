@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Share Your Feedback</title>
+  <style>
+    @media screen and (max-width: 480px) {
+      .outer-pad { padding: 16px 8px !important; }
+      .card-pad { padding: 16px !important; }
+      .event-title { font-size: 20px !important; }
+      .hero-text { font-size: 26px !important; }
+      .star-btn { padding: 8px !important; font-size: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#f1f5f9;background-image:linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);font-family:'Helvetica Neue',Arial,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+  <table align="center" cellpadding="0" cellspacing="0" style="width:100%;max-width:440px;padding:24px 16px;" class="outer-pad">
+    <tr>
+      <td>
+        
+        <!-- Header -->
+        <table cellpadding="0" cellspacing="0" style="width:100%; text-align:center; margin-bottom: 16px;">
+          <tr>
+            <td>
+              <!-- Logo & Title in one line -->
+              <table align="center" cellpadding="0" cellspacing="0" style="display:inline-block; margin-bottom: 12px; background: rgba(255, 255, 255, 0.45); border: 1px solid rgba(255, 255, 255, 0.5); padding: 6px 12px; border-radius: 999px;">
+                <tr>
+                  <td style="vertical-align:middle; padding-right:8px;">
+                    <img src="https://placehold.co/24x24/3B82F6/fff?text=EX" alt="EventX" width="24" height="24" style="display:block;border-radius:6px;">
+                  </td>
+                  <td style="vertical-align:middle;">
+                    <span style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.18em;color:#2563eb;line-height:1;">FEEDBACK</span>
+                  </td>
+                </tr>
+              </table>
+              <h1 class="hero-text" style="margin:0;font-size:32px;font-weight:800;letter-spacing:-0.03em;color:#0f172a;line-height:1.1;">HOW WAS YOUR EXPERIENCE?</h1>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Details card with Glass Effect Simulation -->
+        <table cellpadding="0" cellspacing="0" style="width:100%;border-radius:20px;border:1px solid rgba(255, 255, 255, 0.6);background: rgba(255, 255, 255, 0.75);box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08);">
+          <tr>
+            <td style="padding:20px 24px;" class="card-pad">
+              <table cellpadding="0" cellspacing="0" style="width:100%;">
+                
+                <tr>
+                  <td style="padding-bottom:12px;text-align:center;border-bottom:1px solid rgba(0, 0, 0, 0.05);">
+                    <p style="margin:0 0 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#64748b;">Event</p>
+                    <h2 style="margin:0;font-size:22px;font-weight:700;line-height:1.2;letter-spacing:-0.02em;color:#0f172a;" class="event-title">{{eventTitle}}</h2>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding:16px 0;border-bottom:1px solid rgba(0, 0, 0, 0.05); text-align:center;">
+                    <p style="margin:0;font-size:14px;line-height:1.4;color:#334155;">
+                      Hi <strong>{{firstName}}</strong>, thank you for attending! Please rate your overall experience below:
+                    </p>
+                  </td>
+                </tr>
+
+                <!-- 1 to 5 Star Buttons -->
+                <tr>
+                  <td style="padding-top:20px; text-align:center;">
+                    <table align="center" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                      <tr>
+                        <!-- Star 1 -->
+                        <td style="padding:0 4px;">
+                          <a href="{{rate1}}" style="text-decoration:none; display:inline-block; font-size:28px; background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(0,0,0,0.05); border-radius:10px; width:44px; height:44px; line-height:44px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.02);" title="1 Star">⭐</a>
+                        </td>
+                        <!-- Star 2 -->
+                        <td style="padding:0 4px;">
+                          <a href="{{rate2}}" style="text-decoration:none; display:inline-block; font-size:28px; background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(0,0,0,0.05); border-radius:10px; width:44px; height:44px; line-height:44px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.02);" title="2 Stars">⭐</a>
+                        </td>
+                        <!-- Star 3 -->
+                        <td style="padding:0 4px;">
+                          <a href="{{rate3}}" style="text-decoration:none; display:inline-block; font-size:28px; background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(0,0,0,0.05); border-radius:10px; width:44px; height:44px; line-height:44px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.02);" title="3 Stars">⭐</a>
+                        </td>
+                        <!-- Star 4 -->
+                        <td style="padding:0 4px;">
+                          <a href="{{rate4}}" style="text-decoration:none; display:inline-block; font-size:28px; background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(0,0,0,0.05); border-radius:10px; width:44px; height:44px; line-height:44px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.02);" title="4 Stars">⭐</a>
+                        </td>
+                        <!-- Star 5 -->
+                        <td style="padding:0 4px;">
+                          <a href="{{rate5}}" style="text-decoration:none; display:inline-block; font-size:28px; background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(0,0,0,0.05); border-radius:10px; width:44px; height:44px; line-height:44px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.02);" title="5 Stars">⭐</a>
+                        </td>
+                      </tr>
+                    </table>
+                    <p style="margin:10px 0 0; font-size:11px; color:#64748b;">Click a star to rate directly from your email.</p>
+                  </td>
+                </tr>
+
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Footer -->
+        <table cellpadding="0" cellspacing="0" style="width:100%;margin-top:16px;">
+          <tr>
+            <td style="text-align:center;">
+              <p style="margin:0;font-size:11px;color:#64748b;">You are receiving this because you attended this event.</p>
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
