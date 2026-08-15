@@ -20,6 +20,7 @@ class CronController
 
     public function sendReminders()
     {
+        set_time_limit(0); // Prevent PHP execution timeout
         try {
             // Find events starting tomorrow
             $query = "SELECT * FROM events WHERE DATE(startDate) = DATE(DATE_ADD(NOW(), INTERVAL 1 DAY))";
@@ -33,7 +34,7 @@ class CronController
                 $registrations = $this->registrationService->getRegistrationsList($event['id']);
                 
                 foreach ($registrations as $reg) {
-                    if ($reg['status'] === 'GOING') {
+                    if ($reg['status'] === 'GOING' || $reg['status'] === 'PENDING') {
                         $user = $this->userService->getUser($reg['userId']);
                         if ($user) {
                             $domain = $_ENV['DOMAIN'] ?? getenv('DOMAIN') ?? 'localhost';
@@ -50,6 +51,9 @@ class CronController
                                 "eventLink" => "http://" . $domain . "/event/" . $event["id"],
                             ]);
                             $sentCount++;
+                            
+                            // Add 0.5s delay to prevent SMTP server overload
+                            usleep(500000);
                         }
                     }
                 }
