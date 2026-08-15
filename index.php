@@ -16,5 +16,6 @@ require_once __DIR__ . '/Routes/tasks.php';
 require_once __DIR__ . '/Routes/teamAccess.php';
 require_once __DIR__ . '/Routes/registration.php';
 require_once __DIR__ . '/Routes/admin.php';
+require_once __DIR__ . '/Routes/cron.php';
 
 $router->dispatch();
