@@ -1,3 +1,22 @@
+annotations:
+  anybuild.run/config:
+    commands:
+      build: composer dump-autoload
+    composer_enable: true
+    name: out
+    phpix: true
+  anybuild.run/provider: php
+  anybuild.run/version: 0.27.2
+  wasmer.io/version: 7.3.0
+app_id: da_R36ILtlUZX1P
+enableDatabase: true
+env:
+  PHPIX_PHP_THREADS: '4'
+kind: wasmer.io/App.v0
+name: eventx
+owner: dimaljay
+package: sha256:7ded89e1e3059f953635d96c22824fec0f31d988b3233053b20db39d4d14abd8
+
 volumes:
   - name: uploads
     mount: /uploads
