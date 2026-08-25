@@ -189,6 +189,146 @@ class EventController
         ];
     }
 
+    public function uploadEventCover()
+    {
+        try {
+            if (!isset($_FILES['cover']) || $_FILES['cover']['error'] !== UPLOAD_ERR_OK) {
+                return [
+                    "success" => false,
+                    "message" => "No cover image uploaded",
+                    "data" => null,
+                ];
+            }
+
+            $uploadDir = __DIR__ . '/../../uploads/event-covers/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+
+            $fileName = basename($_FILES['cover']['name']);
+            $fileName = "cover_" . time() . "_" . $fileName;
+
+            $targetFilePath = $uploadDir . $fileName;
+            if (!move_uploaded_file($_FILES['cover']['tmp_name'], $targetFilePath)) {
+                return [
+                    "success" => false,
+                    "message" => "Failed to upload cover image",
+                    "data" => null,
+                ];
+            }
+
+            return [
+                "success" => true,
+                "message" => "Cover image uploaded successfully",
+                "data" => ["coverImage" => '/uploads/event-covers/' . $fileName],
+            ];
+        } catch (\Throwable $th) {
+            return [
+                "success" => false,
+                "message" => "Error uploading cover image: " . $th->getMessage(),
+                "data" => null,
+            ];
+        }
+    }
+
+    public function updateEventStatus()
+    {
+        try {
+            $jsonData = file_get_contents('php://input');
+            $data = json_decode($jsonData, true);
+
+            $eventId = trim($data["id"] ?? "");
+            $status = trim($data["status"] ?? "");
+
+            if (empty($eventId) || empty($status)) {
+                return [
+                    "success" => false,
+                    "message" => "Event ID and status are required",
+                    "data" => null,
+                ];
+            }
+
+            $userId = $_SERVER["uid"];
+            $ownedEvents = $this->eventService->getEventWithUserId($userId, $eventId);
+            if (count($ownedEvents) === 0) {
+                return [
+                    "success" => false,
+                    "message" => "Unauthorized: You do not have access to this event",
+                    "data" => null,
+                ];
+            }
+
+            $allowedStatuses = ['upcoming', 'ongoing', 'completed', 'cancelled', 'draft', 'published'];
+            if (!in_array(strtolower($status), $allowedStatuses, true)) {
+                return [
+                    "success" => false,
+                    "message" => "Invalid status value",
+                    "data" => null,
+                ];
+            }
+
+            $this->eventService->updateEventStatus($eventId, strtolower($status));
+
+            return [
+                "success" => true,
+                "message" => "Event status updated successfully",
+                "data" => null
+            ];
+        } catch (\Throwable $th) {
+            return [
+                "success" => false,
+                "message" => "Error updating event status: " . $th->getMessage(),
+                "data" => null,
+            ];
+        }
+    }
+
+    public function deleteEvent(array $routeParams = [])
+    {
+        try {
+            $eventId = trim($routeParams["id"] ?? "");
+
+            if (empty($eventId)) {
+                return [
+                    "success" => false,
+                    "message" => "Event ID is required",
+                    "data" => null,
+                ];
+            }
+
+            $userId = $_SERVER["uid"];
+            $ownedEvents = $this->eventService->getEventWithUserId($userId, $eventId);
+            if (count($ownedEvents) === 0) {
+                return [
+                    "success" => false,
+                    "message" => "Unauthorized: You do not have access to this event",
+                    "data" => null,
+                ];
+            }
+
+            $deleted = $this->eventService->deleteEvent($eventId);
+            if (!$deleted) {
+                return [
+                    "success" => false,
+                    "message" => "Event not found",
+                    "data" => null,
+                ];
+            }
+
+            return [
+                "success" => true,
+                "message" => "Event deleted successfully",
+                "data" => null
+            ];
+        } catch (\Throwable $th) {
+            return [
+                "success" => false,
+                "message" => "Error deleting event: " . $th->getMessage(),
+                "data" => null,
+            ];
+        }
+    }
+
     public function getEventRegistrations()
     {
         $eventId = $_GET["eventId"] ?? "";
