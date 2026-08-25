@@ -130,5 +130,71 @@ class UserController
             "data" => $updatedUser,
         ];
     }
+
+    public function getUserRegistrations()
+    {
+        $userId = $_GET["userId"] ?? "";
+        if (empty($userId)) {
+            return [
+                "success" => false,
+                "message" => "User ID is required"
+            ];
+        }
+
+        $registrations = \Models\Registration::where(["userId" => $userId]);
+
+        foreach ($registrations as &$reg) {
+            $events = \Models\Event::where(["id" => $reg["eventId"]]);
+            if (count($events) > 0) {
+                $event = $events[0];
+                $reg["eventTitle"] = $event["title"];
+                $reg["startDate"] = $event["startDate"];
+                $reg["eventType"] = $event["eventType"];
+            }
+        }
+
+        return [
+            "success" => true,
+            "message" => "List of registrations for user ID: " . $userId,
+            "data" => $registrations
+        ];
+    }
+
+    public function updateUserStatus()
+    {
+        $data = json_decode(file_get_contents("php://input"), true);
+        $userId = $data['userId'] ?? null;
+        $status = $data['status'] ?? null;
+
+        if (empty($userId) || empty($status)) {
+            http_response_code(400);
+            return [
+                "success" => false,
+                "message" => "User ID and Status are required"
+            ];
+        }
+
+        if (!in_array($status, ['active', 'suspended'])) {
+            http_response_code(400);
+            return [
+                "success" => false,
+                "message" => "Invalid status value"
+            ];
+        }
+
+        try {
+            $this->userService->updateUser($userId, ["accountStatus" => $status]);
+            return [
+                "success" => true,
+                "message" => "User status updated successfully"
+            ];
+        } catch (\Throwable $th) {
+            http_response_code(500);
+            return [
+                "success" => false,
+                "message" => "Error updating status: " . $th->getMessage()
+            ];
+        }
+    }
 }
 

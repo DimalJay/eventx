@@ -51,7 +51,8 @@ class EmailHelper
             $mail->clearAddresses();
             return true;
         } catch (Exception $e) {
-            error_log("EmailHelper Error: " . $mail->ErrorInfo ?? $e->getMessage());
+            $errorMsg = isset($mail) ? $mail->ErrorInfo : $e->getMessage();
+            error_log("EmailHelper Error: " . $errorMsg);
             return false;
         }
     }
@@ -59,7 +60,7 @@ class EmailHelper
     public static function sendWithTemplate(string $to, string $subject, string $template, array $data = []): bool
     {
         $htmlBody = self::renderTemplate($template, $data);
-        // return self::send($to, $subject, $htmlBody);
+        return self::send($to, $subject, $htmlBody);
     }
 
     private static function renderTemplate(string $template, array $data): string

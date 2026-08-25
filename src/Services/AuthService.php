@@ -3,10 +3,38 @@
 namespace Services;
 
 use Models\User;
+use Models\Admin;
 use Middlewares\AuthMiddleware;
 
 class AuthService
 {
+    public function adminLogin($email, $password)
+    {
+        $admin = Admin::where(["email" => $email])[0] ?? null;
+        if ($admin && password_verify($password, $admin['password'])) {
+            $jwt = AuthMiddleware::generateToken($admin['id']);
+            setcookie("auth_token", $jwt, [
+                "expires" => time() + (60 * 60 * 24),
+                "path" => "/",
+                "domain" => getenv('DOMAIN'),
+                "secure" => true,
+                "httponly" => true,
+                "samesite" => "Lax"
+            ]);
+
+            return [
+                "token" => $jwt,
+                "user" => [
+                    "id" => $admin['id'],
+                    "email" => $admin['email'],
+                    "firstName" => $admin['firstName'],
+                    "lastName" => $admin['lastName']
+                ]
+            ];
+        }
+        return null;
+    }
+
     public function login($email, $password)
     {
         $user = User::where(["email" => $email])[0] ?? null;
