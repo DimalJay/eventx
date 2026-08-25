@@ -8,6 +8,7 @@ use Services\EventService;
 use Services\TeamAccessService;
 use Models\Registration;
 use Models\User;
+use Helpers\EmailHelper;
 
 class RegistrationController
 {
@@ -65,7 +66,29 @@ class RegistrationController
             $reg_id = $this->registrationService->registerUserForEvent($registration);
             $registration = $this->registrationService->getRegistrationById($reg_id);
 
-            // TODO: Send email to the user with the ticket code and event details.
+            $event = $this->eventService->getEvent($eventId);
+            if ($event) {
+                $startTs = strtotime($event["startDate"]);
+                $endTs = strtotime($event["endDate"]);
+                $domain = $_ENV['DOMAIN'] ?? getenv('DOMAIN') ?? 'localhost';
+
+                EmailHelper::sendWithTemplate($email, "Your Ticket for " . $event["title"], "ticket", [
+                    "firstName" => $firstName,
+                    "lastName" => $lastName,
+                    "eventTitle" => $event["title"],
+                    "ticketCode" => $registration["ticketCode"],
+                    "eventDate" => $startTs ? date("D, M j, Y", $startTs) : $event["startDate"],
+                    "eventTime" => $startTs && $endTs
+                        ? date("g:i A", $startTs) . " – " . date("g:i A", $endTs)
+                        : "",
+                    "eventLocation" => $event["location"] ?? "TBD",
+                    "eventType" => $event["eventType"] ?? "General admission",
+                    "ticketPrice" => number_format((float)($event["ticketPrice"] ?? 0), 2),
+                    "status" => $registration["status"] === "WAITLIST" ? "Waitlisted" : "Valid",
+                    "calendarLink" => "",
+                    "eventLink" => "http://" . $domain . "/event/" . $event["id"],
+                ]);
+            }
 
             return [
                 "success" => true,
@@ -140,6 +163,26 @@ class RegistrationController
 
         try {
             $this->registrationService->updateRegistrationStatus($registrationId, $status);
+
+            if ($status === 'GOING') {
+                $user = $this->userService->getUser($registration['userId']);
+                $event = $this->eventService->getEvent($registration['eventId']);
+                if ($user && $event) {
+                    $domain = $_ENV['DOMAIN'] ?? getenv('DOMAIN') ?? 'localhost';
+                    $checkinTime = (new \DateTime('now', new \DateTimeZone('Asia/Colombo')))->format('g:i A');
+                    $checkinDate = (new \DateTime('now', new \DateTimeZone('Asia/Colombo')))->format('D, M j, Y');
+                    EmailHelper::sendWithTemplate($user['email'], "Attendance Confirmed: " . $event["title"], "attendance", [
+                        "firstName" => $user["firstName"],
+                        "lastName" => $user["lastName"],
+                        "eventTitle" => $event["title"],
+                        "checkinTime" => $checkinTime,
+                        "checkinDate" => $checkinDate,
+                        "eventLocation" => $event["location"] ?? "TBD",
+                        "eventLink" => "http://" . $domain . "/event/" . $event["id"],
+                    ]);
+                }
+            }
+
             return [
                 "success" => true,
                 "message" => "Registration status updated successfully",

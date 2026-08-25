@@ -52,7 +52,7 @@ class RegistrationService
     {
         return Registration::query('SELECT r.*, u.firstName, u.lastName, u.email
             FROM Registrations r
-            JOIN Users u ON r.userId = u.id
+            JOIN users u ON r.userId = u.id
             WHERE r.eventId = :eventId', ['eventId' => $eventId]);
         
     }
@@ -65,7 +65,7 @@ class RegistrationService
         }
         $updateData =  ["status" => $status];
         if($status == 'GOING') {
-            $updateData['chekingTime'] = (new \DateTime())->format('Y-m-d H:i:s');
+            $updateData['chekingTime'] = (new \DateTime('now', new \DateTimeZone('Asia/Colombo')))->format('Y-m-d H:i:s');
         }
         Registration::updateRecord(["id" => $registrationId], $updateData);
     }

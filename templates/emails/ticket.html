@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Ticket</title>
+  <style>
+    @media screen and (max-width: 480px) {
+      .outer-pad { padding: 32px 12px !important; }
+      .card-pad { padding: 18px 18px 16px !important; }
+      .qr-pad { padding: 18px 18px 22px !important; }
+      .qr-img { width: 160px !important; height: 160px !important; }
+      .event-title { font-size: 18px !important; }
+      .col-half { width: 100% !important; display: block !important; padding: 0 0 12px !important; }
+      .col-half-last { width: 100% !important; display: block !important; padding: 0 !important; }
+      .divider-pad { padding: 0 18px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background:#f5f1ea;font-family:'Helvetica Neue',Arial,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+  <table align="center" cellpadding="0" cellspacing="0" style="width:100%;max-width:440px;padding:48px 20px;" class="outer-pad">
+    <tr>
+      <td>
+        <table cellpadding="0" cellspacing="0" style="width:100%;">
+          <tr>
+            <td style="padding-bottom:24px;">
+              <table cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="vertical-align:middle;padding-right:12px;">
+                    <img src="https://placehold.co/32x32/4F46E5/fff?text=EX" alt="EventX" width="32" height="32" style="display:block;border-radius:8px;max-width:100%;height:auto;">
+                  </td>
+                  <td style="vertical-align:middle;">
+                    <p style="margin:0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.28em;color:rgba(0,0,0,0.5);">EventX ticket</p>
+                    <p style="margin:2px 0 0;font-size:17px;font-weight:600;letter-spacing:-0.02em;color:#000;">Your admission pass</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Ticket card -->
+        <table cellpadding="0" cellspacing="0" style="width:100%;border-radius:24px;border:1px solid rgba(0,0,0,0.1);background:#fff;overflow:hidden;">
+          <!-- Top - event info -->
+          <tr>
+            <td style="padding:28px 28px 24px;" class="card-pad">
+              <table cellpadding="0" cellspacing="0" style="width:100%;">
+                <tr>
+                  <td style="padding-bottom:16px;">
+                    <table cellpadding="0" cellspacing="0" style="width:100%;">
+                      <tr>
+                        <td style="text-align:left;">
+                          <p style="margin:0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.2em;color:rgba(0,0,0,0.5);">EventX Studio</p>
+                        </td>
+                        <td style="text-align:right;">
+                          <table cellpadding="0" cellspacing="0" style="display:inline-block;border-radius:999px;border:1px solid #a7f3d0;background:#ecfdf5;padding:4px 12px;">
+                            <tr>
+                              <td style="vertical-align:middle;padding-right:6px;">
+                                <table cellpadding="0" cellspacing="0" style="width:6px;height:6px;border-radius:50%;background:#10b981;">
+                                  <tr><td style="font-size:1px;line-height:6px;">&nbsp;</td></tr>
+                                </table>
+                              </td>
+                              <td style="vertical-align:middle;">
+                                <p style="margin:0;font-size:11px;font-weight:700;text-transform:uppercase;color:#065f46;">{{status}}</p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-bottom:20px;">
+                    <h1 style="margin:0;font-size:22px;font-weight:600;line-height:1.2;letter-spacing:-0.02em;color:#000;" class="event-title">{{eventTitle}}</h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <table cellpadding="0" cellspacing="0" style="width:100%;">
+                      <tr>
+                        <td style="width:50%;padding-bottom:16px;padding-right:8px;vertical-align:top;" class="col-half">
+                          <p style="margin:0;font-size:11px;text-transform:uppercase;letter-spacing:0.18em;color:rgba(0,0,0,0.4);">Date</p>
+                          <p style="margin:4px 0 0;font-weight:600;font-size:14px;color:#000;">{{eventDate}}</p>
+                        </td>
+                        <td style="width:50%;padding-bottom:16px;padding-left:8px;vertical-align:top;" class="col-half-last">
+                          <p style="margin:0;font-size:11px;text-transform:uppercase;letter-spacing:0.18em;color:rgba(0,0,0,0.4);">Time</p>
+                          <p style="margin:4px 0 0;font-weight:600;font-size:14px;color:#000;">{{eventTime}}</p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td colspan="2" style="padding-bottom:4px;">
+                          <p style="margin:0;font-size:11px;text-transform:uppercase;letter-spacing:0.18em;color:rgba(0,0,0,0.4);">Venue</p>
+                          <p style="margin:4px 0 0;font-weight:600;font-size:14px;color:#000;">{{eventLocation}}</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Perforated divider -->
+          <tr>
+            <td style="padding:0 28px;" class="divider-pad">
+              <table cellpadding="0" cellspacing="0" style="width:100%;">
+                <tr>
+                  <td style="width:12px;background:#f5f1ea;border-radius:0 12px 12px 0;font-size:1px;line-height:1px;">&nbsp;</td>
+                  <td style="border-top:2px dashed rgba(0,0,0,0.15);font-size:1px;line-height:1px;">&nbsp;</td>
+                  <td style="width:12px;background:#f5f1ea;border-radius:12px 0 0 12px;font-size:1px;line-height:1px;">&nbsp;</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Bottom - QR + holder -->
+          <tr>
+            <td style="padding:24px 28px 28px;text-align:center;" class="qr-pad">
+              <table cellpadding="0" cellspacing="0" style="width:100%;">
+                <tr>
+                  <td style="text-align:center;padding-bottom:16px;">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ticketCode}}" alt="QR Code" width="200" height="200" style="display:inline-block;border:1px solid rgba(0,0,0,0.1);border-radius:16px;max-width:100%;height:auto;" class="qr-img">
+                  </td>
+                </tr>
+                <tr>
+                  <td style="text-align:center;padding-bottom:12px;">
+                    <p style="margin:0;font-family:'Courier New',monospace;font-size:13px;font-weight:700;letter-spacing:0.2em;color:#000;">{{ticketCode}}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="text-align:center;padding-bottom:20px;">
+                    <p style="margin:0;font-size:11px;color:rgba(0,0,0,0.5);">Show this code at the entrance for check-in.</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <table cellpadding="0" cellspacing="0" style="width:100%;border-top:1px solid rgba(0,0,0,0.1);padding-top:20px;">
+                      <tr>
+                        <td style="width:50%;padding-right:8px;vertical-align:top;text-align:left;" class="col-half">
+                          <p style="margin:0;font-size:11px;text-transform:uppercase;letter-spacing:0.18em;color:rgba(0,0,0,0.4);">Ticket holder</p>
+                          <p style="margin:4px 0 0;font-weight:600;font-size:14px;color:#000;">{{firstName}} {{lastName}}</p>
+                        </td>
+                        <td style="width:50%;padding-left:8px;vertical-align:top;text-align:left;" class="col-half-last">
+                          <p style="margin:0;font-size:11px;text-transform:uppercase;letter-spacing:0.18em;color:rgba(0,0,0,0.4);">Paid</p>
+                          <p style="margin:4px 0 0;font-weight:600;font-size:14px;color:#000;">${{ticketPrice}}</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Actions -->
+        <table cellpadding="0" cellspacing="0" style="width:100%;margin-top:24px;">
+          <tr>
+            <td style="padding-bottom:12px;">
+              <a href="{{calendarLink}}" style="display:block;text-align:center;padding:14px 20px;border-radius:999px;border:1px solid rgba(0,0,0,0.15);background:#fff;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#000;text-decoration:none;">
+                + Add to Calendar
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <a href="{{eventLink}}" style="display:block;text-align:center;padding:14px 20px;border-radius:999px;background:#000;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#fff;text-decoration:none;">
+                View event
+              </a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
