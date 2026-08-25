@@ -10,6 +10,7 @@ class Router
     {
         $allowedOrigins = [
             "http://localhost:3000",
+            "http://localhost:3001",
             "https://eventx-mega.vercel.app",
             "https://eventx.dimaljay.com"
         ];
