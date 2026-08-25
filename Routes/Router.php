@@ -6,6 +6,7 @@ class Router
 {
     private $current_path;
     private $routes = [];
+    private $route_params = [];
     public function __construct($baseUrl = "api/v1")
     {
         $allowedOrigins = [
@@ -59,9 +60,25 @@ class Router
         $this->routes['DELETE'][$path] = ['action' => $controllerAction, 'middlewares' => $middlewares];
     }
 
+    private function compilePattern(string $pattern): ?string
+    {
+        if (strpos($pattern, '{') === false) {
+            return null;
+        }
+        $regex = preg_replace('/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/', '(?P<$1>[^\/]+)', trim($pattern, '/'));
+        return '#^' . $regex . '$#';
+    }
+
+    public function routeParams(): array
+    {
+        return $this->route_params;
+    }
+
     public function dispatch(){
         $method = $_SERVER['REQUEST_METHOD'];
         $path_found = false;
+        $route_config = null;
+        $this->route_params = [];
 
         foreach ($this->routes as $route_method => $paths){
             if(array_key_exists($this->current_path, $paths)){
@@ -70,9 +87,29 @@ class Router
             }
         }
 
+        if (!$path_found && isset($this->routes[$method])) {
+            $path_to_match = trim($this->current_path, '/');
+            foreach ($this->routes[$method] as $pattern => $config) {
+                $regex = $this->compilePattern($pattern);
+                if ($regex !== null && preg_match($regex, $path_to_match, $matches)) {
+                    foreach ($matches as $key => $value) {
+                        if (!is_int($key)) {
+                            $this->route_params[$key] = urldecode($value);
+                        }
+                    }
+                    $route_config = $config;
+                    $path_found = true;
+                    break;
+                }
+            }
+        }
+
         if($path_found){
-            if(isset($this->routes[$method][$this->current_path])){
+            if ($route_config === null && isset($this->routes[$method][$this->current_path])) {
                 $route_config = $this->routes[$method][$this->current_path];
+            }
+
+            if ($route_config !== null) {
                 $action = $route_config['action'];
                 $middlewares = $route_config['middlewares'];
 
@@ -83,7 +120,7 @@ class Router
                         return; 
                     }
                 }
-                $result = $action();
+                $result = $action($this->route_params);
                 if ($result !== null) {
                     echo json_encode($result);
                 }

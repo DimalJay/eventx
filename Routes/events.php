@@ -13,6 +13,9 @@ $router->post("/event", [$eventController, "createEvent"], [AuthMiddleware::clas
 $router->get("/discover-events", [$eventController, "getPublicEvents"]);
 $router->get("/event/registrations", [$eventController, "getEventRegistrations"], [AuthMiddleware::class]);
 $router->put("/event", [$eventController, "updateEvent"], [AuthMiddleware::class]);
+$router->put("/event/status", [$eventController, "updateEventStatus"], [AuthMiddleware::class]);
+$router->post("/events/upload-cover", [$eventController, "uploadEventCover"], [AuthMiddleware::class]);
+$router->delete("/event/{id}", [$eventController, "deleteEvent"], [AuthMiddleware::class]);
 
 // This route is for registering a user to an event.
 $router->post("/join-event", [$registrationController, "joinEvent"]);

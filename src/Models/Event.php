@@ -61,6 +61,9 @@ class Event extends BaseModel
   #[Column(type: 'BOOLEAN', nullable: false, default: false)]
   protected bool $waitlistEnabled = false;
 
+  #[Column(type: 'VARCHAR', length: 50, nullable: false, default: "'upcoming'")]
+  protected string $status = 'upcoming';
+
 
     public function __construct($title, $eventType, $description, $startDate, $endDate, $location, $organizerId, $coverImage, $isPublic, $capacity, $ticketPrice, $regDeadline, $agenda, $waitlistEnabled = false) {
       $this->title = $title;

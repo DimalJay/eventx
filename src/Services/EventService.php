@@ -37,7 +37,7 @@ class EventService
     {
         $event = $this->getEvent($id);
         if ($event) {
-            return $event->delete();
+            return Event::deleteRecord(["id" => $id]);
         }
         return false;
     }
@@ -45,6 +45,11 @@ class EventService
     public function updateEvent(String $id, array $eventData)
     {
         return Event::updateRecord(["id" => $id], $eventData);
+    }
+
+    public function updateEventStatus(String $id, String $status)
+    {
+        return Event::updateRecord(["id" => $id], ["status" => $status]);
     }
 
     public function getPublicEvents()
