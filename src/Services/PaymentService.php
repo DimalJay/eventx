@@ -236,7 +236,7 @@ class PaymentService
             throw new Exception("This event is free. No payment required.");
         }
 
-        $domain = $_ENV['DOMAIN'] ?? getenv('DOMAIN') ?? 'localhost';
+        $domain = rtrim($this->frontendHost(), '/');
         $stripe = $this->getStripeClient();
 
         $session = $this->runStripe(function () use ($stripe, $event, $quantity, $currency, $data, $eventId, $userId, $registerId, $domain, $ticketPrice) {
@@ -261,8 +261,8 @@ class PaymentService
                     'registerId' => $registerId ? (string)$registerId : null,
                     'quantity' => (string)$quantity,
                 ]),
-                'success_url' => 'http://' . $domain . '/checkout/success?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => 'http://' . $domain . '/checkout/cancel',
+                'success_url' => $domain . '/checkout/success?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => $domain . '/checkout/cancel',
             ]);
         });
 
