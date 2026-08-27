@@ -160,6 +160,31 @@ class UserController
         ];
     }
 
+    public function deleteUser()
+    {
+        $id = $_SERVER["uid"];
+
+        try {
+            $this->userService->deleteUser($id);
+        } catch (\Throwable $th) {
+            http_response_code(500);
+            return [
+                "success" => false,
+                "message" => "Error deleting account: " . $th->getMessage(),
+                "data" => null,
+            ];
+        }
+
+        $authService = new \Services\AuthService();
+        $authService->logout();
+
+        return [
+            "success" => true,
+            "message" => "Account deleted successfully",
+            "data" => null,
+        ];
+    }
+
     public function updateUserStatus()
     {
         $data = json_decode(file_get_contents("php://input"), true);

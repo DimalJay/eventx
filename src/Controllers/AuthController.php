@@ -81,6 +81,62 @@ class AuthController
         ];
     }
 
+    public function changePassword()
+    {
+        $id = $_SERVER["uid"];
+        $data = json_decode(file_get_contents("php://input"), true);
+        $currentPassword = $data['currentPassword'] ?? '';
+        $newPassword = $data['newPassword'] ?? '';
+
+        if (empty($currentPassword) || empty($newPassword)) {
+            http_response_code(400);
+            return [
+                'success' => false,
+                'message' => 'Current and new password are required',
+                'data' => null,
+            ];
+        }
+
+        if (strlen($newPassword) < 8) {
+            http_response_code(400);
+            return [
+                'success' => false,
+                'message' => 'New password must be at least 8 characters',
+                'data' => null,
+            ];
+        }
+
+        $user = \Models\User::where(["id" => $id])[0] ?? null;
+        if (!$user) {
+            http_response_code(404);
+            return [
+                'success' => false,
+                'message' => 'User not found',
+                'data' => null,
+            ];
+        }
+
+        if (!password_verify($currentPassword, $user['password'])) {
+            http_response_code(400);
+            return [
+                'success' => false,
+                'message' => 'Current password is incorrect',
+                'data' => null,
+            ];
+        }
+
+        \Models\User::updateRecord(
+            ["id" => $id],
+            ["password" => password_hash($newPassword, PASSWORD_DEFAULT)]
+        );
+
+        return [
+            'success' => true,
+            'message' => 'Password updated successfully',
+            'data' => null,
+        ];
+    }
+
     public function googleLogin()
     {
         $data = json_decode(file_get_contents('php://input'), true);
