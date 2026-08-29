@@ -118,14 +118,9 @@ class PaymentController
 
     public function createCheckoutSession()
     {
+        // Paid tickets require a logged-in account (enforced by AuthMiddleware
+        // on the route and by the service's null-buyer guard).
         $userId = $this->userId();
-        if (!$userId) {
-            return [
-                "success" => false,
-                "message" => "User not authenticated",
-                "data" => null
-            ];
-        }
 
         try {
             $result = $this->paymentService->createCheckoutSession($userId, $this->requestData());

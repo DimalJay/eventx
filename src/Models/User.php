@@ -50,6 +50,18 @@ class User extends BaseModel
     #[Column(type: 'DATETIME', nullable: true)]
     protected ?DateTime $lastLogin = null;
 
+    #[Column(type: 'VARCHAR', length: 64, nullable: true)]
+    protected ?string $verificationToken = null;
+
+    #[Column(type: 'DATETIME', nullable: true)]
+    protected ?DateTime $verificationTokenExpires = null;
+
+    #[Column(type: 'VARCHAR', length: 64, nullable: true)]
+    protected ?string $resetToken = null;
+
+    #[Column(type: 'DATETIME', nullable: true)]
+    protected ?DateTime $resetTokenExpires = null;
+
     public function __construct($email, $firstName, $lastName, $password, $profilePicture, $loginType = 'standard')
     {
         $this->email = $email;

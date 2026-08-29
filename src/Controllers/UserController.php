@@ -3,6 +3,7 @@ namespace Controllers;
 
 use Services\UserService;
 use Models\User;
+use Helpers\EmailHelper;
 class UserController
 {
 
@@ -66,9 +67,32 @@ class UserController
         $user = new User($email, $fName, $lName, $password, null);
 
         $response = $this->userService->createUser($user);
+
+        $verificationToken = bin2hex(random_bytes(32));
+        User::updateRecord(
+            ["id" => $response],
+            [
+                "isVerified" => "0",
+                "verificationToken" => $verificationToken,
+                "verificationTokenExpires" => date('Y-m-d H:i:s', time() + (24 * 60 * 60)),
+            ]
+        );
+
+        $frontendHost = ($_ENV['FRONTEND_HOST'] ?? getenv('FRONTEND_HOST')) ?: 'http://localhost:3000';
+        $verifyLink = $frontendHost . "/verify?token=" . urlencode($verificationToken) . "&email=" . urlencode($email);
+        EmailHelper::sendWithTemplate(
+            $email,
+            "Verify your EventX account",
+            "verification",
+            [
+                "name" => $fName . ' ' . $lName,
+                "verifyLink" => $verifyLink,
+            ]
+        );
+
         return [
             "success" => true,
-            "message" => "User created successfully",
+            "message" => "Account created. Please check your email to verify your account before logging in.",
             "data" => $response,
         ];
     }

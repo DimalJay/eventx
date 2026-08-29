@@ -217,6 +217,12 @@ class PaymentService
 
     public function createCheckoutSession(int $userId, array $data): array
     {
+        // Buying a ticket on this platform requires a logged-in account.
+        // Guests are not allowed to purchase paid tickets.
+        if ($userId <= 0) {
+            throw new Exception("You must be logged in to purchase a ticket.");
+        }
+
         $eventId = $data['eventId'] ?? '';
         $quantity = (int)($data['quantity'] ?? 1);
         $currency = strtolower($data['currency'] ?? 'lkr');
@@ -234,6 +240,35 @@ class PaymentService
         $ticketPrice = (float)($event['ticketPrice'] ?? 0);
         if ($ticketPrice <= 0) {
             throw new Exception("This event is free. No payment required.");
+        }
+
+        // Ensure a registration exists for this user+event so the buyer's
+        // registration appears immediately (the frontend only sends
+        // eventId + email). The real registration id is stored in the
+        // Stripe session metadata so the payment can be linked on success.
+        if (!$registerId) {
+            $registrationService = new RegistrationService();
+            if ($registrationService->isUserRegisteredForEvent($userId, $eventId)) {
+                $existing = \Models\Registration::where(["userId" => $userId, "eventId" => $eventId]);
+                $registerId = $existing[0]['id'];
+            } else {
+                $registration = new \Models\Registration($eventId, $userId);
+                $registerId = $registrationService->registerUserForEvent($registration);
+            }
+            if (!$registerId) {
+                throw new Exception("Could not create a registration for this event");
+            }
+        }
+
+        // Prevent the same user from buying a ticket for an event they have
+        // already paid for. A freshly created registration (no payment yet)
+        // is left untouched so a cancelled checkout can be retried.
+        $existingPayments = Payment::where([
+            "userId" => (int)$userId,
+            "registerId" => (int)$registerId,
+        ]);
+        if (count($existingPayments) > 0) {
+            throw new Exception("You have already purchased a ticket for this event.");
         }
 
         $domain = rtrim($this->frontendHost(), '/');
@@ -261,8 +296,8 @@ class PaymentService
                     'registerId' => $registerId ? (string)$registerId : null,
                     'quantity' => (string)$quantity,
                 ]),
-                'success_url' => $domain . '/checkout/success?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => $domain . '/checkout/cancel',
+                'success_url' => $domain . '/payment/success?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => $domain . '/payment/cancel',
             ]);
         });
 
@@ -282,9 +317,28 @@ class PaymentService
 
         $metadata = (array)($session->metadata ?? []);
         $userId = $metadata['userId'] ?? null;
+        $eventId = $metadata['eventId'] ?? null;
         $registerId = $metadata['registerId'] ?? null;
 
-        if (!$userId || !$registerId) {
+        if (!$userId || !$eventId) {
+            return;
+        }
+
+        // A paid checkout may arrive without a pre-created registration
+        // (the frontend sends only eventId + email). Ensure one exists so
+        // the registration appears in the user's registrations.
+        if (!$registerId) {
+            $registrationService = new RegistrationService();
+            if (!$registrationService->isUserRegisteredForEvent($userId, $eventId)) {
+                $registration = new \Models\Registration($eventId, $userId);
+                $registerId = $registrationService->registerUserForEvent($registration);
+            } else {
+                $existing = \Models\Registration::where(["userId" => $userId, "eventId" => $eventId]);
+                $registerId = $existing[0]['id'];
+            }
+        }
+
+        if (!$registerId) {
             return;
         }
 
