@@ -3,7 +3,8 @@
     "require": {
         "firebase/php-jwt": "*",
         "vlucas/phpdotenv": "^5.6",
-        "phpmailer/phpmailer": "*"
+        "phpmailer/phpmailer": "*",
+        "stripe/stripe-php": "^21.3"
     },
     "autoload": {
         "psr-4": {

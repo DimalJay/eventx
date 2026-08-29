@@ -39,6 +39,14 @@ class AuthService
     {
         $user = User::where(["email" => $email])[0] ?? null;
         if ($user && password_verify($password, $user['password'])) {
+            if (empty($user['isVerified'])) {
+                return [
+                    "success" => false,
+                    "unverified" => true,
+                    "email" => $user['email']
+                ];
+            }
+
             $jwt = AuthMiddleware::generateToken($user['id']);
             setcookie("auth_token", $jwt, [
                 "expires" => time() + (60 * 60 * 24),
@@ -94,7 +102,8 @@ class AuthService
         if (!$user) {
             $randomPassword = bin2hex(random_bytes(16));
             $userObj = new User($email, $firstName, $lastName, $randomPassword, $profilePicture, 'google');
-            $userObj->save();
+            $newId = $userObj->save();
+            User::updateRecord(["id" => $newId], ["isVerified" => "1"]);
             $user = User::where(["email" => $email])[0] ?? null;
         }
 

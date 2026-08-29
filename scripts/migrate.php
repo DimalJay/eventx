@@ -5,6 +5,7 @@ require __DIR__ . '/../vendor/autoload.php';
 use Dotenv\Dotenv;
 use Models\User;
 use Models\Payment;
+use Models\PaymentAccount;
 use Models\Ticket;
 use Models\Event;
 use Models\Registration;
@@ -22,6 +23,7 @@ $tables = [
     User::class,
     Event::class,
     Payment::class,
+    PaymentAccount::class,
     TeamAccess::class,
     Ticket::class,
     Registration::class,
