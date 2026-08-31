@@ -37,7 +37,6 @@ class CronController
                     if ($reg['status'] === 'GOING' || $reg['status'] === 'PENDING') {
                         $user = $this->userService->getUser($reg['userId']);
                         if ($user) {
-                            $domain = $_ENV['DOMAIN'] ?? getenv('DOMAIN') ?? 'localhost';
                             $eventTs = strtotime($event["startDate"]);
                             
                             EmailHelper::sendWithTemplate($user['email'], "Reminder: " . $event["title"] . " is Tomorrow!", "reminder", [
@@ -48,7 +47,7 @@ class CronController
                                 "eventYear" => $eventTs ? date("Y", $eventTs) : "",
                                 "eventTime" => $eventTs ? date("g:i A", $eventTs) : "",
                                 "eventLocation" => $event["location"] ?? "TBD",
-                                "eventLink" => "http://" . $domain . "/event/" . $event["id"],
+                                "eventLink" => \Helpers\EmailHelper::frontendUrl() . "/event/" . $event["id"],
                             ]);
                             $sentCount++;
                             

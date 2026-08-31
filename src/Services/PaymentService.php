@@ -274,31 +274,43 @@ class PaymentService
         $domain = rtrim($this->frontendHost(), '/');
         $stripe = $this->getStripeClient();
 
-        $session = $this->runStripe(function () use ($stripe, $event, $quantity, $currency, $data, $eventId, $userId, $registerId, $domain, $ticketPrice) {
-            return $stripe->checkout->sessions->create([
-                'payment_method_types' => ['card'],
-                'mode' => 'payment',
-                'customer_email' => $data['email'] ?? null,
-                'line_items' => [[
-                    'price_data' => [
-                        'currency' => $currency,
-                        'unit_amount' => (int)round($ticketPrice * 100),
-                        'product_data' => [
-                            'name' => $event['title'] ?? 'Event Ticket',
-                            'description' => 'Ticket for ' . ($event['title'] ?? 'Event'),
-                        ],
+        // Always bill the logged-in user's own email. The frontend only sends
+        // eventId + quantity, so relying on $data['email'] leaves customer_email
+        // null and Stripe rejects it with "Invalid email address:". Look it up
+        // from the user record instead; omit the param entirely when absent.
+        $userService = new UserService();
+        $buyer = $userService->getUser((string)$userId);
+        $customerEmail = ($buyer['email'] ?? null) ?: null;
+
+        $sessionParams = [
+            'payment_method_types' => ['card'],
+            'mode' => 'payment',
+            'line_items' => [[
+                'price_data' => [
+                    'currency' => $currency,
+                    'unit_amount' => (int)round($ticketPrice * 100),
+                    'product_data' => [
+                        'name' => $event['title'] ?? 'Event Ticket',
+                        'description' => 'Ticket for ' . ($event['title'] ?? 'Event'),
                     ],
-                    'quantity' => $quantity,
-                ]],
-                'metadata' => array_filter([
-                    'eventId' => $eventId,
-                    'userId' => (string)$userId,
-                    'registerId' => $registerId ? (string)$registerId : null,
-                    'quantity' => (string)$quantity,
-                ]),
-                'success_url' => $domain . '/payment/success?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => $domain . '/payment/cancel',
-            ]);
+                ],
+                'quantity' => $quantity,
+            ]],
+            'metadata' => array_filter([
+                'eventId' => $eventId,
+                'userId' => (string)$userId,
+                'registerId' => $registerId ? (string)$registerId : null,
+                'quantity' => (string)$quantity,
+            ]),
+            'success_url' => $domain . '/payment/success?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url' => $domain . '/payment/cancel',
+        ];
+        if ($customerEmail) {
+            $sessionParams['customer_email'] = $customerEmail;
+        }
+
+        $session = $this->runStripe(function () use ($stripe, $sessionParams) {
+            return $stripe->checkout->sessions->create($sessionParams);
         });
 
         return [

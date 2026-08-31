@@ -47,7 +47,7 @@ class InvitationController
         }
 
         $roleLabel = $role === 'GUEST_SPEAKER' ? 'Guest Speaker' : 'VVIP / VIP Participant';
-        $domain = $_ENV['DOMAIN'] ?? getenv('DOMAIN') ?? 'localhost';
+        $backendUrl = \Helpers\EmailHelper::backendUrl();
         $secretKey = ($_ENV['APP_SECRET'] ?? getenv('APP_SECRET')) ?: 'secret_key_123';
         
         $startTs = strtotime($event["startDate"]);
@@ -74,9 +74,9 @@ class InvitationController
             $acceptToken = hash_hmac('sha256', $eventId . '-' . $email . '-accept', $secretKey);
             $declineToken = hash_hmac('sha256', $eventId . '-' . $email . '-decline', $secretKey);
 
-            $acceptLink = "http://" . $domain . "/eventx/api/v1/invitation/respond?eventId=" . $eventId 
+            $acceptLink = $backendUrl . "/eventx/api/v1/invitation/respond?eventId=" . $eventId 
                 . "&email=" . urlencode($email) . "&role=" . urlencode($role) . "&response=accept&token=" . $acceptToken;
-            $declineLink = "http://" . $domain . "/eventx/api/v1/invitation/respond?eventId=" . $eventId 
+            $declineLink = $backendUrl . "/eventx/api/v1/invitation/respond?eventId=" . $eventId 
                 . "&email=" . urlencode($email) . "&role=" . urlencode($role) . "&response=decline&token=" . $declineToken;
 
             $success = EmailHelper::sendWithTemplate($email, "Exclusive Invitation: " . $event["title"], "invitation", [
@@ -168,8 +168,7 @@ class InvitationController
             }
 
             // Redirect to Next.js
-            $domain = $_ENV['DOMAIN'] ?? getenv('DOMAIN') ?? 'localhost';
-            $redirectUrl = "http://" . $domain . ":3000/invitation/status?success=true&response=" . $response 
+            $redirectUrl = \Helpers\EmailHelper::frontendUrl() . "/invitation/status?success=true&response=" . $response 
                 . "&eventTitle=" . urlencode($event['title']) . "&eventId=" . $eventId;
             header("Location: " . $redirectUrl);
             exit;

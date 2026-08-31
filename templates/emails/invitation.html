@@ -3,99 +3,128 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Special Invitation</title>
+  <title>You're invited to {{eventTitle}}</title>
   <style>
     @media screen and (max-width: 480px) {
-      .outer-pad { padding: 16px 8px !important; }
-      .card-pad { padding: 16px !important; }
-      .event-title { font-size: 20px !important; }
-      .hero-text { font-size: 26px !important; }
+      .outer-pad { padding: 24px 12px !important; }
+      .card-pad { padding: 20px !important; }
+      .hero-text { font-size: 24px !important; }
+      .btn-wrap { display: block !important; width: 100% !important; margin: 6px 0 !important; }
+      .btn { width: 100% !important; box-sizing: border-box !important; text-align: center !important; }
     }
   </style>
 </head>
-<body style="margin:0;padding:0;background-color:#f5f1ea;background-image:linear-gradient(135deg, #f5f1ea 0%, #e8e2d5 100%);font-family:'Helvetica Neue',Arial,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
-  <table align="center" cellpadding="0" cellspacing="0" style="width:100%;max-width:500px;padding:24px 16px;" class="outer-pad">
+<body style="margin:0;padding:0;background-color:#fafafa;font-family:'Helvetica Neue',Arial,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+  <table align="center" cellpadding="0" cellspacing="0" style="width:100%;max-width:480px;padding:32px 16px;" class="outer-pad">
     <tr>
       <td>
-        
-        <!-- Header -->
-        <table cellpadding="0" cellspacing="0" style="width:100%; text-align:center; margin-bottom: 16px;">
+
+        <!-- Header / logo -->
+        <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:24px;">
           <tr>
             <td>
-              <table align="center" cellpadding="0" cellspacing="0" style="display:inline-block; margin-bottom: 12px; background: rgba(255, 255, 255, 0.45); border: 1px solid rgba(255, 255, 255, 0.5); padding: 6px 12px; border-radius: 999px;">
+              <table align="center" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="vertical-align:middle; padding-right:8px;">
-                    <img src="https://placehold.co/24x24/000000/fff?text=EX" alt="EventX" width="24" height="24" style="display:block;border-radius:6px;">
+                  <td style="background-color:#7c3aed;border-radius:8px;padding:6px 9px;">
+                    <span style="color:#ffffff;font-size:13px;font-weight:800;letter-spacing:0.04em;">EX</span>
                   </td>
-                  <td style="vertical-align:middle;">
-                    <span style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.18em;color:#000000;line-height:1;">INVITATION</span>
+                  <td style="padding-left:10px;">
+                    <span style="font-size:13px;font-weight:800;letter-spacing:0.22em;color:#18181b;">EVENTX</span>
                   </td>
                 </tr>
               </table>
-              <h1 class="hero-text" style="margin:0;font-size:28px;font-weight:800;letter-spacing:-0.03em;color:#000000;line-height:1.1;">SPECIAL INVITATION</h1>
             </td>
           </tr>
         </table>
 
-        <!-- Details card -->
-        <table cellpadding="0" cellspacing="0" style="width:100%;border-radius:24px;border:1px solid rgba(0, 0, 0, 0.08);background: #ffffff;box-shadow: 0 12px 35px -12px rgba(0, 0, 0, 0.1);">
+        <!-- Card -->
+        <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e4e7;border-radius:16px;background-color:#ffffff;">
           <tr>
-            <td style="padding:24px 32px;" class="card-pad">
+            <td style="padding:28px 32px;" class="card-pad">
               <table cellpadding="0" cellspacing="0" style="width:100%;">
-                
                 <tr>
-                  <td style="padding-bottom:16px;text-align:center;border-bottom:1px solid rgba(0, 0, 0, 0.05);">
-                    <p style="margin:0 0 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#8c857b;">You are invited as a</p>
-                    <h3 style="margin:0;font-size:18px;font-weight:800;color:#22c55e;text-transform:uppercase;letter-spacing:0.05em;">{{roleLabel}}</h3>
+                  <td style="text-align:center;padding-bottom:6px;">
+                    <span style="display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:#7c3aed;background-color:#ede9fe;padding:4px 12px;border-radius:999px;">Exclusive invitation</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="text-align:center;padding:14px 0 8px;">
+                    <h1 class="hero-text" style="margin:0;font-size:28px;font-weight:800;letter-spacing:-0.03em;color:#18181b;line-height:1.15;">You&rsquo;re invited</h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0 20px;text-align:center;">
+                    <p style="margin:0;font-size:14px;line-height:1.6;color:#3f3f46;">
+                      You have been invited to <strong>{{eventTitle}}</strong> as <strong>{{roleLabel}}</strong>. We&rsquo;d love for you to join us.
+                    </p>
                   </td>
                 </tr>
 
+                <!-- Event details -->
                 <tr>
-                  <td style="padding:20px 0;border-bottom:1px solid rgba(0, 0, 0, 0.05);">
-                    <p style="margin:0 0 12px;font-size:15px;line-height:1.5;color:#1a1a1a;">
-                      Dear Guest,
-                    </p>
-                    <p style="margin:0;font-size:14px;line-height:1.6;color:#4a4a4a;">
-                      We are pleased to cordially invite you as a <strong>{{roleLabel}}</strong> for the upcoming event <strong>{{eventTitle}}</strong>. We would be highly honored by your presence.
-                    </p>
-                  </td>
-                </tr>
-
-                <!-- Event Info Blocks -->
-                <tr>
-                  <td style="padding:20px 0;border-bottom:1px solid rgba(0, 0, 0, 0.05);">
+                  <td style="padding:16px 0;border-top:1px solid #f0f0f3;">
                     <table cellpadding="0" cellspacing="0" style="width:100%;">
                       <tr>
-                        <td style="padding-bottom:10px;">
-                          <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#8c857b;display:block;">Date & Time</span>
-                          <span style="font-size:14px;font-weight:600;color:#1a1a1a;">{{eventDate}} @ {{eventTime}}</span>
+                        <td style="padding:6px 0;">
+                          <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#71717a;">Date</span>
+                          <span style="display:block;font-size:14px;font-weight:600;color:#18181b;margin-top:2px;">{{eventDate}}</span>
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding-bottom:10px;">
-                          <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#8c857b;display:block;">Venue</span>
-                          <span style="font-size:14px;font-weight:600;color:#1a1a1a;">{{eventLocation}}</span>
+                        <td style="padding:6px 0;">
+                          <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#71717a;">Time</span>
+                          <span style="display:block;font-size:14px;font-weight:600;color:#18181b;margin-top:2px;">{{eventTime}}</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:6px 0;">
+                          <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#71717a;">Location</span>
+                          <span style="display:block;font-size:14px;font-weight:600;color:#18181b;margin-top:2px;">{{eventLocation}}</span>
                         </td>
                       </tr>
                     </table>
                   </td>
                 </tr>
 
-                <!-- Action Buttons -->
+                <!-- Actions -->
                 <tr>
-                  <td style="padding-top:24px;text-align:center;">
-                    <a href="{{acceptLink}}" style="display:block;margin-bottom:12px;background-color:#22c55e;color:#ffffff;text-align:center;padding:12px 24px;border-radius:999px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;box-shadow:0 4px 12px rgba(34,197,94,0.25);">Accept & Confirm Attendance</a>
-                    <a href="{{declineLink}}" style="display:block;margin-bottom:16px;background-color:#ef4444;color:#ffffff;text-align:center;padding:10px 24px;border-radius:999px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;">Decline Invitation</a>
-                    
-                    <a href="{{calendarLink}}" target="_blank" style="display:inline-block;font-size:12px;color:#2563eb;text-decoration:none;font-weight:600;">+ Add to Google Calendar</a>
+                  <td style="padding:20px 0 6px;">
+                    <table cellpadding="0" cellspacing="0" style="width:100%;">
+                      <tr>
+                        <td class="btn-wrap" style="display:inline-block;width:50%;padding:2px;">
+                          <a href="{{acceptLink}}" class="btn" style="display:block;background-color:#7c3aed;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;padding:12px 16px;border-radius:999px;">Accept invitation</a>
+                        </td>
+                        <td class="btn-wrap" style="display:inline-block;width:50%;padding:2px;">
+                          <a href="{{declineLink}}" class="btn" style="display:block;background-color:#ffffff;color:#3f3f46;text-decoration:none;font-size:14px;font-weight:700;padding:12px 16px;border-radius:999px;border:1px solid #e4e4e7;">Decline</a>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
-
+                <tr>
+                  <td style="padding:12px 0 0;text-align:center;">
+                    <a href="{{calendarLink}}" style="display:inline-block;font-size:13px;font-weight:600;color:#6d28d9;text-decoration:none;">Add to calendar &rarr;</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:16px 0 0;border-top:1px solid #f0f0f3;">
+                    <p style="margin:0;font-size:12px;line-height:1.6;color:#71717a;">If the buttons above don&rsquo;t work, copy and paste the links into your browser. Let us know your response so we can save your seat.</p>
+                  </td>
+                </tr>
               </table>
             </td>
           </tr>
         </table>
-        
+
+        <!-- Footer -->
+        <table cellpadding="0" cellspacing="0" style="width:100%;margin-top:16px;">
+          <tr>
+            <td style="text-align:center;">
+              <p style="margin:0;font-size:11px;color:#71717a;">You are receiving this because you were invited to attend this event on EventX.</p>
+            </td>
+          </tr>
+        </table>
+
       </td>
     </tr>
   </table>

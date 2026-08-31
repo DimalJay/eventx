@@ -73,14 +73,21 @@ class FeedbackController
       ];
     }
 
-    $feedbacks = $this->feedBackService->getFeedbacks($eventId);
+    $feedbacks = \Models\Feedback::query(
+      "SELECT f.*, u.firstName, u.lastName, u.email
+       FROM feedbacks f
+       JOIN users u ON f.participantId = u.id
+       WHERE f.eventId = :eventId
+       ORDER BY f.createdAt DESC",
+      ["eventId" => $eventId]
+    );
 
     if (empty($feedbacks)) {
 
       return [
-        "success" => false,
+        "success" => true,
         "message" => "No feedback found for this event.",
-        "data" => null,
+        "data" => [],
       ];
     }
 
@@ -159,9 +166,8 @@ class FeedbackController
       );
     }
 
-    // Redirect to Next.js landing page
-    $domain = $_ENV['DOMAIN'] ?? getenv('DOMAIN') ?? 'localhost';
-    $redirectUrl = "http://" . $domain . ":3000/feedback?eventId=" . $eventId . "&participantId=" . $participantId . "&rating=" . $rating . "&token=" . $token;
+    // Redirect to Next.js feedback page
+    $redirectUrl = \Helpers\EmailHelper::frontendUrl() . "/feedback?eventId=" . $eventId . "&participantId=" . $participantId . "&rating=" . $rating . "&token=" . $token;
     header("Location: " . $redirectUrl);
     exit;
   }
@@ -175,6 +181,7 @@ class FeedbackController
     $participantId = $data['participantId'] ?? '';
     $organizationRating = (int)($data['organizationRating'] ?? 0);
     $contentRating = (int)($data['contentRating'] ?? 0);
+    $experienceRating = (int)($data['experienceRating'] ?? 0);
     $comment = trim($data['comment'] ?? '');
     $token = $data['token'] ?? '';
 
@@ -182,6 +189,13 @@ class FeedbackController
       return [
         "success" => false,
         "message" => "Missing required fields"
+      ];
+    }
+
+    if ($organizationRating < 1 || $organizationRating > 5 || $contentRating < 1 || $contentRating > 5) {
+      return [
+        "success" => false,
+        "message" => "Ratings must be between 1 and 5"
       ];
     }
 
@@ -196,17 +210,26 @@ class FeedbackController
       ];
     }
 
-    // Update the existing feedback record
-    $updateData = [
-      "organizationRating" => $organizationRating,
-      "contentRating" => $contentRating,
-      "comment" => $comment
-    ];
+    $existing = FeedBack::where(["eventId" => $eventId, "participantId" => $participantId]);
 
-    FeedBack::updateRecord(
-      ["eventId" => $eventId, "participantId" => $participantId],
-      $updateData
-    );
+    if (count($existing) === 0) {
+      $feedback = new FeedBack($eventId, $participantId, $organizationRating, $contentRating, $experienceRating > 0 ? $experienceRating : 0, $comment, 'Pending');
+      $this->feedBackService->submitFeedback($feedback);
+    } else {
+      $updateData = [
+        "organizationRating" => $organizationRating,
+        "contentRating" => $contentRating,
+        "comment" => $comment
+      ];
+      if ($experienceRating > 0) {
+        $updateData["experienceRating"] = $experienceRating;
+      }
+
+      FeedBack::updateRecord(
+        ["eventId" => $eventId, "participantId" => $participantId],
+        $updateData
+      );
+    }
 
     return [
       "success" => true,
@@ -241,12 +264,11 @@ class FeedbackController
 
     $registrations = $registrationService->getRegistrationsList($eventId);
     $sentCount = 0;
-    
-    $domain = $_ENV['DOMAIN'] ?? getenv('DOMAIN') ?? 'localhost';
+
     $secretKey = ($_ENV['APP_SECRET'] ?? getenv('APP_SECRET')) ?: 'secret_key_123';
-    
-    // Base API URL for rate links
-    $baseUrl = "http://" . $domain . "/eventx/api/v1/feedback/rate";
+
+    // Base URL for the website feedback form
+    $baseUrl = \Helpers\EmailHelper::frontendUrl() . "/feedback";
 
     foreach ($registrations as $reg) {
       if ($reg['status'] === 'GOING') {

@@ -77,4 +77,31 @@ class EmailHelper
 
         return $html;
     }
+
+    private static function host(string $envKey): string
+    {
+        $value = $_ENV[$envKey] ?? getenv($envKey);
+        if (!is_string($value) || $value === '') {
+            return 'localhost';
+        }
+        return rtrim($value, '/');
+    }
+
+    public static function backendUrl(): string
+    {
+        $host = self::host('DOMAIN');
+        if (str_starts_with($host, 'http://') || str_starts_with($host, 'https://')) {
+            return rtrim($host, '/');
+        }
+        return 'http://' . $host;
+    }
+
+    public static function frontendUrl(): string
+    {
+        $frontendHost = $_ENV['FRONTEND_HOST'] ?? getenv('FRONTEND_HOST');
+        if (is_string($frontendHost) && $frontendHost !== '') {
+            return rtrim($frontendHost, '/');
+        }
+        return 'http://' . self::host('DOMAIN') . ':3000';
+    }
 }
