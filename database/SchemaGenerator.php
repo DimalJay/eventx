@@ -58,14 +58,12 @@ class SchemaGenerator
     public function updateRecord(array $conditions, array $set): string
     {
         $setClause = implode(', ', array_map(
-            fn($k, $v) => "`{$k}` = " . ($v === null ? 'NULL' : "'" . addslashes($v) . "'"),
-            array_keys($set),
-            $set
+            fn($k) => "`{$k}` = :set_{$k}",
+            array_keys($set)
         ));
         $whereClause = implode(' AND ', array_map(
-            fn($k, $v) => "`{$k}` = " . ($v === null ? 'NULL' : "'" . addslashes($v) . "'"),
-            array_keys($conditions),
-            $conditions
+            fn($k) => "`{$k}` = :cond_{$k}",
+            array_keys($conditions)
         ));
         return "UPDATE `{$this->tableName}` SET {$setClause} WHERE {$whereClause};";
     }
@@ -92,22 +90,12 @@ class SchemaGenerator
             $data[$columnName] = $value;
 
         }
-        $formattedValues = [];
+        $placeholderValues = [];
         foreach ($data as $key => $value) {
-            if ($value instanceof \DateTime) {
-                $formattedValues[] = "'" . $value->format('Y-m-d H:i:s') . "'";
-            } elseif ($value === null) {
-                $formattedValues[] = "NULL";
-            } elseif (is_bool($value)) {
-                $formattedValues[] = $value ? "1" : "0"; 
-            } elseif (is_int($value) || is_float($value)) {
-                $formattedValues[] = $value;
-            } else {
-                $formattedValues[] = "'" . addslashes($value) . "'";
-            }
+            $placeholderValues[] = ":{$key}";
         }
         $columns = implode(', ', array_map(fn($k) => "`{$k}`", array_keys($data)));
-        $values = implode(', ', $formattedValues);
+        $values = implode(', ', $placeholderValues);
         return "INSERT INTO `{$this->tableName}` ({$columns}) VALUES ({$values});";
     }
 
@@ -118,13 +106,13 @@ class SchemaGenerator
 
     public function where(array $conditions): string
     {
-        $whereClause = implode(' AND ', array_map(fn($k, $v) => "`{$k}` = '{$v}'", array_keys($conditions), $conditions));
+        $whereClause = implode(' AND ', array_map(fn($k) => "`{$k}` = :{$k}", array_keys($conditions)));
         return "SELECT * FROM `{$this->tableName}` WHERE {$whereClause};";
     }
 
     public function deleteRecord(array $conditions): string
     {
-        $whereClause = implode(' AND ', array_map(fn($k, $v) => "`{$k}` = '{$v}'", array_keys($conditions), $conditions));
+        $whereClause = implode(' AND ', array_map(fn($k) => "`{$k}` = :{$k}", array_keys($conditions)));
         return "DELETE FROM `{$this->tableName}` WHERE {$whereClause};";
     }
 

@@ -47,7 +47,7 @@ class CronController
                                 "eventYear" => $eventTs ? date("Y", $eventTs) : "",
                                 "eventTime" => $eventTs ? date("g:i A", $eventTs) : "",
                                 "eventLocation" => $event["location"] ?? "TBD",
-                                "eventLink" => \Helpers\EmailHelper::frontendUrl() . "/event/" . $event["id"],
+                                "eventLink" => EmailHelper::frontendUrl() . "/event/" . $event["id"],
                             ]);
                             $sentCount++;
                             

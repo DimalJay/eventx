@@ -47,6 +47,39 @@ class EventController
         }
     }
 
+    private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+    private const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
+    private function storeCoverImage(array $file): ?string
+    {
+        if (!isset($file['tmp_name']) || ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            return null;
+        }
+
+        $mime = (new \finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);
+        if (!in_array($mime, self::ALLOWED_MIME, true)) {
+            throw new \Exception("Unsupported file type.");
+        }
+
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, self::ALLOWED_EXTENSIONS, true)) {
+            throw new \Exception("Unsupported file extension.");
+        }
+
+        $uploadDir = realpath(__DIR__ . '/../../uploads/event-covers/') ?: (__DIR__ . '/../../uploads/event-covers/');
+        if (!is_dir($uploadDir)) {
+            @mkdir($uploadDir, 0775, true);
+        }
+
+        $fileName = "cover_" . bin2hex(random_bytes(8)) . ".{$ext}";
+        $targetFilePath = $uploadDir . DIRECTORY_SEPARATOR . $fileName;
+
+        if (!move_uploaded_file($file['tmp_name'], $targetFilePath)) {
+            throw new \Exception("Failed to store file.");
+        }
+        return '/uploads/event-covers/' . $fileName;
+    }
+
     private function assertManageAccess(int $eventId): bool
     {
         $userId = (int) ($_SERVER["uid"] ?? 0);
@@ -94,16 +127,7 @@ class EventController
             $data = $_POST;
 
             if (isset($_FILES['coverImage']) && $_FILES['coverImage']['error'] === UPLOAD_ERR_OK) {
-                $uploadDir = __DIR__ . '/../../uploads/event-covers/';
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0777, true);
-                }
-                $fileName = basename($_FILES['coverImage']['name']);
-                $fileName = "cover_" . time() . "_" . $fileName;
-
-                $targetFilePath = $uploadDir . $fileName;
-                move_uploaded_file($_FILES['coverImage']['tmp_name'], $targetFilePath);
-                $data['coverImage'] = '/uploads/event-covers/' . $fileName; // Store relative path
+                $data['coverImage'] = $this->storeCoverImage($_FILES['coverImage']);
             } else {
                 $data['coverImage'] = null; // No image uploaded
             }
@@ -249,29 +273,15 @@ class EventController
                 ];
             }
 
-            $uploadDir = __DIR__ . '/../../uploads/event-covers/';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
-            }
-
-            $fileName = basename($_FILES['cover']['name']);
-            $fileName = "cover_" . time() . "_" . $fileName;
-
-            $targetFilePath = $uploadDir . $fileName;
-            if (!move_uploaded_file($_FILES['cover']['tmp_name'], $targetFilePath)) {
-                return [
-                    "success" => false,
-                    "message" => "Failed to upload cover image",
-                    "data" => null,
-                ];
-            }
+            $coverPath = $this->storeCoverImage($_FILES['cover']);
 
             return [
                 "success" => true,
                 "message" => "Cover image uploaded successfully",
-                "data" => ["coverImage" => '/uploads/event-covers/' . $fileName],
+                "data" => ["coverImage" => $coverPath],
             ];
         } catch (\Throwable $th) {
+            http_response_code(400);
             return [
                 "success" => false,
                 "message" => "Error uploading cover image: " . $th->getMessage(),

@@ -74,20 +74,46 @@
                   </td>
                 </tr>
 
-                <!-- Ticket code -->
+                <!-- QR code -->
                 <tr>
-                  <td style="padding:20px 0 6px;border-top:2px dashed #e4e4e7;">
+                  <td style="padding:24px 0 12px;border-top:2px dashed #e4e4e7;" align="center">
+                    {{qrCode}}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:0 0 18px;" align="center">
+                    <p style="margin:0;font-size:12px;line-height:1.6;color:#71717a;">Scan this code at the entrance to check in.</p>
+                  </td>
+                </tr>
+
+                <!-- View ticket button -->
+                <tr>
+                  <td style="padding:0 0 18px;" align="center">
+                    <!--[if mso]>
+                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ticketLink}}" style="height:44px;v-text-anchor:middle;width:200px;" arcsize="50%" fillcolor="#7c3aed">
+                    <w:anchorlock/><center style="color:#ffffff;font-family:'Helvetica Neue',Arial,sans-serif;font-size:14px;font-weight:700;">View ticket</center>
+                    </v:roundrect>
+                    <![endif]-->
+                    <!--[if !mso]><!-->
+                    <a href="{{ticketLink}}" target="_blank" style="display:inline-block;background-color:#7c3aed;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;padding:12px 32px;border-radius:999px;font-family:'Helvetica Neue',Arial,sans-serif;">View ticket</a>
+                    <!--<![endif]-->
+                  </td>
+                </tr>
+
+                <!-- Ticket code (fallback / manual copy) -->
+                <tr>
+                  <td style="padding:0 0 6px;">
                     <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#71717a;">Ticket code</span>
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding:8px 0 4px;">
+                  <td style="padding:4px 0 8px;">
                     <span style="font-size:22px;font-weight:800;letter-spacing:0.12em;color:#6d28d9;font-family:'Courier New',monospace;">{{ticketCode}}</span>
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding:12px 0 0;">
-                    <p style="margin:0;font-size:12px;line-height:1.6;color:#71717a;">Keep this email — you&rsquo;ll need it to check in at the entrance.</p>
+                  <td style="padding:8px 0 0;">
+                    <p style="margin:0;font-size:12px;line-height:1.6;color:#71717a;">Keep this email &mdash; you can show this QR code or enter the ticket code manually at the entrance.</p>
                   </td>
                 </tr>
               </table>

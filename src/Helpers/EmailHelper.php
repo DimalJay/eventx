@@ -66,6 +66,13 @@ class EmailHelper
 
         $html = file_get_contents($templatePath);
         foreach ($data as $key => $value) {
+            // Keys prefixed with "raw_" are injected without HTML-escaping so that
+            // templates can embed markup such as a QR table.
+            if (str_starts_with($key, 'raw_')) {
+                $placeholder = '{{' . substr($key, 4) . '}}';
+                $html = str_replace($placeholder, (string) $value, $html);
+                continue;
+            }
             $html = str_replace('{{' . $key . '}}', htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'), $html);
         }
 

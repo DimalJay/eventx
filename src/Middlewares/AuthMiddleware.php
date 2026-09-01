@@ -5,13 +5,14 @@ require "vendor/autoload.php";
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use Helpers\Config;
 use Exception;
 
 class AuthMiddleware
 {
     public static function generateToken($user_id)
     {
-        $secretKey = "your_secret_key_is_not_short_please_change_it";
+        $secretKey = Config::requireSecret('JWT_SECRET');
         $payload = array(
             "iss" => "http://localhost",
             "iat" => time(),
@@ -35,7 +36,7 @@ class AuthMiddleware
         }
 
         $token = $_COOKIE['auth_token'];
-        $secretKey = "your_secret_key_is_not_short_please_change_it";
+        $secretKey = Config::requireSecret('JWT_SECRET');
 
         try {
             $decoded = JWT::decode($token, new Key($secretKey, 'HS256'));

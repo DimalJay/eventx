@@ -66,4 +66,9 @@ class Database
     {
         return $this->pdo->lastInsertId();
     }
+
+    public function getPdo()
+    {
+        return $this->pdo;
+    }
 }

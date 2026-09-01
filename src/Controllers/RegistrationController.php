@@ -9,6 +9,7 @@ use Services\TeamAccessService;
 use Models\Registration;
 use Models\User;
 use Helpers\EmailHelper;
+use Helpers\QrHelper;
 
 class RegistrationController
 {
@@ -71,6 +72,7 @@ class RegistrationController
                 $startTs = strtotime($event["startDate"]);
                 $endTs = strtotime($event["endDate"]);
                 $domain = $_ENV['DOMAIN'] ?? getenv('DOMAIN') ?? 'localhost';
+                $ticketLink = EmailHelper::frontendUrl() . '/ticket/' . rawurlencode($registration["ticketCode"]);
 
                 EmailHelper::sendWithTemplate($email, "Your Ticket for " . $event["title"], "ticket", [
                     "firstName" => $firstName,
@@ -85,8 +87,9 @@ class RegistrationController
                     "eventType" => $event["eventType"] ?? "General admission",
                     "ticketPrice" => number_format((float)($event["ticketPrice"] ?? 0), 2),
                     "status" => $registration["status"] === "WAITLIST" ? "Waitlisted" : "Valid",
-                    "calendarLink" => "",
                     "eventLink" => "http://" . $domain . "/event/" . $event["id"],
+                    "ticketLink" => $ticketLink,
+                    "raw_qrCode" => QrHelper::renderTable($ticketLink),
                 ]);
             }
 
@@ -195,6 +198,70 @@ class RegistrationController
                 "data" => null
             ];
         }
+    }
+
+    public function getTicketDetails()
+    {
+        $code = $_GET["code"] ?? "";
+        if (empty($code)) {
+            http_response_code(400);
+            return [
+                "success" => false,
+                "message" => "Ticket code is required",
+                "data" => null
+            ];
+        }
+
+        $registration = $this->registrationService->getRegistrationByTicketCode($code);
+        if (!$registration) {
+            http_response_code(404);
+            return [
+                "success" => false,
+                "message" => "Invalid ticket code",
+                "data" => null
+            ];
+        }
+
+        $event = $this->eventService->getEvent($registration["eventId"]);
+        if (!$event) {
+            http_response_code(404);
+            return [
+                "success" => false,
+                "message" => "Event not found for this ticket",
+                "data" => null
+            ];
+        }
+
+        $holder = null;
+        $user = $this->userService->getUser($registration["userId"]);
+        if ($user) {
+            $holder = [
+                "firstName" => $user["firstName"],
+                "lastName" => $user["lastName"],
+                "email" => $user["email"]
+            ];
+        }
+
+        $organizer = null;
+        if (!empty($event["organizerId"])) {
+            $org = $this->userService->getUser($event["organizerId"]);
+            if ($org) {
+                $organizer = trim(($org["firstName"] ?? "") . " " . ($org["lastName"] ?? ""));
+            }
+        }
+
+        return [
+            "success" => true,
+            "message" => "Ticket details retrieved successfully",
+            "data" => [
+                "ticketCode" => $registration["ticketCode"],
+                "status" => $registration["status"],
+                "eventId" => $registration["eventId"],
+                "event" => $event,
+                "organizer" => $organizer,
+                "holder" => $holder
+            ]
+        ];
     }
 
     public function scanTicket()

@@ -7,6 +7,7 @@ use Services\RegistrationService;
 use Services\UserService;
 use Services\EventService;
 use Helpers\EmailHelper;
+use Helpers\Config;
 use Models\FeedBack;
 
 class FeedbackController
@@ -153,7 +154,7 @@ class FeedbackController
     }
 
     // Validate stateless token
-    $secretKey = ($_ENV['APP_SECRET'] ?? getenv('APP_SECRET')) ?: 'secret_key_123';
+    $secretKey = Config::requireSecret('APP_SECRET');
     $expectedToken = hash_hmac('sha256', $eventId . '-' . $participantId, $secretKey);
 
     if (!hash_equals($expectedToken, $token)) {
@@ -178,7 +179,7 @@ class FeedbackController
     }
 
     // Redirect to Next.js feedback page
-    $redirectUrl = \Helpers\EmailHelper::frontendUrl() . "/feedback?eventId=" . $eventId . "&participantId=" . $participantId . "&rating=" . $rating . "&token=" . $token;
+    $redirectUrl = EmailHelper::frontendUrl() . "/feedback?eventId=" . $eventId . "&participantId=" . $participantId . "&rating=" . $rating . "&token=" . $token;
     header("Location: " . $redirectUrl);
     exit;
   }
@@ -211,7 +212,7 @@ class FeedbackController
     }
 
     // Validate stateless token
-    $secretKey = ($_ENV['APP_SECRET'] ?? getenv('APP_SECRET')) ?: 'secret_key_123';
+    $secretKey = Config::requireSecret('APP_SECRET');
     $expectedToken = hash_hmac('sha256', $eventId . '-' . $participantId, $secretKey);
 
     if (!hash_equals($expectedToken, $token)) {
@@ -286,10 +287,10 @@ class FeedbackController
     $registrations = $registrationService->getRegistrationsList($eventId);
     $sentCount = 0;
 
-    $secretKey = ($_ENV['APP_SECRET'] ?? getenv('APP_SECRET')) ?: 'secret_key_123';
+    $secretKey = Config::requireSecret('APP_SECRET');
 
     // Base URL for the website feedback form
-    $baseUrl = \Helpers\EmailHelper::frontendUrl() . "/feedback";
+    $baseUrl = EmailHelper::frontendUrl() . "/feedback";
 
     foreach ($registrations as $reg) {
       if ($reg['status'] === 'GOING') {

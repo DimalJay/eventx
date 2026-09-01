@@ -157,7 +157,7 @@ class UserController
 
     public function getUserRegistrations()
     {
-        $userId = $_GET["userId"] ?? "";
+        $userId = $_SERVER["uid"] ?? "";
         if (empty($userId)) {
             return [
                 "success" => false,

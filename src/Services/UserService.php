@@ -37,7 +37,13 @@ class UserService
     public function getUser(String $id)
     {
         $users = User::where(["id" => $id]);
-        return count($users) > 0 ? $users[0] : null;
+        return count($users) > 0 ? $this->safeUser($users[0]) : null;
+    }
+
+    private function safeUser(array $user): array
+    {
+        unset($user['password'], $user['resetToken'], $user['verificationToken']);
+        return $user;
     }
 
     public function getUserByEmail(String $email)

@@ -27,7 +27,25 @@ abstract class BaseModel {
     public function save() {
         $db = new Database();
         $q = $this->schemaGenerator->insertRecord($this);
-        $db->execute($q);
+        $reflection = new \ReflectionClass($this);
+        $params = [];
+        foreach ($reflection->getProperties() as $property) {
+            $property->setAccessible(true);
+            $attributes = $property->getAttributes(\database\Column::class);
+            $autoIncrement = !empty($attributes) ? $attributes[0]->newInstance()->autoIncrement ?? false : false;
+            if ($autoIncrement) {
+                continue;
+            }
+            $name = $property->getName();
+            $value = $property->isInitialized($this) ? $property->getValue($this) : null;
+            if ($value instanceof \DateTime) {
+                $value = $value->format('Y-m-d H:i:s');
+            } elseif (is_bool($value)) {
+                $value = $value ? 1 : 0;
+            }
+            $params[":{$name}"] = $value;
+        }
+        $db->execute($q, $params);
         return $db->lastInsertId();
     }
 
@@ -42,21 +60,36 @@ abstract class BaseModel {
         $schema = new SchemaGenerator(static::class);
         $db = new Database();
         $q = $schema->where($conditions);
-        return $db->queryAll($q);
+        $params = [];
+        foreach ($conditions as $k => $v) {
+            $params[":{$k}"] = $v;
+        }
+        return $db->queryAll($q, $params);
     }
 
     public static function updateRecord($field, $value){
         $schema = new SchemaGenerator(static::class);
         $db = new Database();
         $q = $schema->updateRecord($field, $value);
-        return $db->query($q);
+        $params = [];
+        foreach ($field as $k => $v) {
+            $params[":cond_{$k}"] = $v;
+        }
+        foreach ($value as $k => $v) {
+            $params[":set_{$k}"] = $v;
+        }
+        return $db->query($q, $params);
     }
 
     public static function deleteRecord($field){
         $schema = new SchemaGenerator(static::class);
         $db = new Database();
         $q = $schema->deleteRecord($field);
-        return $db->execute($q)->rowCount();
+        $params = [];
+        foreach ($field as $k => $v) {
+            $params[":{$k}"] = $v;
+        }
+        return $db->execute($q, $params)->rowCount();
     }
 
     public static function query($query, $params = []) {

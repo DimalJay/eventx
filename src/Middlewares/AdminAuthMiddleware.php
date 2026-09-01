@@ -6,6 +6,7 @@ require "vendor/autoload.php";
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Models\Admin;
+use Helpers\Config;
 use Exception;
 
 class AdminAuthMiddleware
@@ -22,7 +23,7 @@ class AdminAuthMiddleware
         }
 
         $token = $_COOKIE['auth_token'];
-        $secretKey = "your_secret_key_is_not_short_please_change_it";
+        $secretKey = Config::requireSecret('JWT_SECRET');
 
         try {
             $decoded = JWT::decode($token, new Key($secretKey, 'HS256'));

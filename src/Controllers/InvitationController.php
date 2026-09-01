@@ -9,6 +9,7 @@ use Services\TeamAccessService;
 use Helpers\EmailHelper;
 use Models\Registration;
 use Models\User;
+use Helpers\Config;
 
 class InvitationController
 {
@@ -59,8 +60,8 @@ class InvitationController
         }
 
         $roleLabel = $role === 'GUEST_SPEAKER' ? 'Guest Speaker' : 'VVIP / VIP Participant';
-        $backendUrl = \Helpers\EmailHelper::backendUrl();
-        $secretKey = ($_ENV['APP_SECRET'] ?? getenv('APP_SECRET')) ?: 'secret_key_123';
+        $backendUrl = EmailHelper::backendUrl();
+        $secretKey = Config::requireSecret('APP_SECRET');
         
         $startTs = strtotime($event["startDate"]);
         $endTs = strtotime($event["endDate"]);
@@ -131,7 +132,7 @@ class InvitationController
             exit;
         }
 
-        $secretKey = ($_ENV['APP_SECRET'] ?? getenv('APP_SECRET')) ?: 'secret_key_123';
+        $secretKey = Config::requireSecret('APP_SECRET');
         $expectedToken = hash_hmac('sha256', $eventId . '-' . $email . '-' . $response, $secretKey);
 
         if (!hash_equals($expectedToken, $token)) {
@@ -152,7 +153,8 @@ class InvitationController
             $user = $this->userService->getUserByEmail($email);
             if (!$user) {
                 $lastName = $role === 'GUEST_SPEAKER' ? 'Speaker' : 'VIP';
-                $userModel = new User($email, "Invited", $lastName, "", null, "temp");
+                $randomPassword = bin2hex(random_bytes(16));
+                $userModel = new User($email, "Invited", $lastName, $randomPassword, null, "temp");
                 $userId = $this->userService->createUser($userModel);
             } else {
                 $userId = $user['id'];
@@ -180,7 +182,7 @@ class InvitationController
             }
 
             // Redirect to Next.js
-            $redirectUrl = \Helpers\EmailHelper::frontendUrl() . "/invitation/status?success=true&response=" . $response 
+            $redirectUrl = EmailHelper::frontendUrl() . "/invitation/status?success=true&response=" . $response 
                 . "&eventTitle=" . urlencode($event['title']) . "&eventId=" . $eventId;
             header("Location: " . $redirectUrl);
             exit;
