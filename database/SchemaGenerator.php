@@ -57,8 +57,16 @@ class SchemaGenerator
 
     public function updateRecord(array $conditions, array $set): string
     {
-        $setClause = implode(', ', array_map(fn($k, $v) => "`{$k}` = '" . addslashes($v) . "'", array_keys($set), $set ));
-        $whereClause = implode(' AND ', array_map( fn($k, $v) => "`{$k}` = '" . addslashes($v) . "'", array_keys($conditions), $conditions ));
+        $setClause = implode(', ', array_map(
+            fn($k, $v) => "`{$k}` = " . ($v === null ? 'NULL' : "'" . addslashes($v) . "'"),
+            array_keys($set),
+            $set
+        ));
+        $whereClause = implode(' AND ', array_map(
+            fn($k, $v) => "`{$k}` = " . ($v === null ? 'NULL' : "'" . addslashes($v) . "'"),
+            array_keys($conditions),
+            $conditions
+        ));
         return "UPDATE `{$this->tableName}` SET {$setClause} WHERE {$whereClause};";
     }
 
