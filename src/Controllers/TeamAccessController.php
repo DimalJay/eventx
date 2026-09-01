@@ -22,6 +22,12 @@ class TeamAccessController
         $this->eventService = new EventService();
     }
 
+    private function canManage(int $eventId): bool
+    {
+        $userId = (int) ($_SERVER["uid"] ?? 0);
+        return $this->teamService->hasTeamAccess($userId, $eventId);
+    }
+
     public function addMember() // Logic to add a team
     {
         $jsonData = file_get_contents('php://input');
@@ -35,6 +41,22 @@ class TeamAccessController
             return [
                 "success" => false,
                 "message" => "Missing required fields"
+            ];
+        }
+
+        try {
+            if (!$this->canManage((int) $eventId)) {
+                http_response_code(403);
+                return [
+                    "success" => false,
+                    "message" => "Unauthorized: You do not have access to this event"
+                ];
+            }
+        } catch (\Throwable $th) {
+            http_response_code(404);
+            return [
+                "success" => false,
+                "message" => "Event not found"
             ];
         }
 
@@ -87,6 +109,31 @@ class TeamAccessController
             ];
         }
 
+        $member = $this->teamService->getMember((int) $id);
+        if (!$member) {
+            http_response_code(404);
+            return [
+                "success" => false,
+                "message" => "Team member not found"
+            ];
+        }
+
+        try {
+            if (!$this->canManage((int) $member["eventId"])) {
+                http_response_code(403);
+                return [
+                    "success" => false,
+                    "message" => "Unauthorized: You do not have access to this event"
+                ];
+            }
+        } catch (\Throwable $th) {
+            http_response_code(404);
+            return [
+                "success" => false,
+                "message" => "Event not found"
+            ];
+        }
+
         try {
             $this->teamService->removeMember($id);
             return [
@@ -109,7 +156,6 @@ class TeamAccessController
         $eventId = $_GET["eventId"] ?? "";
 
         $user = $this->userService->getUser($userId);
-        $event = $this->eventService->getEventWithUserId($userId, $eventId);
 
         if (!$user) {
             return [
@@ -118,10 +164,19 @@ class TeamAccessController
             ];
         }
 
-        if (!$event) {
+        try {
+            if (!$this->canManage((int) $eventId)) {
+                http_response_code(403);
+                return [
+                    "success" => false,
+                    "message" => "Unauthorized: You do not have access to this event"
+                ];
+            }
+        } catch (\Throwable $th) {
+            http_response_code(404);
             return [
                 "success" => false,
-                "message" => "Event not found $eventId $userId"
+                "message" => "Event not found"
             ];
         }
 
@@ -175,6 +230,31 @@ class TeamAccessController
             return [
                 "success" => false,
                 "message" => "Missing required fields"
+            ];
+        }
+
+        $member = $this->teamService->getMember((int) $id);
+        if (!$member) {
+            http_response_code(404);
+            return [
+                "success" => false,
+                "message" => "Team member not found"
+            ];
+        }
+
+        try {
+            if (!$this->canManage((int) $member["eventId"])) {
+                http_response_code(403);
+                return [
+                    "success" => false,
+                    "message" => "Unauthorized: You do not have access to this event"
+                ];
+            }
+        } catch (\Throwable $th) {
+            http_response_code(404);
+            return [
+                "success" => false,
+                "message" => "Event not found"
             ];
         }
 

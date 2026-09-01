@@ -73,6 +73,17 @@ class FeedbackController
       ];
     }
 
+    $teamAccessService = new \Services\TeamAccessService();
+    $canManage = $teamAccessService->hasTeamAccess((int) ($_SERVER["uid"] ?? 0), (int) $eventId);
+    if (!$canManage) {
+      http_response_code(403);
+      return [
+        "success" => false,
+        "message" => "Unauthorized: You do not have access to this event",
+        "data" => null,
+      ];
+    }
+
     $feedbacks = \Models\Feedback::query(
       "SELECT f.*, u.firstName, u.lastName, u.email
        FROM feedbacks f
@@ -253,12 +264,22 @@ class FeedbackController
     $registrationService = new RegistrationService();
     $userService = new UserService();
     $eventService = new EventService();
+    $teamAccessService = new \Services\TeamAccessService();
 
     $event = $eventService->getEvent($eventId);
     if (!$event) {
       return [
         "success" => false,
         "message" => "Event not found"
+      ];
+    }
+
+    $canManage = $teamAccessService->hasTeamAccess((int) ($_SERVER["uid"] ?? 0), (int) $eventId);
+    if (!$canManage) {
+      http_response_code(403);
+      return [
+        "success" => false,
+        "message" => "Unauthorized: You do not have access to this event"
       ];
     }
 

@@ -8,34 +8,28 @@ use PHPMailer\PHPMailer\Exception;
 
 class EmailHelper
 {
-    private static ?PHPMailer $mailer = null;
-
     private static function getMailer(): PHPMailer
     {
-        if (self::$mailer === null) {
-            $mail = new PHPMailer(true);
+        $mail = new PHPMailer(true);
 
-            $mail->isSMTP();
-            $mail->Host = $_ENV['SMTP_HOST'] ?? getenv('SMTP_HOST');
-            $mail->Port = (int) ($_ENV['SMTP_PORT'] ?? getenv('SMTP_PORT') ?? 587);
-            $mail->SMTPAuth = true;
-            $mail->Username = $_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME');
-            $mail->Password = $_ENV['SMTP_PASSWORD'] ?? getenv('SMTP_PASSWORD');
-            $mail->SMTPSecure = $_ENV['SMTP_ENCRYPTION'] ?? getenv('SMTP_ENCRYPTION') ?? PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->isSMTP();
+        $mail->Host = $_ENV['SMTP_HOST'] ?? getenv('SMTP_HOST');
+        $mail->Port = (int) ($_ENV['SMTP_PORT'] ?? getenv('SMTP_PORT') ?? 587);
+        $mail->SMTPAuth = true;
+        $mail->Username = $_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME');
+        $mail->Password = $_ENV['SMTP_PASSWORD'] ?? getenv('SMTP_PASSWORD');
+        $mail->SMTPSecure = $_ENV['SMTP_ENCRYPTION'] ?? getenv('SMTP_ENCRYPTION') ?? PHPMailer::ENCRYPTION_STARTTLS;
 
-            $fromEmail = $_ENV['SMTP_FROM_EMAIL'] ?? getenv('SMTP_FROM_EMAIL');
-            $fromName = $_ENV['SMTP_FROM_NAME'] ?? getenv('SMTP_FROM_NAME') ?? 'EventX';
-            if ($fromEmail) {
-                $mail->setFrom($fromEmail, $fromName);
-            }
-
-            $mail->isHTML(true);
-            $mail->CharSet = 'UTF-8';
-
-            self::$mailer = $mail;
+        $fromEmail = $_ENV['SMTP_FROM_EMAIL'] ?? getenv('SMTP_FROM_EMAIL');
+        $fromName = $_ENV['SMTP_FROM_NAME'] ?? getenv('SMTP_FROM_NAME') ?? 'EventX';
+        if ($fromEmail) {
+            $mail->setFrom($fromEmail, $fromName);
         }
 
-        return self::$mailer;
+        $mail->isHTML(true);
+        $mail->CharSet = 'UTF-8';
+
+        return $mail;
     }
 
     public static function send(string $to, string $subject, string $htmlBody, ?string $altBody = null): bool

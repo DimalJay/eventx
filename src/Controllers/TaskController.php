@@ -6,6 +6,7 @@ use Models\Task;
 use Services\TaskService;
 use Services\EventService;
 use Services\UserService;
+use Services\TeamAccessService;
 use Exception;
 
 class TaskController
@@ -14,11 +15,19 @@ class TaskController
     private TaskService $taskService;
     private EventService $eventService;
     private UserService $userService;
+    private TeamAccessService $teamAccessService;
     public function __construct()
     {
         $this->taskService = new TaskService();
         $this->eventService = new EventService();
         $this->userService = new UserService();
+        $this->teamAccessService = new TeamAccessService();
+    }
+
+    private function canManage(int $eventId): bool
+    {
+        $userId = (int) ($_SERVER["uid"] ?? 0);
+        return $this->teamAccessService->hasTeamAccess($userId, $eventId);
     }
 
     public function addTask() // Logic to add a task
@@ -32,6 +41,14 @@ class TaskController
             return [
                 "success" => false,
                 "message" => "Missing required fields"
+            ];
+        }
+
+        if (!$this->canManage((int) $data["eventId"])) {
+            http_response_code(403);
+            return [
+                "success" => false,
+                "message" => "Unauthorized: You do not have access to this event"
             ];
         }
 
@@ -72,6 +89,15 @@ class TaskController
             return [
                 "success" => false,
                 "message" => "Task ID is required"
+            ];
+        }
+
+        $existing = $this->taskService->getTask($id);
+        if (!$existing || !$this->canManage((int) $existing["eventId"])) {
+            http_response_code(403);
+            return [
+                "success" => false,
+                "message" => "Unauthorized: You do not have access to this task"
             ];
         }
         
@@ -123,6 +149,15 @@ class TaskController
             ];
         }
 
+        $existing = $this->taskService->getTask($id);
+        if (!$existing || !$this->canManage((int) $existing["eventId"])) {
+            http_response_code(403);
+            return [
+                "success" => false,
+                "message" => "Unauthorized: You do not have access to this task"
+            ];
+        }
+
         try {
             $this->taskService->updateTask($id, ["status" => $status]);
             return [
@@ -150,6 +185,16 @@ class TaskController
                 "message" => "Task ID is required"
             ];
         }
+
+        $existing = $this->taskService->getTask($id);
+        if (!$existing || !$this->canManage((int) $existing["eventId"])) {
+            http_response_code(403);
+            return [
+                "success" => false,
+                "message" => "Unauthorized: You do not have access to this task"
+            ];
+        }
+
         try {
             $ret = $this->taskService->deleteTask($id);
             if ($ret > 0) {
@@ -184,8 +229,15 @@ class TaskController
             ];
         }
 
-        $event = $this->eventService->getEventWithUserId($userId, $eventId);
-        if (!$event) {
+        try {
+            if (!$this->canManage((int) $eventId)) {
+                http_response_code(404);
+                return [
+                    "success" => false,
+                    "message" => "Event not found"
+                ];
+            }
+        } catch (\Throwable $th) {
             http_response_code(404);
             return [
                 "success" => false,
@@ -218,17 +270,32 @@ class TaskController
                 "message" => "Task ID is required"
             ];
         }
+
+        $task = $this->taskService->getTask($id);
+        if (!$task) {
+            http_response_code(404);
+            return [
+                "success" => false,
+                "message" => "Task not found",
+                "data" => null,
+            ];
+        }
+
+        if (!$this->canManage((int) $task["eventId"])) {
+            http_response_code(403);
+            return [
+                "success" => false,
+                "message" => "Unauthorized: You do not have access to this task",
+                "data" => null,
+            ];
+        }
+
         try {
-            $task = $this->taskService->getTask($id);
-            if ($task) {
-                return [
-                    "success" => true,
-                    "message" => "Task retrieved successfully",
-                    "data" => $task
-                ];
-            } else {
-                throw new Exception("Task not found");
-            }
+            return [
+                "success" => true,
+                "message" => "Task retrieved successfully",
+                "data" => $task
+            ];
         } catch (\Throwable $th) {
             return [
                 "success" => false,

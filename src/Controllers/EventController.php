@@ -3,14 +3,54 @@
 namespace Controllers;
 
 use Services\EventService;
+use Services\TeamAccessService;
 use Models\Event;
 
 class EventController
 {
     private EventService $eventService;
+    private TeamAccessService $teamAccessService;
     public function __construct()
     {
         $this->eventService = new EventService();
+        $this->teamAccessService = new TeamAccessService();
+    }
+
+    public function canManageEvent(array $routeParams = [])
+    {
+        $userId = $_SERVER["uid"];
+        $eventId = trim($routeParams["id"] ?? "");
+
+        if (empty($eventId)) {
+            http_response_code(400);
+            return [
+                "success" => false,
+                "message" => "Event ID is required",
+                "data" => null,
+            ];
+        }
+
+        try {
+            $canManage = $this->teamAccessService->hasTeamAccess((int) $userId, (int) $eventId);
+            return [
+                "success" => true,
+                "message" => $canManage ? "Access granted" : "Access denied",
+                "data" => ["canManage" => $canManage],
+            ];
+        } catch (\Throwable $th) {
+            http_response_code(404);
+            return [
+                "success" => false,
+                "message" => "Event not found",
+                "data" => null,
+            ];
+        }
+    }
+
+    private function assertManageAccess(int $eventId): bool
+    {
+        $userId = (int) ($_SERVER["uid"] ?? 0);
+        return $this->teamAccessService->hasTeamAccess($userId, $eventId);
     }
 
     public function listEvents()
@@ -135,6 +175,15 @@ class EventController
             ];
         }
 
+        if (!$this->assertManageAccess((int) $id)) {
+            http_response_code(403);
+            return [
+                "success" => false,
+                "message" => "Unauthorized: You do not have access to this event",
+                "data" => null,
+            ];
+        }
+
         $eventData = [];
         if (!empty($title)) {
             $eventData["title"] = trim($title);
@@ -248,9 +297,8 @@ class EventController
                 ];
             }
 
-            $userId = $_SERVER["uid"];
-            $ownedEvents = $this->eventService->getEventWithUserId($userId, $eventId);
-            if (count($ownedEvents) === 0) {
+            if (!$this->assertManageAccess((int) $eventId)) {
+                http_response_code(403);
                 return [
                     "success" => false,
                     "message" => "Unauthorized: You do not have access to this event",
@@ -296,9 +344,8 @@ class EventController
                 ];
             }
 
-            $userId = $_SERVER["uid"];
-            $ownedEvents = $this->eventService->getEventWithUserId($userId, $eventId);
-            if (count($ownedEvents) === 0) {
+            if (!$this->assertManageAccess((int) $eventId)) {
+                http_response_code(403);
                 return [
                     "success" => false,
                     "message" => "Unauthorized: You do not have access to this event",
@@ -336,6 +383,14 @@ class EventController
             return [
                 "success" => false,
                 "message" => "Event ID is required"
+            ];
+        }
+
+        if (!$this->assertManageAccess((int) $eventId)) {
+            http_response_code(403);
+            return [
+                "success" => false,
+                "message" => "Unauthorized: You do not have access to this event"
             ];
         }
 

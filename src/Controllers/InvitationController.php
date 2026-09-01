@@ -5,6 +5,7 @@ namespace Controllers;
 use Services\EventService;
 use Services\UserService;
 use Services\RegistrationService;
+use Services\TeamAccessService;
 use Helpers\EmailHelper;
 use Models\Registration;
 use Models\User;
@@ -14,12 +15,14 @@ class InvitationController
     private EventService $eventService;
     private UserService $userService;
     private RegistrationService $registrationService;
+    private TeamAccessService $teamAccessService;
 
     public function __construct()
     {
         $this->eventService = new EventService();
         $this->userService = new UserService();
         $this->registrationService = new RegistrationService();
+        $this->teamAccessService = new TeamAccessService();
     }
 
     public function sendInvitations()
@@ -43,6 +46,15 @@ class InvitationController
             return [
                 "success" => false,
                 "message" => "Event not found."
+            ];
+        }
+
+        $canManage = $this->teamAccessService->hasTeamAccess((int) ($_SERVER["uid"] ?? 0), (int) $eventId);
+        if (!$canManage) {
+            http_response_code(403);
+            return [
+                "success" => false,
+                "message" => "Unauthorized: You do not have access to this event"
             ];
         }
 

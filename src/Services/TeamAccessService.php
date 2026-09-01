@@ -39,6 +39,12 @@ class TeamAccessService
         return TeamAccess::where(["eventId" => $eventId]);
     }
 
+    public function getMember(int $id)
+    {
+        $members = TeamAccess::where(["id" => $id]);
+        return count($members) > 0 ? $members[0] : null;
+    }
+
     public function updateMemberRole(int $id, string $role)
     {
         $members = TeamAccess::where(["id" => $id]);
