@@ -6,6 +6,7 @@ use Services\RegistrationService;
 use Services\UserService;
 use Services\EventService;
 use Services\TeamAccessService;
+use Services\NotificationService;
 use Models\Registration;
 use Models\User;
 use Helpers\EmailHelper;
@@ -17,12 +18,14 @@ class RegistrationController
     private EventService $eventService;
     private UserService $userService;
     private TeamAccessService $teamAccessService;
+    private NotificationService $notificationService;
     public function __construct()
     {
         $this->registrationService = new RegistrationService();
         $this->userService = new UserService();
         $this->eventService = new EventService();
         $this->teamAccessService = new TeamAccessService();
+        $this->notificationService = new NotificationService();
     }
 
     public function joinEvent()
@@ -91,6 +94,9 @@ class RegistrationController
                     "ticketLink" => $ticketLink,
                     "raw_qrCode" => QrHelper::renderTable($ticketLink),
                 ]);
+
+                $attendeeName = trim($firstName . " " . $lastName);
+                $this->notificationService->notifyNewRegistration($event, $attendeeName);
             }
 
             return [

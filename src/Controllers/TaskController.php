@@ -7,6 +7,7 @@ use Services\TaskService;
 use Services\EventService;
 use Services\UserService;
 use Services\TeamAccessService;
+use Services\NotificationService;
 use Exception;
 
 class TaskController
@@ -16,12 +17,14 @@ class TaskController
     private EventService $eventService;
     private UserService $userService;
     private TeamAccessService $teamAccessService;
+    private NotificationService $notificationService;
     public function __construct()
     {
         $this->taskService = new TaskService();
         $this->eventService = new EventService();
         $this->userService = new UserService();
         $this->teamAccessService = new TeamAccessService();
+        $this->notificationService = new NotificationService();
     }
 
     private function canManage(int $eventId): bool
@@ -62,7 +65,14 @@ class TaskController
             $data["dueDate"]
             );
         try {
-            $this->taskService->addTask($task);
+            $taskId = $this->taskService->addTask($task);
+
+            $savedTask = $this->taskService->getTask((int) $taskId);
+            $event = $this->eventService->getEvent($eventId);
+            $eventTitle = $event["title"] ?? "your event";
+            if ($savedTask) {
+                $this->notificationService->notifyTaskAssigned($savedTask, $eventTitle);
+            }
         } catch (Exception $e) {
             http_response_code(500);
             return [
@@ -119,6 +129,9 @@ class TaskController
         try {
             $this->taskService->updateTask($id, $taskData);
             $tsk = $this->taskService->getTask($id);
+            if ($tsk) {
+                $this->notificationService->notifyTaskUpdated($tsk);
+            }
             return [
                 "success" => true,
                 "message" => "Task updated successfully",
