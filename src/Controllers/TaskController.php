@@ -173,6 +173,10 @@ class TaskController
 
         try {
             $this->taskService->updateTask($id, ["status" => $status]);
+            $tsk = $this->taskService->getTask($id);
+            if ($tsk) {
+                $this->notificationService->notifyTaskUpdated($tsk);
+            }
             return [
                 "success" => true,
                 "message" => "Task status updated successfully",

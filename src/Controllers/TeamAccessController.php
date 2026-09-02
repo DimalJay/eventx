@@ -5,8 +5,11 @@ namespace Controllers;
 use Services\TeamAccessService;
 use Services\UserService;
 use Services\EventService;
+use Services\NotificationService;
 use Exception;
 use Models\User;
+use Models\Event;
+use Helpers\EmailHelper;
 use database\Database;
 
 class TeamAccessController
@@ -14,12 +17,14 @@ class TeamAccessController
     private TeamAccessService $teamService;
     private UserService $userService;
     private EventService $eventService;
+    private NotificationService $notificationService;
 
     public function __construct()
     {
         $this->teamService = new TeamAccessService();
         $this->userService = new UserService();
         $this->eventService = new EventService();
+        $this->notificationService = new NotificationService();
     }
 
     private function canManage(int $eventId): bool
@@ -81,6 +86,44 @@ class TeamAccessController
 
             $this->teamService->addMember($userId, $eventId, $role);
 
+            // --- Notification + Email ---
+            $addedUser = User::where(["id" => $userId]);
+            $event = Event::where(["id" => $eventId]);
+            if (count($addedUser) > 0 && count($event) > 0) {
+                $eventTitle = $event[0]['title'];
+                $firstName = $addedUser[0]['firstName'];
+                $addedEmail = $addedUser[0]['email'];
+                $roleLabel = ucfirst(strtolower($role));
+
+                // Notify the added member
+                $this->notificationService->notifyTeamMemberAdded((int) $userId, $eventTitle, (int) $eventId);
+
+                // Send email to the added member
+                EmailHelper::sendWithTemplate(
+                    $addedEmail,
+                    "You've been added to {$eventTitle}'s team",
+                    "team_access",
+                    [
+                        "firstName" => $firstName,
+                        "eventTitle" => $eventTitle,
+                        "roleLabel" => $roleLabel,
+                        "eventLink" => EmailHelper::frontendUrl() . "/events/{$eventId}",
+                    ]
+                );
+
+                // Notify the organizer
+                $organizerId = (int) $event[0]['organizerId'];
+                if ($organizerId !== (int) $userId) {
+                    $this->notificationService->notifyOrganizer(
+                        $organizerId,
+                        $eventTitle,
+                        (int) $eventId,
+                        "New team member",
+                        "{$firstName} ({$addedEmail}) has been added to the team as {$roleLabel}."
+                    );
+                }
+            }
+
             return [
                 "success" => true,
                 "message" => "Member added to the team successfully",
@@ -135,6 +178,42 @@ class TeamAccessController
         }
 
         try {
+            // --- Notification + Email (before removal) ---
+            $removedUser = User::where(["id" => $member["userId"]]);
+            $event = Event::where(["id" => $member["eventId"]]);
+            if (count($removedUser) > 0 && count($event) > 0) {
+                $eventTitle = $event[0]['title'];
+                $firstName = $removedUser[0]['firstName'];
+                $removedEmail = $removedUser[0]['email'];
+
+                // Notify the removed member
+                $this->notificationService->notifyTeamMemberRemoved((int) $member["userId"], $eventTitle, (int) $member["eventId"]);
+
+                // Send email to the removed member
+                EmailHelper::sendWithTemplate(
+                    $removedEmail,
+                    "You've been removed from {$eventTitle}'s team",
+                    "team_removed",
+                    [
+                        "firstName" => $firstName,
+                        "eventTitle" => $eventTitle,
+                    ]
+                );
+
+                // Notify the organizer
+                $organizerId = (int) $event[0]['organizerId'];
+                $currentUser = $_SERVER["uid"] ?? 0;
+                if ($organizerId !== (int) $member["userId"] && $organizerId !== (int) $currentUser) {
+                    $this->notificationService->notifyOrganizer(
+                        $organizerId,
+                        $eventTitle,
+                        (int) $member["eventId"],
+                        "Team member removed",
+                        "{$firstName} ({$removedEmail}) has been removed from the team."
+                    );
+                }
+            }
+
             $this->teamService->removeMember($id);
             return [
                 "success" => true,
@@ -259,7 +338,52 @@ class TeamAccessController
         }
 
         try {
+            $oldRole = $member["role"];
             $this->teamService->updateMemberRole($id, $role);
+
+            // --- Notification + Email ---
+            $memberUser = User::where(["id" => $member["userId"]]);
+            $event = Event::where(["id" => $member["eventId"]]);
+            if (count($memberUser) > 0 && count($event) > 0) {
+                $eventTitle = $event[0]['title'];
+                $firstName = $memberUser[0]['firstName'];
+                $memberEmail = $memberUser[0]['email'];
+                $roleLabel = ucfirst(strtolower($role));
+
+                // Notify the member whose role changed
+                $this->notificationService->notifyTeamMemberRoleChanged(
+                    (int) $member["userId"],
+                    $eventTitle,
+                    (int) $member["eventId"],
+                    $role
+                );
+
+                // Send email to the member
+                EmailHelper::sendWithTemplate(
+                    $memberEmail,
+                    "Your role on {$eventTitle} has been updated",
+                    "team_role_changed",
+                    [
+                        "firstName" => $firstName,
+                        "eventTitle" => $eventTitle,
+                        "roleLabel" => $roleLabel,
+                        "eventLink" => EmailHelper::frontendUrl() . "/events/" . $member["eventId"],
+                    ]
+                );
+
+                // Notify the organizer
+                $organizerId = (int) $event[0]['organizerId'];
+                if ($organizerId !== (int) $member["userId"]) {
+                    $this->notificationService->notifyOrganizer(
+                        $organizerId,
+                        $eventTitle,
+                        (int) $member["eventId"],
+                        "Team role changed",
+                        "{$firstName}'s role has been changed from " . ucfirst(strtolower($oldRole)) . " to {$roleLabel}."
+                    );
+                }
+            }
+
             return [
                 "success" => true,
                 "message" => "Team member updated successfully",

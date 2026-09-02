@@ -121,6 +121,63 @@ class NotificationService
         );
     }
 
+    /**
+     * Notify a user that they were added to an event's team.
+     */
+    public function notifyTeamMemberAdded(int $userId, string $eventTitle, int $eventId): void
+    {
+        $this->create(
+            $userId,
+            "Added to team",
+            "You have been added to the team for \"{$eventTitle}\".",
+            'team_access',
+            ["eventId" => $eventId]
+        );
+    }
+
+    /**
+     * Notify a user that they were removed from an event's team.
+     */
+    public function notifyTeamMemberRemoved(int $userId, string $eventTitle, int $eventId): void
+    {
+        $this->create(
+            $userId,
+            "Removed from team",
+            "You have been removed from the team for \"{$eventTitle}\".",
+            'team_removed',
+            ["eventId" => $eventId]
+        );
+    }
+
+    /**
+     * Notify a user that their role was changed on an event's team.
+     */
+    public function notifyTeamMemberRoleChanged(int $userId, string $eventTitle, int $eventId, string $newRole): void
+    {
+        $roleLabel = ucfirst(strtolower($newRole));
+        $this->create(
+            $userId,
+            "Role updated",
+            "Your role on \"{$eventTitle}\" has been changed to {$roleLabel}.",
+            'team_role_changed',
+            ["eventId" => $eventId, "role" => $newRole]
+        );
+    }
+
+    /**
+     * Notify the event organizer about a team change.
+     */
+    public function notifyOrganizer(int $organizerId, string $eventTitle, int $eventId, string $title, string $message): void
+    {
+        $this->create(
+            $organizerId,
+            $title,
+            $message,
+            'team_update',
+            ["eventId" => $eventId]
+        );
+    }
+
     public function getForUser(int $userId, int $page, int $limit): array
     {
         $offset = ($page - 1) * $limit;
