@@ -6,13 +6,13 @@
   <title>Your ticket for {{eventTitle}}</title>
   <style>
     @media screen and (max-width: 480px) {
-      .outer-pad { padding: 24px 12px !important; }
-      .card-pad { padding: 20px !important; }
-      .hero-text { font-size: 24px !important; }
+      .outer-pad { padding: 28px 12px !important; }
+      .card-pad { padding: 22px !important; }
+      .hero-text { font-size: 22px !important; }
     }
   </style>
 </head>
-<body style="margin:0;padding:0;background-color:#fafafa;font-family:'Helvetica Neue',Arial,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+<body style="margin:0;padding:0;background-color:#fafafa;font-family:'Geist','Helvetica Neue',Arial,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
   <table align="center" cellpadding="0" cellspacing="0" style="width:100%;max-width:480px;padding:32px 16px;" class="outer-pad">
     <tr>
       <td>
@@ -23,11 +23,11 @@
             <td>
               <table align="center" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="background-color:#7c3aed;border-radius:8px;padding:6px 9px;">
-                    <span style="color:#ffffff;font-size:13px;font-weight:800;letter-spacing:0.04em;">EX</span>
+                  <td style="background-color:#7c3aed;border-radius:12px;width:34px;height:34px;text-align:center;vertical-align:middle;">
+                    <span style="color:#ffffff;font-size:17px;line-height:34px;font-family:Arial,Helvetica,sans-serif;">&#10022;</span>
                   </td>
-                  <td style="padding-left:10px;">
-                    <span style="font-size:13px;font-weight:800;letter-spacing:0.22em;color:#18181b;">EVENTX</span>
+                  <td style="padding-left:10px;vertical-align:middle;">
+                    <span style="font-family:'Space Grotesk','Geist','Helvetica Neue',Arial,sans-serif;font-size:15px;font-weight:700;letter-spacing:0.18em;color:#18181b;">EVENTX</span>
                   </td>
                 </tr>
               </table>
@@ -40,80 +40,84 @@
           <tr>
             <!-- Violet accent strip -->
             <td style="width:6px;background-color:#7c3aed;border-radius:16px 0 0 16px;"></td>
-            <td style="padding:28px 28px;" class="card-pad">
+            <td style="padding:28px;" class="card-pad">
               <table cellpadding="0" cellspacing="0" style="width:100%;">
                 <tr>
                   <td>
-                    <span style="display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:#7c3aed;background-color:#ede9fe;padding:4px 12px;border-radius:999px;">Your ticket</span>
+                    <span style="display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.16em;color:#6d28d9;background-color:#ede9fe;padding:5px 12px;border-radius:999px;">Your ticket</span>
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding:14px 0 4px;">
-                    <h1 class="hero-text" style="margin:0;font-size:26px;font-weight:800;letter-spacing:-0.03em;color:#18181b;line-height:1.2;">{{eventTitle}}</h1>
+                  <td style="padding:16px 0 6px;">
+                    <h1 class="hero-text" style="margin:0;font-family:'Space Grotesk','Geist','Helvetica Neue',Arial,sans-serif;font-size:25px;font-weight:600;letter-spacing:-0.03em;color:#18181b;line-height:1.18;">{{eventTitle}}</h1>
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding:4px 0 18px;">
-                    <p style="margin:0;font-size:14px;line-height:1.6;color:#3f3f46;">
-                      Hi <strong>{{firstName}} {{lastName}}</strong>, you&rsquo;re all set. Here&rsquo;s your entry ticket &mdash; show the code below at the entrance to check in.
+                  <td style="padding:0 0 6px;">
+                    <p style="margin:0;font-size:14px;line-height:1.7;color:#3f3f46;">
+                      Hi <strong style="color:#18181b;">{{firstName}} {{lastName}}</strong>, you&rsquo;re all set. Show the code below at the entrance to check in.
                     </p>
                   </td>
                 </tr>
 
                 <!-- Details -->
                 <tr>
-                  <td style="padding:6px 0;">
-                    <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#71717a;">Date</span>
-                    <span style="display:block;font-size:14px;font-weight:600;color:#18181b;margin-top:2px;">{{eventDate}}</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:6px 0 18px;">
-                    <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#71717a;">Time</span>
-                    <span style="display:block;font-size:14px;font-weight:600;color:#18181b;margin-top:2px;">{{eventTime}}</span>
+                  <td style="padding:20px 0 0;border-top:1px dashed #e4e4e7;">
+                    <table cellpadding="0" cellspacing="0" style="width:100%;">
+                      <tr>
+                        <td style="width:50%;padding:14px 8px 0 0;" valign="top">
+                          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#71717a;">Date</span>
+                          <span style="display:block;font-size:14px;font-weight:600;color:#18181b;margin-top:3px;">{{eventDate}}</span>
+                        </td>
+                        <td style="width:50%;padding:14px 0 0;" valign="top">
+                          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#71717a;">Time</span>
+                          <span style="display:block;font-size:14px;font-weight:600;color:#18181b;margin-top:3px;">{{eventTime}}</span>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
 
                 <!-- QR code -->
                 <tr>
-                  <td style="padding:24px 0 12px;border-top:2px dashed #e4e4e7;" align="center">
+                  <td style="padding:28px 0 8px;border-top:2px dashed #e4e4e7;" align="center">
                     {{qrCode}}
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding:0 0 18px;" align="center">
-                    <p style="margin:0;font-size:12px;line-height:1.6;color:#71717a;">Scan this code at the entrance to check in.</p>
+                  <td style="padding:0 0 22px;" align="center">
+                    <p style="margin:0;font-size:12px;line-height:1.7;color:#71717a;">Scan this code at the entrance to check in.</p>
                   </td>
                 </tr>
 
                 <!-- View ticket button -->
                 <tr>
-                  <td style="padding:0 0 18px;" align="center">
+                  <td style="padding:0 0 6px;" align="center">
                     <!--[if mso]>
-                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ticketLink}}" style="height:44px;v-text-anchor:middle;width:200px;" arcsize="50%" fillcolor="#7c3aed">
-                    <w:anchorlock/><center style="color:#ffffff;font-family:'Helvetica Neue',Arial,sans-serif;font-size:14px;font-weight:700;">View ticket</center>
+                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ticketLink}}" style="height:44px;v-text-anchor:middle;width:220px;" arcsize="50%" fillcolor="#7c3aed">
+                    <w:anchorlock/><center style="color:#ffffff;font-family:'Geist','Helvetica Neue',Arial,sans-serif;font-size:14px;font-weight:600;">View ticket</center>
                     </v:roundrect>
                     <![endif]-->
                     <!--[if !mso]><!-->
-                    <a href="{{ticketLink}}" target="_blank" style="display:inline-block;background-color:#7c3aed;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;padding:12px 32px;border-radius:999px;font-family:'Helvetica Neue',Arial,sans-serif;">View ticket</a>
+                    <a href="{{ticketLink}}" target="_blank" style="display:inline-block;background-color:#7c3aed;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:13px 34px;border-radius:999px;font-family:'Geist','Helvetica Neue',Arial,sans-serif;">View ticket</a>
                     <!--<![endif]-->
                   </td>
                 </tr>
 
                 <!-- Ticket code (fallback / manual copy) -->
                 <tr>
-                  <td style="padding:0 0 6px;">
-                    <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#71717a;">Ticket code</span>
+                  <td style="padding:22px 0 4px;">
+                    <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#71717a;">Ticket code</span>
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding:4px 0 8px;">
-                    <span style="font-size:22px;font-weight:800;letter-spacing:0.12em;color:#6d28d9;font-family:'Courier New',monospace;">{{ticketCode}}</span>
+                  <td style="padding:0 0 4px;">
+                    <span style="font-size:22px;font-weight:700;letter-spacing:0.12em;color:#6d28d9;font-family:'Geist Mono','Courier New',monospace;">{{ticketCode}}</span>
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding:8px 0 0;">
-                    <p style="margin:0;font-size:12px;line-height:1.6;color:#71717a;">Keep this email &mdash; you can show this QR code or enter the ticket code manually at the entrance.</p>
+                  <td style="padding:2px 0 0;">
+                    <p style="margin:0;font-size:12px;line-height:1.7;color:#71717a;">Keep this email &mdash; show the QR code or enter the code manually at the entrance.</p>
                   </td>
                 </tr>
               </table>
@@ -122,9 +126,9 @@
         </table>
 
         <!-- Footer -->
-        <table cellpadding="0" cellspacing="0" style="width:100%;margin-top:16px;">
+        <table cellpadding="0" cellspacing="0" style="width:100%;margin-top:18px;">
           <tr>
-            <td style="text-align:center;">
+            <td style="text-align:center;border-top:1px solid #e4e4e7;padding-top:16px;">
               <p style="margin:0;font-size:11px;color:#71717a;">You are receiving this because you registered for this event on EventX.</p>
             </td>
           </tr>

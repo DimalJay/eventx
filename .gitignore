@@ -5,3 +5,7 @@
 
 .env.*
 !.env.example
+
+.agents
+.claude
+skills-lock.json
