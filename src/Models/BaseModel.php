@@ -2,9 +2,6 @@
 
 namespace Models;
 
-require "./database/SchemaGenerator.php";
-require "./database/database.php";
-
 use database\SchemaGenerator;
 use database\Database;
 

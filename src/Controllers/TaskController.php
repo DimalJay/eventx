@@ -2,7 +2,10 @@
 
 namespace Controllers;
 
+require_once dirname(__DIR__, 2) . '/database/Database.php';
+
 use Models\Task;
+use Models\TeamAccess;
 use Services\TaskService;
 use Services\EventService;
 use Services\UserService;
@@ -35,19 +38,26 @@ class TaskController
 
     public function addTask() // Logic to add a task
     {
-        $id = $_SERVER["uid"];
+        $id = (int) ($_SERVER["uid"] ?? 0);
 
         $jsonData = file_get_contents('php://input');
         $data = json_decode($jsonData, true);
 
-        if (empty($data["eventId"]) || empty($data["title"]) || empty($data["assignedTo"]) || empty($data["assignedBy"]) || empty($data["dueDate"])) {
+        $eventId = $data["eventId"] ?? null;
+        $title = isset($data["title"]) ? trim($data["title"]) : "";
+        $assignedTo = $data["assignedTo"] ?? null;
+        $assignedBy = $data["assignedBy"] ?? null;
+        $dueDate = $data["dueDate"] ?? null;
+
+        if (empty($eventId) || $title === "" || $assignedTo === null || $assignedTo === "" || $assignedBy === null || $assignedBy === "" || empty($dueDate)) {
+            http_response_code(400);
             return [
                 "success" => false,
                 "message" => "Missing required fields"
             ];
         }
 
-        if (!$this->canManage((int) $data["eventId"])) {
+        if (!$this->canManage((int) $eventId)) {
             http_response_code(403);
             return [
                 "success" => false,
@@ -55,25 +65,43 @@ class TaskController
             ];
         }
 
+        $description = isset($data["description"]) ? trim($data["description"]) : "";
+
         $task = new Task(
-            $data["eventId"], 
-            trim($data["title"]) ?? "",
-            trim($data["description"]) ?? "", 
+            (int) $eventId, 
+            $title,
+            $description, 
             $id, 
-            $data["assignedTo"], 
-            $data["assignedBy"], 
-            $data["dueDate"]
-            );
+            (int) $assignedTo, 
+            (int) $assignedBy, 
+            $dueDate
+        );
         try {
             $taskId = $this->taskService->addTask($task);
 
             $savedTask = $this->taskService->getTask((int) $taskId);
-            $event = $this->eventService->getEvent($eventId);
+            $event = $this->eventService->getEvent((string) $eventId);
             $eventTitle = $event["title"] ?? "your event";
             if ($savedTask) {
-                $this->notificationService->notifyTaskAssigned($savedTask, $eventTitle);
+                // Resolve recipient user ID for notification:
+                // If assignedTo is 0, the recipient is the organizer
+                // If assignedTo matches a team_access ID, resolve to that member's userId
+                $recipientUserId = (int) $assignedTo;
+                if ($recipientUserId === 0 && !empty($event['organizerId'])) {
+                    $recipientUserId = (int) $event['organizerId'];
+                } else {
+                    $member = TeamAccess::where(["id" => $recipientUserId]);
+                    if (count($member) > 0 && !empty($member[0]['userId'])) {
+                        $recipientUserId = (int) $member[0]['userId'];
+                    }
+                }
+
+                $this->notificationService->notifyTaskAssigned(
+                    array_merge($savedTask, ['assignedTo' => $recipientUserId]),
+                    $eventTitle
+                );
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             http_response_code(500);
             return [
                 "success" => false,
@@ -83,8 +111,8 @@ class TaskController
 
         return [
             "success" => true,
-            "message" => "Task created succesfully",
-            "data" => null
+            "message" => "Task created successfully",
+            "data" => $savedTask ?? null
         ];
     }
 
@@ -93,16 +121,17 @@ class TaskController
         $jsonData = file_get_contents('php://input');
         $data = json_decode($jsonData, true);
 
-        $id = $data["id"];
+        $id = $data["id"] ?? null;
 
-        if (empty($id)) {
+        if ($id === null || $id === "") {
+            http_response_code(400);
             return [
                 "success" => false,
                 "message" => "Task ID is required"
             ];
         }
 
-        $existing = $this->taskService->getTask($id);
+        $existing = $this->taskService->getTask((int) $id);
         if (!$existing || !$this->canManage((int) $existing["eventId"])) {
             http_response_code(403);
             return [
@@ -110,14 +139,13 @@ class TaskController
                 "message" => "Unauthorized: You do not have access to this task"
             ];
         }
-        
 
         $taskData = [];
-        if (!empty($data["title"])) {
-            $taskData["title"] = $data["title"];
+        if (isset($data["title"]) && trim($data["title"]) !== "") {
+            $taskData["title"] = trim($data["title"]);
         }
-        if (!empty($data["description"])) {
-            $taskData["description"] = $data["description"];
+        if (isset($data["description"])) {
+            $taskData["description"] = trim($data["description"]);
         }
         if (!empty($data["dueDate"])) {
             $taskData["dueDate"] = $data["dueDate"];
@@ -125,10 +153,16 @@ class TaskController
         if (!empty($data["status"])) {
             $taskData["status"] = $data["status"];
         }
+        if (isset($data["assignedTo"]) && $data["assignedTo"] !== "") {
+            $taskData["assignedTo"] = (int) $data["assignedTo"];
+        }
+        if (isset($data["assignedBy"]) && $data["assignedBy"] !== "") {
+            $taskData["assignedBy"] = (int) $data["assignedBy"];
+        }
 
         try {
-            $this->taskService->updateTask($id, $taskData);
-            $tsk = $this->taskService->getTask($id);
+            $this->taskService->updateTask((int) $id, $taskData);
+            $tsk = $this->taskService->getTask((int) $id);
             if ($tsk) {
                 $this->notificationService->notifyTaskUpdated($tsk);
             }
@@ -138,13 +172,12 @@ class TaskController
                 "data" => $tsk
             ];
         } catch (\Throwable $th) {
+            http_response_code(500);
             return [
                 "success" => false,
                 "message" => "Error updating task: " . $th->getMessage()
             ];
         }
-
-        
     }
 
     public function updateTaskStatus() // Logic to update task status
@@ -152,17 +185,18 @@ class TaskController
         $jsonData = file_get_contents('php://input');
         $data = json_decode($jsonData, true);
 
-        $id = $data["id"];
-        $status = $data["status"];
+        $id = $data["id"] ?? null;
+        $status = isset($data["status"]) ? trim($data["status"]) : "";
 
-        if (empty($id) || empty($status)) {
+        if ($id === null || $id === "" || $status === "") {
+            http_response_code(400);
             return [
                 "success" => false,
                 "message" => "Task ID and status are required"
             ];
         }
 
-        $existing = $this->taskService->getTask($id);
+        $existing = $this->taskService->getTask((int) $id);
         if (!$existing || !$this->canManage((int) $existing["eventId"])) {
             http_response_code(403);
             return [
@@ -172,8 +206,8 @@ class TaskController
         }
 
         try {
-            $this->taskService->updateTask($id, ["status" => $status]);
-            $tsk = $this->taskService->getTask($id);
+            $this->taskService->updateTask((int) $id, ["status" => $status]);
+            $tsk = $this->taskService->getTask((int) $id);
             if ($tsk) {
                 $this->notificationService->notifyTaskUpdated($tsk);
             }
@@ -183,6 +217,7 @@ class TaskController
                 "data" => null
             ];
         } catch (\Throwable $th) {
+            http_response_code(500);
             return [
                 "success" => false,
                 "message" => "Error updating task status: " . $th->getMessage()
@@ -190,20 +225,22 @@ class TaskController
         }
     }
 
-    public function deleteTask() // Logic to delete a task
+    public function deleteTask($params = []) // Logic to delete a task
     {
         $jsonData = file_get_contents('php://input');
-        $data = json_decode($jsonData, true);
+        $data = json_decode($jsonData, true) ?? [];
 
-        $id = trim($data["id"]) ?? "";
-        if (empty($id)) {
+        $id = $params["id"] ?? $data["id"] ?? $_GET["id"] ?? "";
+        $id = trim($id);
+        if ($id === "") {
+            http_response_code(400);
             return [
                 "success" => false,
                 "message" => "Task ID is required"
             ];
         }
 
-        $existing = $this->taskService->getTask($id);
+        $existing = $this->taskService->getTask((int) $id);
         if (!$existing || !$this->canManage((int) $existing["eventId"])) {
             http_response_code(403);
             return [
@@ -213,7 +250,7 @@ class TaskController
         }
 
         try {
-            $ret = $this->taskService->deleteTask($id);
+            $ret = $this->taskService->deleteTask((int) $id);
             if ($ret > 0) {
                 return [
                     "success" => true,
@@ -222,9 +259,13 @@ class TaskController
                 ];
             } else {
                 http_response_code(404);
-                throw new Exception("Task not found");
+                return [
+                    "success" => false,
+                    "message" => "Task not found"
+                ];
             }
         } catch (\Throwable $th) {
+            http_response_code(500);
             return [
                 "success" => false,
                 "message" => "Error deleting task: " . $th->getMessage()
@@ -234,8 +275,8 @@ class TaskController
 
     public function getTasks() // Logic to view all tasks
     {
-        $userId = $_SERVER["uid"];
-        $eventId = $_GET["eventId"] ?? 0;
+        $userId = (int) ($_SERVER["uid"] ?? 0);
+        $eventId = isset($_GET["eventId"]) ? trim($_GET["eventId"]) : "";
 
         $user = $this->userService->getUser($userId);
         if (!$user) {
@@ -246,12 +287,31 @@ class TaskController
             ];
         }
 
-        try {
-            if (!$this->canManage((int) $eventId)) {
-                http_response_code(404);
+        // If no eventId specified, return all tasks created by this user
+        if (empty($eventId)) {
+            try {
+                $createdTasks = Task::where(["createdBy" => $userId]);
+                return [
+                    "success" => true,
+                    "message" => "Tasks retrieved successfully",
+                    "data" => $createdTasks
+                ];
+            } catch (\Throwable $th) {
+                http_response_code(500);
                 return [
                     "success" => false,
-                    "message" => "Event not found"
+                    "message" => "Error retrieving tasks: " . $th->getMessage(),
+                    "data" => null
+                ];
+            }
+        }
+
+        try {
+            if (!$this->canManage((int) $eventId)) {
+                http_response_code(403);
+                return [
+                    "success" => false,
+                    "message" => "Unauthorized: You do not have access to this event"
                 ];
             }
         } catch (\Throwable $th) {
@@ -263,13 +323,14 @@ class TaskController
         }
 
         try {
-            $tasks = $this->taskService->getTasks($eventId);
+            $tasks = $this->taskService->getTasks((int) $eventId);
             return [
                 "success" => true,
                 "message" => "Tasks retrieved successfully",
                 "data" => $tasks
             ];
         } catch (\Throwable $th) {
+            http_response_code(500);
             return [
                 "success" => false,
                 "message" => "Error retrieving tasks: " . $th->getMessage(),
@@ -278,17 +339,19 @@ class TaskController
         }
     }
 
-    public function getTask() // Logic to view a single task
+    public function getTask($params = []) // Logic to view a single task
     {
-        $id = trim($_GET["id"]) ?? "";
-        if (empty($id)) {
+        $id = $params["id"] ?? $_GET["id"] ?? "";
+        $id = trim($id);
+        if ($id === "") {
+            http_response_code(400);
             return [
                 "success" => false,
                 "message" => "Task ID is required"
             ];
         }
 
-        $task = $this->taskService->getTask($id);
+        $task = $this->taskService->getTask((int) $id);
         if (!$task) {
             http_response_code(404);
             return [
@@ -314,6 +377,7 @@ class TaskController
                 "data" => $task
             ];
         } catch (\Throwable $th) {
+            http_response_code(500);
             return [
                 "success" => false,
                 "message" => "Error retrieving task: " . $th->getMessage(),
