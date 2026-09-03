@@ -1,7 +1,7 @@
 <?php
 
 namespace Middlewares;
-require "vendor/autoload.php";
+require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;

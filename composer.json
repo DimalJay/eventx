@@ -14,7 +14,14 @@
             "Services\\": "src/Services/",
             "Models\\": "src/Models/",
             "Middlewares\\": "src/Middlewares/",
-            "Helpers\\": "src/Helpers/"
-        }
+            "Helpers\\": "src/Helpers/",
+            "Contracts\\": "src/Contracts/",
+            "database\\": "database/"
+        },
+        "files": [
+            "database/DbStruct.php",
+            "database/Database.php",
+            "database/SchemaGenerator.php"
+        ]
     }
 }

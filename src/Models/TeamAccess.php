@@ -22,17 +22,18 @@ class TeamAccess extends BaseModel
   #[Column(type: 'VARCHAR', length: 20, nullable: false)]
   protected string $role;
 
-  #[Column(type: 'VARCHAR', length: 20, nullable: false, default: "'PENDING'")]
-  protected string $status = 'PENDING';
+  #[Column(type: 'VARCHAR', length: 20, nullable: false, default: "'ACTIVE'")]
+  protected string $status = 'ACTIVE';
 
   #[Column(type: 'DATETIME', default: 'CURRENT_TIMESTAMP')]
   protected DateTime $joinedAt;
 
-  public function __construct($userId, $eventId, $role)
+  public function __construct($userId, $eventId, $role, string $status = 'ACTIVE')
   {
     $this->userId = $userId;
     $this->eventId = $eventId;
-    $this->role = $role;
+    $this->role = strtoupper($role);
+    $this->status = $status;
     $this->joinedAt = new DateTime();
     parent::__construct();
   }

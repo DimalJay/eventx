@@ -2,6 +2,8 @@
 
 namespace Services;
 
+require_once dirname(__DIR__, 2) . '/database/Database.php';
+
 use Models\Notification;
 use Models\TeamAccess;
 use Models\Event;

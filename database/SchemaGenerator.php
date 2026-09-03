@@ -2,8 +2,6 @@
 
 namespace database;
 
-require 'DbStruct.php';
-
 use database\Table;
 use database\Column;
 

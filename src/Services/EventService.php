@@ -2,7 +2,10 @@
 
 namespace Services;
 
+require_once dirname(__DIR__, 2) . '/database/Database.php';
+
 use Models\Event;
+use Models\TeamAccess;
 
 class EventService
 {
@@ -14,7 +17,39 @@ class EventService
     }
 
     public function getEventForUserId(String $userId){
-        return Event::where(["organizerId" => $userId]);
+        $organized = Event::where(["organizerId" => $userId]);
+
+        // Events where the user is a team member (any role)
+        $memberships = TeamAccess::where(["userId" => $userId]);
+        $teamEventIds = array_values(array_unique(array_map(
+            fn($m) => (int) $m["eventId"],
+            $memberships
+        )));
+
+        if (count($teamEventIds) === 0) {
+            return $organized;
+        }
+
+        // Pull full event rows for those ids via direct query
+        $in = implode(",", $teamEventIds);
+        $teamEvents = Event::query(
+            "SELECT * FROM `events` WHERE `id` IN ($in)"
+        );
+
+        // Merge and dedupe by id (organized first so organizer wins positional ordering)
+        $result = $organized;
+        $seen = [];
+        foreach ($organized as $ev) {
+            $seen[(int) $ev["id"]] = true;
+        }
+        foreach ($teamEvents as $ev) {
+            $eid = (int) $ev["id"];
+            if (!isset($seen[$eid])) {
+                $seen[$eid] = true;
+                $result[] = $ev;
+            }
+        }
+        return $result;
     }
 
     public function getEvent(String $id)

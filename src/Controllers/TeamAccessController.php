@@ -2,399 +2,200 @@
 
 namespace Controllers;
 
+use Contracts\TeamAccessServiceInterface;
+use Contracts\TeamNotifierInterface;
 use Services\TeamAccessService;
-use Services\UserService;
-use Services\EventService;
-use Services\NotificationService;
-use Exception;
+use Services\Team\TeamNotifier;
+use Helpers\APIResponse;
 use Models\User;
-use Models\Event;
-use Helpers\EmailHelper;
-use database\Database;
+use Exception;
 
 class TeamAccessController
 {
-    private TeamAccessService $teamService;
-    private UserService $userService;
-    private EventService $eventService;
-    private NotificationService $notificationService;
+    private TeamAccessServiceInterface $teamService;
+    private TeamNotifierInterface $notifier;
 
-    public function __construct()
+    public function __construct(?TeamAccessServiceInterface $teamService = null, ?TeamNotifierInterface $notifier = null)
     {
-        $this->teamService = new TeamAccessService();
-        $this->userService = new UserService();
-        $this->eventService = new EventService();
-        $this->notificationService = new NotificationService();
+        $this->teamService = $teamService ?? new TeamAccessService();
+        $this->notifier = $notifier ?? new TeamNotifier();
     }
 
-    private function canManage(int $eventId): bool
+    private function parseJsonInput(): array
     {
-        $userId = (int) ($_SERVER["uid"] ?? 0);
-        return $this->teamService->hasTeamAccess($userId, $eventId);
+        $json = file_get_contents('php://input');
+        return json_decode($json, true) ?? [];
     }
 
-    public function addMember() // Logic to add a team
+    private function currentUserId(): int
     {
-        $jsonData = file_get_contents('php://input');
-        $data = json_decode($jsonData, true);
+        return (int) ($_SERVER["uid"] ?? 0);
+    }
 
-        $email = $data["email"] ?? "";
+    /**
+     * Returns an error response if the user lacks team access, null on success.
+     */
+    private function requireManageAccess(int $eventId): ?array
+    {
+        try {
+            if (!$this->teamService->hasTeamAccess($this->currentUserId(), $eventId)) {
+                return APIResponse::error("Unauthorized: You do not have access to this event", 403);
+            }
+        } catch (\Throwable $th) {
+            return APIResponse::error("Event not found", 404);
+        }
+        return null;
+    }
+
+    /**
+     * Returns an error response if the given user IS the event organizer, null on success.
+     */
+    private function requireNotOrganizer(int $eventId, int $userId, string $message): ?array
+    {
+        try {
+            if ($this->teamService->isOrganizer($eventId, $userId)) {
+                return APIResponse::error($message, 403);
+            }
+        } catch (\Throwable $th) {
+            return APIResponse::error("Event not found", 404);
+        }
+        return null;
+    }
+
+    public function addMember()
+    {
+        $data = $this->parseJsonInput();
+        $email = trim($data["email"] ?? "");
         $eventId = $data["eventId"] ?? "";
-        $role = trim($data["role"]) ?? "";
+        $role = trim($data["role"] ?? "");
 
         if (empty($eventId) || empty($role) || empty($email)) {
-            return [
-                "success" => false,
-                "message" => "Missing required fields"
-            ];
+            return APIResponse::error("Missing required fields");
         }
 
-        try {
-            if (!$this->canManage((int) $eventId)) {
-                http_response_code(403);
-                return [
-                    "success" => false,
-                    "message" => "Unauthorized: You do not have access to this event"
-                ];
-            }
-        } catch (\Throwable $th) {
-            http_response_code(404);
-            return [
-                "success" => false,
-                "message" => "Event not found"
-            ];
+        $denied = $this->requireManageAccess((int) $eventId);
+        if ($denied !== null) return $denied;
+
+        $users = User::where(["email" => $email]);
+        if (count($users) === 0) {
+            return APIResponse::error("Email Not Found.");
         }
+        $userId = (int) $users[0]["id"];
+
+        $organizerCheck = $this->requireNotOrganizer(
+            (int) $eventId,
+            $userId,
+            "The event organizer is already on the team as the permanent owner"
+        );
+        if ($organizerCheck !== null) return $organizerCheck;
 
         try {
-
-            if (empty($email)) {
-                return [
-                    "success" => false,
-                    "message" => "Email is required"
-                ];
-            }
-
-            $user = User::where(["email" => $email]);
-            if (count($user) === 0) {
-                return [
-                    "success" => false,
-                    "message" => "Email Not Found."
-                ];
-            }
-            $userId = $user[0]["id"];
-
-
             $this->teamService->addMember($userId, $eventId, $role);
-
-            // --- Notification + Email ---
-            $addedUser = User::where(["id" => $userId]);
-            $event = Event::where(["id" => $eventId]);
-            if (count($addedUser) > 0 && count($event) > 0) {
-                $eventTitle = $event[0]['title'];
-                $firstName = $addedUser[0]['firstName'];
-                $addedEmail = $addedUser[0]['email'];
-                $roleLabel = ucfirst(strtolower($role));
-
-                // Notify the added member
-                $this->notificationService->notifyTeamMemberAdded((int) $userId, $eventTitle, (int) $eventId);
-
-                // Send email to the added member
-                EmailHelper::sendWithTemplate(
-                    $addedEmail,
-                    "You've been added to {$eventTitle}'s team",
-                    "team_access",
-                    [
-                        "firstName" => $firstName,
-                        "eventTitle" => $eventTitle,
-                        "roleLabel" => $roleLabel,
-                        "eventLink" => EmailHelper::frontendUrl() . "/events/{$eventId}",
-                    ]
-                );
-
-                // Notify the organizer
-                $organizerId = (int) $event[0]['organizerId'];
-                if ($organizerId !== (int) $userId) {
-                    $this->notificationService->notifyOrganizer(
-                        $organizerId,
-                        $eventTitle,
-                        (int) $eventId,
-                        "New team member",
-                        "{$firstName} ({$addedEmail}) has been added to the team as {$roleLabel}."
-                    );
-                }
-            }
-
-            return [
-                "success" => true,
-                "message" => "Member added to the team successfully",
-                "data" => null
-            ];
         } catch (Exception $e) {
-            return [
-                "success" => false,
-                "message" => "Error adding member to the team: " . $e->getMessage()
-            ];
+            return APIResponse::error("Error adding member to the team: " . $e->getMessage(), 500);
         }
+
+        $this->notifier->notifyMemberAdded($userId, (int) $eventId, $role);
+
+        return APIResponse::success("Member added to the team successfully");
     }
 
-
-    public function removeMember() // Logic to remove a member from team
+    public function removeMember()
     {
-        $jsonData = file_get_contents('php://input');
-        $data = json_decode($jsonData, true);
+        $data = $this->parseJsonInput();
+        $id = $data["id"] ?? null;
 
-        $id = $data["id"] ?? "";
+        if ($id === null || $id === "") {
+            return APIResponse::error("Missing required fields");
+        }
 
-        if (empty($id)) {
-            return [
-                "success" => false,
-                "message" => "Missing required fields"
-            ];
+        if ((int) $id === 0) {
+            return APIResponse::error("The event organizer is permanent and cannot be removed", 403);
         }
 
         $member = $this->teamService->getMember((int) $id);
         if (!$member) {
-            http_response_code(404);
-            return [
-                "success" => false,
-                "message" => "Team member not found"
-            ];
+            return APIResponse::error("Team member not found", 404);
         }
 
-        try {
-            if (!$this->canManage((int) $member["eventId"])) {
-                http_response_code(403);
-                return [
-                    "success" => false,
-                    "message" => "Unauthorized: You do not have access to this event"
-                ];
-            }
-        } catch (\Throwable $th) {
-            http_response_code(404);
-            return [
-                "success" => false,
-                "message" => "Event not found"
-            ];
-        }
+        $denied = $this->requireManageAccess((int) $member["eventId"]);
+        if ($denied !== null) return $denied;
+
+        $organizerCheck = $this->requireNotOrganizer(
+            (int) $member["eventId"],
+            (int) $member["userId"],
+            "The event organizer cannot be removed"
+        );
+        if ($organizerCheck !== null) return $organizerCheck;
+
+        $this->notifier->notifyMemberRemoved((int) $member["userId"], (int) $member["eventId"]);
 
         try {
-            // --- Notification + Email (before removal) ---
-            $removedUser = User::where(["id" => $member["userId"]]);
-            $event = Event::where(["id" => $member["eventId"]]);
-            if (count($removedUser) > 0 && count($event) > 0) {
-                $eventTitle = $event[0]['title'];
-                $firstName = $removedUser[0]['firstName'];
-                $removedEmail = $removedUser[0]['email'];
-
-                // Notify the removed member
-                $this->notificationService->notifyTeamMemberRemoved((int) $member["userId"], $eventTitle, (int) $member["eventId"]);
-
-                // Send email to the removed member
-                EmailHelper::sendWithTemplate(
-                    $removedEmail,
-                    "You've been removed from {$eventTitle}'s team",
-                    "team_removed",
-                    [
-                        "firstName" => $firstName,
-                        "eventTitle" => $eventTitle,
-                    ]
-                );
-
-                // Notify the organizer
-                $organizerId = (int) $event[0]['organizerId'];
-                $currentUser = $_SERVER["uid"] ?? 0;
-                if ($organizerId !== (int) $member["userId"] && $organizerId !== (int) $currentUser) {
-                    $this->notificationService->notifyOrganizer(
-                        $organizerId,
-                        $eventTitle,
-                        (int) $member["eventId"],
-                        "Team member removed",
-                        "{$firstName} ({$removedEmail}) has been removed from the team."
-                    );
-                }
-            }
-
             $this->teamService->removeMember($id);
-            return [
-                "success" => true,
-                "message" => "Member removed from the team successfully",
-                "data" => null
-            ];
         } catch (Exception $e) {
-            http_response_code(500);
-            return [
-                "success" => false,
-                "message" => "Error removing member from the team: " . $e->getMessage()
-            ];
+            return APIResponse::error("Error removing member from the team: " . $e->getMessage(), 500);
         }
+
+        return APIResponse::success("Member removed from the team successfully");
     }
 
-    public function getMembers() // Logic to get team members for an event
+    public function getMembers()
     {
-        $userId = $_SERVER["uid"];
         $eventId = $_GET["eventId"] ?? "";
-
-        $user = $this->userService->getUser($userId);
-
-        if (!$user) {
-            return [
-                "success" => false,
-                "message" => "User not found"
-            ];
+        if (empty($eventId)) {
+            return APIResponse::error("Event ID is required");
         }
 
-        try {
-            if (!$this->canManage((int) $eventId)) {
-                http_response_code(403);
-                return [
-                    "success" => false,
-                    "message" => "Unauthorized: You do not have access to this event"
-                ];
-            }
-        } catch (\Throwable $th) {
-            http_response_code(404);
-            return [
-                "success" => false,
-                "message" => "Event not found"
-            ];
-        }
+        $denied = $this->requireManageAccess((int) $eventId);
+        if ($denied !== null) return $denied;
 
         try {
-            $db = new Database();
-            // team_access සහ users tables JOIN කර අවශ්‍ය දත්ත ලබා ගැනීම
-            $sql = "SELECT 
-                        ta.id, 
-                        ta.role, 
-                        ta.joinedAt, 
-                        u.email, 
-                        CONCAT(u.firstName, ' ', u.lastName) as name 
-                    FROM team_access ta
-                    JOIN users u ON ta.userId = u.id
-                    WHERE ta.eventId = :eventId";
-
-            $members = $db->queryAll($sql, [":eventId" => $eventId]);
-
-            $formattedMembers = array_map(function ($member) {
-                return [
-                    "id" => $member["id"],
-                    "name" => $member["name"],
-                    "email" => $member["email"],
-                    "role" => ucfirst(strtolower($member["role"])),
-                ];
-            }, $members);
-
-            return [
-                "success" => true,
-                "message" => "Team members fetched successfully",
-                "data" => $formattedMembers
-            ];
+            $members = $this->teamService->getMembersWithDetails((int) $eventId);
         } catch (Exception $e) {
-            http_response_code(500);
-            return [
-                "success" => false,
-                "message" => "Error fetching team members: " . $e->getMessage()
-            ];
+            return APIResponse::error("Error fetching team members: " . $e->getMessage(), 500);
         }
+
+        return APIResponse::success("Team members fetched successfully", $members);
     }
 
-    public function updateMemberRole() // Logic to update a team member's role
+    public function updateMemberRole()
     {
-        $jsonData = file_get_contents('php://input');
-        $data = json_decode($jsonData, true);
+        $data = $this->parseJsonInput();
+        $id = $data["id"] ?? null;
+        $role = isset($data["role"]) ? strtoupper(trim($data["role"])) : "";
 
-        $id = $data["id"] ?? "";
-        $role = trim($data["role"]) ?? "";
+        if ($id === null || $id === "" || $role === "") {
+            return APIResponse::error("Missing required fields");
+        }
 
-        if (empty($id) || empty($role)) {
-            return [
-                "success" => false,
-                "message" => "Missing required fields"
-            ];
+        if ((int) $id === 0) {
+            return APIResponse::error("The event organizer's role cannot be changed", 403);
         }
 
         $member = $this->teamService->getMember((int) $id);
         if (!$member) {
-            http_response_code(404);
-            return [
-                "success" => false,
-                "message" => "Team member not found"
-            ];
+            return APIResponse::error("Team member not found", 404);
         }
 
-        try {
-            if (!$this->canManage((int) $member["eventId"])) {
-                http_response_code(403);
-                return [
-                    "success" => false,
-                    "message" => "Unauthorized: You do not have access to this event"
-                ];
-            }
-        } catch (\Throwable $th) {
-            http_response_code(404);
-            return [
-                "success" => false,
-                "message" => "Event not found"
-            ];
-        }
+        $denied = $this->requireManageAccess((int) $member["eventId"]);
+        if ($denied !== null) return $denied;
 
+        $organizerCheck = $this->requireNotOrganizer(
+            (int) $member["eventId"],
+            (int) $member["userId"],
+            "The event organizer's role cannot be changed"
+        );
+        if ($organizerCheck !== null) return $organizerCheck;
+
+        $oldRole = $member["role"];
         try {
-            $oldRole = $member["role"];
             $this->teamService->updateMemberRole($id, $role);
-
-            // --- Notification + Email ---
-            $memberUser = User::where(["id" => $member["userId"]]);
-            $event = Event::where(["id" => $member["eventId"]]);
-            if (count($memberUser) > 0 && count($event) > 0) {
-                $eventTitle = $event[0]['title'];
-                $firstName = $memberUser[0]['firstName'];
-                $memberEmail = $memberUser[0]['email'];
-                $roleLabel = ucfirst(strtolower($role));
-
-                // Notify the member whose role changed
-                $this->notificationService->notifyTeamMemberRoleChanged(
-                    (int) $member["userId"],
-                    $eventTitle,
-                    (int) $member["eventId"],
-                    $role
-                );
-
-                // Send email to the member
-                EmailHelper::sendWithTemplate(
-                    $memberEmail,
-                    "Your role on {$eventTitle} has been updated",
-                    "team_role_changed",
-                    [
-                        "firstName" => $firstName,
-                        "eventTitle" => $eventTitle,
-                        "roleLabel" => $roleLabel,
-                        "eventLink" => EmailHelper::frontendUrl() . "/events/" . $member["eventId"],
-                    ]
-                );
-
-                // Notify the organizer
-                $organizerId = (int) $event[0]['organizerId'];
-                if ($organizerId !== (int) $member["userId"]) {
-                    $this->notificationService->notifyOrganizer(
-                        $organizerId,
-                        $eventTitle,
-                        (int) $member["eventId"],
-                        "Team role changed",
-                        "{$firstName}'s role has been changed from " . ucfirst(strtolower($oldRole)) . " to {$roleLabel}."
-                    );
-                }
-            }
-
-            return [
-                "success" => true,
-                "message" => "Team member updated successfully",
-                "data" => null
-            ];
         } catch (Exception $e) {
-            http_response_code(500);
-            return [
-                "success" => false,
-                "message" => "Error updating team member: " . $e->getMessage()
-            ];
+            return APIResponse::error("Error updating team member: " . $e->getMessage(), 500);
         }
+
+        $this->notifier->notifyMemberRoleChanged((int) $member["userId"], (int) $member["eventId"], $oldRole, $role);
+
+        return APIResponse::success("Team member updated successfully");
     }
 }
