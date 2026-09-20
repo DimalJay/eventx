@@ -18,6 +18,27 @@ class FeedbackController
   {
     $this->feedBackService = new FeedbackService();
   }
+
+  /**
+   * Run Gemini sentiment analysis on a submitted comment and persist the
+   * label when it succeeds. Failures degrade to 'Pending' (never fail the
+   * request) and are backfilled by the /cron/analyze-sentiments job.
+   */
+  private function classifyAndStore(int $feedbackId, string $comment): void
+  {
+    if ($feedbackId <= 0 || $comment === '') {
+      return;
+    }
+    try {
+      $sentimentService = new \Services\SentimentService();
+      $label = $sentimentService->classifyComment($comment);
+      if ($label !== 'Pending') {
+        FeedBack::updateRecord(["id" => $feedbackId], ["sentiment" => $label]);
+      }
+    } catch (\Throwable $e) {
+      error_log("Sentiment analysis skipped for feedback {$feedbackId}: " . $e->getMessage());
+    }
+  }
   public function submitFeedback()
   {
     $data = json_decode(file_get_contents("php://input"), true);
@@ -26,8 +47,7 @@ class FeedbackController
     $organizationRating = $data['organizationRating'] ?? null;
     $contentRating = $data['contentRating'] ?? null;
     $experienceRating = $data['experienceRating'] ?? null;
-    $comment = trim($data['comment']) ?? '';
-    $sentiment = trim($data['sentiment']) ?? 'Pending';
+    $comment = trim($data['comment'] ?? '');
 
     //Basic validation
 
@@ -51,9 +71,11 @@ class FeedbackController
       ];
     }
 
-    $feedback = new FeedBack($eventId, $participantId, $organizationRating, $contentRating, $experienceRating, $comment, $sentiment);
+    $feedback = new FeedBack($eventId, $participantId, $organizationRating, $contentRating, $experienceRating, $comment, 'Pending');
 
     $response = $this->feedBackService->submitFeedback($feedback);
+
+    $this->classifyAndStore((int) $response, $comment);
 
     return [
       "success" => true,
@@ -226,8 +248,10 @@ class FeedbackController
 
     if (count($existing) === 0) {
       $feedback = new FeedBack($eventId, $participantId, $organizationRating, $contentRating, $experienceRating > 0 ? $experienceRating : 0, $comment, 'Pending');
-      $this->feedBackService->submitFeedback($feedback);
+      $feedbackId = (int) $this->feedBackService->submitFeedback($feedback);
+      $this->classifyAndStore($feedbackId, $comment);
     } else {
+      $existingId = (int) $existing[0]["id"];
       $updateData = [
         "organizationRating" => $organizationRating,
         "contentRating" => $contentRating,
@@ -241,6 +265,14 @@ class FeedbackController
         ["eventId" => $eventId, "participantId" => $participantId],
         $updateData
       );
+
+      if ($comment !== '') {
+        $sentimentService = new \Services\SentimentService();
+        $label = $sentimentService->classifyComment($comment);
+        if ($label !== 'Pending') {
+          FeedBack::updateRecord(["id" => $existingId], ["sentiment" => $label]);
+        }
+      }
     }
 
     return [
