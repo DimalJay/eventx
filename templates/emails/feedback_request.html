@@ -6,30 +6,30 @@
   <title>Share your feedback on {{eventTitle}}</title>
   <style>
     @media screen and (max-width: 480px) {
-      .outer-pad { padding: 28px 12px !important; }
-      .card-pad { padding: 22px !important; }
+      .outer-pad { padding: 24px 12px !important; }
+      .card-pad { padding: 28px 20px !important; }
       .hero-text { font-size: 22px !important; }
-      .star-cell { padding: 4px 3px !important; }
-      .star-btn { font-size: 22px !important; width: 42px !important; height: 42px !important; line-height: 40px !important; }
+      .star-cell { padding: 0 2px !important; }
+      .star-btn { font-size: 20px !important; width: 40px !important; height: 40px !important; line-height: 38px !important; }
     }
   </style>
 </head>
-<body style="margin:0;padding:0;background-color:#fafafa;font-family:'Geist','Helvetica Neue',Arial,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
-  <table align="center" cellpadding="0" cellspacing="0" style="width:100%;max-width:480px;padding:32px 16px;" class="outer-pad">
+<body style="margin:0;padding:0;background-color:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+  <table align="center" cellpadding="0" cellspacing="0" style="width:100%;max-width:520px;padding:40px 16px;" class="outer-pad">
     <tr>
       <td>
 
-        <!-- Header / logo -->
-        <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:24px;">
+        <!-- Header / Logo -->
+        <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:28px;">
           <tr>
-            <td>
-              <table align="center" cellpadding="0" cellspacing="0">
+            <td align="center">
+              <table cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="background-color:#7c3aed;border-radius:12px;width:34px;height:34px;text-align:center;vertical-align:middle;">
-                    <span style="color:#ffffff;font-size:17px;line-height:34px;font-family:Arial,Helvetica,sans-serif;">&#10022;</span>
+                  <td style="background-color:#7c3aed;border-radius:10px;width:36px;height:36px;text-align:center;vertical-align:middle;">
+                    <span style="color:#ffffff;font-size:18px;line-height:36px;font-family:Arial,sans-serif;">&#10022;</span>
                   </td>
-                  <td style="padding-left:10px;vertical-align:middle;">
-                    <span style="font-family:'Space Grotesk','Geist','Helvetica Neue',Arial,sans-serif;font-size:15px;font-weight:700;letter-spacing:0.18em;color:#18181b;">EVENTX</span>
+                  <td style="padding-left:12px;vertical-align:middle;">
+                    <span style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:18px;font-weight:700;letter-spacing:0.15em;color:#18181b;">EVENTX</span>
                   </td>
                 </tr>
               </table>
@@ -37,61 +37,57 @@
           </tr>
         </table>
 
-        <!-- Card -->
-        <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e4e7;border-radius:16px;background-color:#ffffff;">
+        <!-- Main Card -->
+        <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e4e7;border-radius:20px;background-color:#ffffff;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
           <tr>
-            <td style="padding:32px;" class="card-pad">
+            <td style="padding:36px 32px;" class="card-pad">
               <table cellpadding="0" cellspacing="0" style="width:100%;">
                 <tr>
-                  <td style="text-align:center;padding-bottom:12px;">
-                    <span style="display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.16em;color:#6d28d9;background-color:#ede9fe;padding:5px 12px;border-radius:999px;">Feedback</span>
+                  <td style="text-align:center;padding-bottom:16px;">
+                    <span style="display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:#6d28d9;background-color:#f3e8ff;padding:6px 14px;border-radius:999px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">Feedback</span>
                   </td>
                 </tr>
                 <tr>
-                  <td style="text-align:center;padding:0 0 14px;">
-                    <h1 class="hero-text" style="margin:0;font-family:'Space Grotesk','Geist','Helvetica Neue',Arial,sans-serif;font-size:26px;font-weight:600;letter-spacing:-0.03em;color:#18181b;line-height:1.18;">How was your experience?</h1>
+                  <td style="text-align:center;padding:0 0 16px;">
+                    <h1 class="hero-text" style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:24px;font-weight:700;letter-spacing:-0.02em;color:#18181b;line-height:1.25;">How was your experience?</h1>
                   </td>
                 </tr>
-
-                <!-- Event details -->
                 <tr>
-                  <td style="padding:20px 0;text-align:center;border-top:1px solid #e4e4e7;border-bottom:1px solid #e4e4e7;">
-                    <p style="margin:0 0 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.16em;color:#71717a;">Event</p>
-                    <h2 style="margin:0;font-family:'Space Grotesk','Geist','Helvetica Neue',Arial,sans-serif;font-size:20px;font-weight:600;line-height:1.25;letter-spacing:-0.02em;color:#18181b;">{{eventTitle}}</h2>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td style="padding:20px 0 4px;text-align:center;">
-                    <p style="margin:0;font-size:14px;line-height:1.7;color:#3f3f46;">
-                      Hi <strong style="color:#18181b;">{{firstName}}</strong>, thank you for attending! Tap a star to rate your overall experience &mdash; it takes a second.
+                  <td style="text-align:center;padding:0 0 20px;">
+                    <p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:15px;line-height:1.6;color:#52525b;">
+                      Hi <strong style="color:#18181b;">{{firstName}}</strong>, thank you for attending <strong style="color:#18181b;">{{eventTitle}}</strong>! Tap a star below to rate your experience &mdash; it only takes a second.
                     </p>
                   </td>
                 </tr>
 
-                <!-- 1 to 5 Star buttons -->
+                <!-- Star Rating Table -->
                 <tr>
-                  <td style="padding-top:20px;text-align:center;">
+                  <td style="padding:20px 0 10px;text-align:center;">
                     <table align="center" cellpadding="0" cellspacing="0" style="margin:0 auto;">
                       <tr>
                         <td class="star-cell" style="padding:0 4px;">
-                          <a href="{{rate1}}" class="star-btn" style="text-decoration:none;display:inline-block;font-size:24px;background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;width:46px;height:46px;line-height:44px;text-align:center;" title="1 Star">&#11088;</a>
+                          <a href="{{rate1}}" class="star-btn" style="text-decoration:none;display:inline-block;font-size:22px;background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;width:44px;height:44px;line-height:42px;text-align:center;" title="1 Star">&#11088;</a>
                         </td>
                         <td class="star-cell" style="padding:0 4px;">
-                          <a href="{{rate2}}" class="star-btn" style="text-decoration:none;display:inline-block;font-size:24px;background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;width:46px;height:46px;line-height:44px;text-align:center;" title="2 Stars">&#11088;</a>
+                          <a href="{{rate2}}" class="star-btn" style="text-decoration:none;display:inline-block;font-size:22px;background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;width:44px;height:44px;line-height:42px;text-align:center;" title="2 Stars">&#11088;</a>
                         </td>
                         <td class="star-cell" style="padding:0 4px;">
-                          <a href="{{rate3}}" class="star-btn" style="text-decoration:none;display:inline-block;font-size:24px;background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;width:46px;height:46px;line-height:44px;text-align:center;" title="3 Stars">&#11088;</a>
+                          <a href="{{rate3}}" class="star-btn" style="text-decoration:none;display:inline-block;font-size:22px;background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;width:44px;height:44px;line-height:42px;text-align:center;" title="3 Stars">&#11088;</a>
                         </td>
                         <td class="star-cell" style="padding:0 4px;">
-                          <a href="{{rate4}}" class="star-btn" style="text-decoration:none;display:inline-block;font-size:24px;background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;width:46px;height:46px;line-height:44px;text-align:center;" title="4 Stars">&#11088;</a>
+                          <a href="{{rate4}}" class="star-btn" style="text-decoration:none;display:inline-block;font-size:22px;background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;width:44px;height:44px;line-height:42px;text-align:center;" title="4 Stars">&#11088;</a>
                         </td>
                         <td class="star-cell" style="padding:0 4px;">
-                          <a href="{{rate5}}" class="star-btn" style="text-decoration:none;display:inline-block;font-size:24px;background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;width:46px;height:46px;line-height:44px;text-align:center;" title="5 Stars">&#11088;</a>
+                          <a href="{{rate5}}" class="star-btn" style="text-decoration:none;display:inline-block;font-size:22px;background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;width:44px;height:44px;line-height:42px;text-align:center;" title="5 Stars">&#11088;</a>
                         </td>
                       </tr>
                     </table>
-                    <p style="margin:14px 0 0;font-size:12px;color:#71717a;">Clicking a star takes you to a short follow-up. You can also share written feedback there.</p>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding:16px 0 0;border-top:1px solid #f4f4f5;text-align:center;">
+                    <p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:13px;line-height:1.6;color:#71717a;">Clicking a star opens a short feedback form where you can also leave written comments.</p>
                   </td>
                 </tr>
               </table>
@@ -100,10 +96,11 @@
         </table>
 
         <!-- Footer -->
-        <table cellpadding="0" cellspacing="0" style="width:100%;margin-top:18px;">
+        <table cellpadding="0" cellspacing="0" style="width:100%;margin-top:24px;">
           <tr>
-            <td style="text-align:center;border-top:1px solid #e4e4e7;padding-top:16px;">
-              <p style="margin:0;font-size:11px;color:#71717a;">You are receiving this because you attended this event on EventX.</p>
+            <td style="text-align:center;">
+              <p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;color:#a1a1aa;line-height:1.5;">You are receiving this because you attended this event on EventX.</p>
+              <p style="margin:6px 0 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;color:#a1a1aa;">&copy; EventX Campus Platform. All rights reserved.</p>
             </td>
           </tr>
         </table>
