@@ -14,6 +14,27 @@ use Helpers\QrHelper;
 
 class RegistrationController
 {
+    /**
+     * Accept both a bare ticket code (6aafb…) and a ticket URL/QR payload
+     * (…/ticket/6aafb…). URLs yield their last path segment, URI-decoded.
+     */
+    private static function extractTicketCode(?string $raw): string
+    {
+        $value = trim((string) $raw);
+        if ($value === "") {
+            return "";
+        }
+        $value = preg_split('/[?#]/', $value)[0];
+        if (strpos($value, "/") !== false) {
+            $segments = explode("/", rtrim($value, "/"));
+            $last = rawurldecode(end($segments));
+            if ($last !== "") {
+                return $last;
+            }
+        }
+        return $value;
+    }
+
     private RegistrationService $registrationService;
     private EventService $eventService;
     private UserService $userService;
@@ -37,6 +58,7 @@ class RegistrationController
         $eventId = $data["eventId"] ?? "";
         $firstName = $data["firstName"] ?? "";
         $lastName = $data["lastName"] ?? "";
+        $customFields = $data["customFields"] ?? null;
 
         if (empty($email) || empty($eventId) || empty($firstName) || empty($lastName)) {
             return [
@@ -56,21 +78,31 @@ class RegistrationController
                 $userId = $user["id"];
             }
 
+            // the event organizer cannot register to their own event
+            $event = $this->eventService->getEvent($eventId);
+            if ($event && (int) $event["organizerId"] === (int) $userId) {
+                http_response_code(400);
+                return [
+                    "success" => false,
+                    "message" => "Organizer cannot register to their own event"
+                ];
+            }
 
             // check if the user is already registered for the event
             $existingRegistration = $this->registrationService->isUserRegisteredForEvent($userId, $eventId);
             if ($existingRegistration) {
+                http_response_code(400);
                 return [
                     "success" => false,
                     "message" => "User is already registered for this event"
                 ];
             }
 
-            $registration = new Registration($eventId, $userId);
+            $registration = new Registration($eventId, $userId, $customFields);
             $reg_id = $this->registrationService->registerUserForEvent($registration);
+            $this->registrationService->createTicketForRegistration((int) $reg_id, (int) $eventId, (int) $userId);
             $registration = $this->registrationService->getRegistrationById($reg_id);
 
-            $event = $this->eventService->getEvent($eventId);
             if ($event) {
                 $startTs = strtotime($event["startDate"]);
                 $endTs = strtotime($event["endDate"]);
@@ -208,7 +240,7 @@ class RegistrationController
 
     public function getTicketDetails()
     {
-        $code = $_GET["code"] ?? "";
+        $code = self::extractTicketCode($_GET["code"] ?? "");
         if (empty($code)) {
             http_response_code(400);
             return [
@@ -276,7 +308,7 @@ class RegistrationController
         $jsonData = file_get_contents('php://input');
         $data = json_decode($jsonData, true);
 
-        $ticketCode = $data["ticketCode"] ?? "";
+        $ticketCode = self::extractTicketCode($data["ticketCode"] ?? "");
 
         if (empty($ticketCode)) {
             return [

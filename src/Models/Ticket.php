@@ -19,22 +19,26 @@ class Ticket extends BaseModel
   #[Column(type: 'INT', nullable: false)]
   protected int $userId;
 
-  #[Column(type: 'INT', nullable: false)]
-  protected int $paymentId;
+  #[Column(type: 'INT', nullable: true)]
+  protected int $paymentId = 0;
 
   #[Column(type: 'INT', nullable: false)]
   protected int $registerId;
 
-  public function __construct($eventId, $userId, $paymentId, $registerId) {
+  #[Column(type: 'VARCHAR', length: 100, nullable: false)]
+  protected string $ticketCode;
+
+  public function __construct($eventId, $userId, $ticketCode, $registerId, $paymentId = 0) {
     $this->eventId = $eventId;
     $this->userId = $userId;
+    $this->ticketCode = $ticketCode;
     $this->paymentId = $paymentId;
     $this->registerId = $registerId;
     parent::__construct();
   } 
 
   public static function empty() : self {
-    return new self(0,0,0,0);
+    return new self(0,0,'',0);
   }
 
 

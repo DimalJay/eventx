@@ -67,8 +67,11 @@ class Event extends BaseModel
   #[Column(type: 'VARCHAR', length: 50, nullable: false, default: "'upcoming'")]
   protected string $status = 'upcoming';
 
+  #[Column(type: 'TEXT', nullable: true)]
+  protected ?string $customFields = null;
 
-    public function __construct($title, $eventType, $description, $startDate, $endDate, $location, $organizerId, $coverImage, $isPublic, $capacity, $ticketPrice, $regDeadline, $agenda, $waitlistEnabled = false, $category = 'General') {
+
+    public function __construct($title, $eventType, $description, $startDate, $endDate, $location, $organizerId, $coverImage, $isPublic, $capacity, $ticketPrice, $regDeadline, $agenda, $waitlistEnabled = false, $category = 'General', $customFields = null) {
       $this->title = $title;
       $this->eventType = $eventType;
       $this->category = $category;
@@ -86,9 +89,29 @@ class Event extends BaseModel
       }
       $this->agenda = $agenda;
       $this->waitlistEnabled = $waitlistEnabled;
+      $this->customFields = self::encodeCustomFields($customFields);
       $this->createdAt = new DateTime();
       $this->updatedAt = new DateTime();
       parent::__construct();
+  }
+
+  /**
+   * Normalize custom fields input into a stored JSON string.
+   * Accepts an array/object or an already-encoded JSON string.
+   */
+  public static function encodeCustomFields($value): ?string
+  {
+      if ($value === null || $value === '') {
+          return null;
+      }
+      if (is_array($value) || is_object($value)) {
+          return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+      }
+      $decoded = json_decode((string) $value, true);
+      if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+          return (string) $value;
+      }
+      return null;
   }
 
   public static function empty() : self {

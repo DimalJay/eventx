@@ -155,6 +155,7 @@ class EventController
                 $data["agenda"] ?? null,
                 $data["waitlistEnabled"] ?? false,
                 trim($data["category"] ?? 'General'),
+                $data["customFields"] ?? null,
             );
 
             $lastId = $this->eventService->createEvent($event);
@@ -193,6 +194,7 @@ class EventController
         $waitlistEnabled = $data["waitlistEnabled"] ?? false;
         $coverImage = $data["coverImage"] ?? "";
         $category = $data["category"] ?? "";
+        $customFields = $data["customFields"] ?? null;
 
         if (empty($id)) {
             return [
@@ -249,6 +251,12 @@ class EventController
         }
         if (!empty($coverImage) && is_string($coverImage)) {
             $eventData["coverImage"] = trim($coverImage);
+        }
+        if (array_key_exists("customFields", $data)) {
+            $encoded = Event::encodeCustomFields($data["customFields"]);
+            if ($encoded !== null) {
+                $eventData["customFields"] = $encoded;
+            }
         }
 
         try {
@@ -411,12 +419,23 @@ class EventController
             ];
         }
 
-        $q = "SELECT r.*, u.firstName, u.lastName, u.email, u.profilePicture 
+        $q = "SELECT r.*, t.ticketCode AS ticketCode, u.firstName, u.lastName, u.email, u.profilePicture 
               FROM Registrations r 
+              LEFT JOIN tickets t ON t.registerId = r.id
               JOIN users u ON r.userId = u.id 
               WHERE r.eventId = ?";
         
         $attendees = Event::query($q, [$eventId]);
+
+        $attendees = array_map(function ($attendee) {
+            if (!empty($attendee["customFields"]) && is_string($attendee["customFields"])) {
+                $decoded = json_decode($attendee["customFields"], true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $attendee["customFields"] = $decoded;
+                }
+            }
+            return $attendee;
+        }, $attendees ?? []);
 
         return [
             "success" => true,

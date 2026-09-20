@@ -34,6 +34,13 @@ class EmailHelper
 
     public static function send(string $to, string $subject, string $htmlBody, ?string $altBody = null): bool
     {
+        $user = $_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME');
+        $password = $_ENV['SMTP_PASSWORD'] ?? getenv('SMTP_PASSWORD');
+        if (empty($user) || empty($password)) {
+            error_log("EmailHelper: skipped sending \"$subject\" to \"$to\" (SMTP not configured)");
+            return false;
+        }
+
         try {
             $mail = self::getMailer();
             $mail->addAddress($to);
@@ -101,7 +108,10 @@ class EmailHelper
     {
         $frontendHost = $_ENV['FRONTEND_HOST'] ?? getenv('FRONTEND_HOST');
         if (is_string($frontendHost) && $frontendHost !== '') {
-            return rtrim($frontendHost, '/');
+            if (preg_match('#^https?://#i', $frontendHost)) {
+                return rtrim($frontendHost, '/');
+            }
+            return 'https://' . rtrim($frontendHost, '/');
         }
         return 'http://' . self::host('DOMAIN') . ':3000';
     }

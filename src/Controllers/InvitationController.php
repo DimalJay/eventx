@@ -205,19 +205,14 @@ class InvitationController
 
             if ($existing) {
                 $updateData = ["status" => $status];
-                if (strpos($existing['ticketCode'], 'INVITE-') !== 0) {
-                    $updateData['ticketCode'] = "INVITE-" . $role . "-" . uniqid();
-                }
                 Registration::updateRecord(["id" => $existing['id']], $updateData);
+                $this->registrationService->ensureInviteTicket((int) $existing['id'], (int) $eventId, (int) $userId, $role);
             } else {
                 $registration = new Registration($eventId, $userId);
                 $regId = $this->registrationService->registerUserForEvent($registration);
-                
-                $updateData = [
-                    "status" => $status,
-                    "ticketCode" => "INVITE-" . $role . "-" . uniqid()
-                ];
-                Registration::updateRecord(["id" => $regId], $updateData);
+
+                Registration::updateRecord(["id" => $regId], ["status" => $status]);
+                $this->registrationService->ensureInviteTicket((int) $regId, (int) $eventId, (int) $userId, $role);
             }
 
             // Redirect to Next.js

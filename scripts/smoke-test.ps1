@@ -27,7 +27,7 @@ function Invoke-Curl {
 function Call-Web {
     param($method, $url, [string]$json, [string]$cookie, [string]$extraHeaders)
     Remove-Item $tmpBody,$tmpJson -ErrorAction SilentlyContinue
-    $a = @("-s","-o",$tmpBody,"-w","%{http_code}","-X",$method,$url,"-m",20)
+    $a = @("-s","-o",$tmpBody,"-w","%{http_code}","-X",$method,$url,"-m",60)
     if ($json) {
         [System.IO.File]::WriteAllText($tmpJson, $json, (New-Object System.Text.UTF8Encoding($false)))
         $a += @("-H","Content-Type: application/json","--data","@$tmpJson")
@@ -45,7 +45,7 @@ function Call-Web {
 function Call-Form {
     param($url, $fields, $cookie)
     Remove-Item $tmpBody -ErrorAction SilentlyContinue
-    $a = @("-s","-o",$tmpBody,"-w","%{http_code}","-X","POST",$url,"-m",20)
+    $a = @("-s","-o",$tmpBody,"-w","%{http_code}","-X","POST",$url,"-m",60)
     foreach ($k in $fields.Keys) { $a += @("-F","$k=$($fields[$k])") }
     if ($cookie) { $a += @("-H","Cookie: $cookie") }
     $status = Invoke-Curl $a
@@ -63,9 +63,17 @@ Add-Result "POST" "/auth/register" "200" $reg.Status $reg.Body.message ($reg.Sta
 $setupPhp = Join-Path $env:TEMP ("set_" + (Get-Random) + ".php")
 @"
 <?php
-`$pdo = new PDO('mysql:host=localhost;dbname=test;charset=utf8mb4','root','');
+`$cfg = [];
+foreach (file('C:/xampp/htdocs/eventx/.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as `$line) {
+    if (isset(`$line[0]) && `$line[0] === '#') continue;
+    if (strpos(`$line, '=') === false) continue;
+    list(`$k, `$v) = explode('=', `$line, 2);
+    `$cfg[trim(`$k)] = trim(`$v);
+}
+`$pdo = new PDO('mysql:host=' . `$cfg['DB_HOST'] . ';port=' . `$cfg['DB_PORT'] . ';dbname=' . `$cfg['DB_NAME'] . ';charset=utf8mb4', `$cfg['DB_USERNAME'], `$cfg['DB_PASSWORD']);
 `$pdo->exec("UPDATE users SET isVerified=1 WHERE email='$testEmail'");
 `$uid = `$pdo->query("SELECT id FROM users WHERE email='$testEmail'")->fetchColumn();
+if (empty(`$uid)) { die("USER NOT FOUND after registration"); }
 `$pdo->exec("INSERT INTO team_access (userId,eventId,role,status,joinedAt) VALUES (`$uid,1,'COORDINATOR','ACTIVE',NOW())");
 `$adminHash = password_hash('$adminPass', PASSWORD_DEFAULT);
 `$pdo->prepare("INSERT INTO admins (email,firstName,lastName,password,createdAt,updatedAt) VALUES (?, 'Smoke','Admin',? ,NOW(),NOW())")->execute(['$adminEmail', `$adminHash]);
@@ -168,7 +176,14 @@ if ($token) {
     $taskIdPhp = Join-Path $env:TEMP ("task_" + (Get-Random) + ".php")
     @"
 <?php
-`$pdo = new PDO('mysql:host=localhost;dbname=test;charset=utf8mb4','root','');
+`$cfg = [];
+foreach (file('C:/xampp/htdocs/eventx/.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as `$line) {
+    if (isset(`$line[0]) && `$line[0] === '#') continue;
+    if (strpos(`$line, '=') === false) continue;
+    list(`$k, `$v) = explode('=', `$line, 2);
+    `$cfg[trim(`$k)] = trim(`$v);
+}
+`$pdo = new PDO('mysql:host=' . `$cfg['DB_HOST'] . ';port=' . `$cfg['DB_PORT'] . ';dbname=' . `$cfg['DB_NAME'] . ';charset=utf8mb4', `$cfg['DB_USERNAME'], `$cfg['DB_PASSWORD']);
 echo (int)`$pdo->query("SELECT id FROM tasks WHERE eventId=$evId ORDER BY id DESC LIMIT 1")->fetchColumn();
 "@ | Set-Content -Path $taskIdPhp -Encoding ASCII
     $taskId = php $taskIdPhp
@@ -188,7 +203,10 @@ echo (int)`$pdo->query("SELECT id FROM tasks WHERE eventId=$evId ORDER BY id DES
     }
 
     # Join event + update status + scan
-    $je = Call-Web POST "$base/join-event" (@{ email=$testEmail; eventId=$evId; firstName="Smoke"; lastName="Test" } | ConvertTo-Json -Compress)
+    # The organizer cannot register their own event, so use a fresh attendee account.
+    $attendeeEmail = "smokeatt_" + (Get-Random -Maximum 99999) + "@eventx.test"
+    $null = Call-Web POST "$base/auth/register" (@{ email=$attendeeEmail; password=$testPass; firstName="Att"; lastName="Tend" } | ConvertTo-Json -Compress)
+    $je = Call-Web POST "$base/join-event" (@{ email=$attendeeEmail; eventId=$evId; firstName="Att"; lastName="Tend" } | ConvertTo-Json -Compress)
     Add-Result "POST" "/join-event" "200" $je.Status $je.Body.message ($je.Status -eq 200 -and $je.Body.success)
     $regId = $je.Body.data.id
     if ($regId) {

@@ -4,6 +4,12 @@ Base URL `/api/v1`
 
 All registration routes require `AuthMiddleware` (requires `auth_token` cookie).
 
+> **Data model:** every registration is backed by a row in the `tickets` table. The
+> `Registrations.ticketId` column references `tickets.id`, and the human-readable
+> `ticketCode` lives on the `tickets` row. A ticket row is created automatically when
+> a user joins (`POST /join-event`) and by the invitation flow (`INVITE-*` codes).
+> Registration responses include a joined `ticketCode` for compatibility.
+
 ---
 
 ## Get All Registrations
@@ -23,9 +29,14 @@ All registration routes require `AuthMiddleware` (requires `auth_token` cookie).
                 "userId": 5,
                 "name": "Kumara"
             },
+            "ticketId": 11,
             "ticketCode": "TICKET-ABC123",
             "registeredAt": "2026-08-01 10:30:00",
-            "status": "registered"
+            "status": "registered",
+            "customFields": {
+                "tshirtSize": "L",
+                "dietary": "Vegetarian"
+            }
         },
         {
             "id": 2,
@@ -34,9 +45,48 @@ All registration routes require `AuthMiddleware` (requires `auth_token` cookie).
                 "userId": 7,
                 "name": "Nimal"
             },
+            "ticketId": 12,
             "ticketCode": "TICKET-DEF456",
             "registeredAt": "2026-08-01 11:00:00",
-            "status": "waitlisted"
+            "status": "waitlisted",
+            "customFields": null
+        }
+    ]
+}
+```
+
+---
+
+## Get Attendees (Organizer)
+
+`GET /event/registrations?eventId={eventId}`
+
+Auth: `AuthMiddleware` (requires `auth_token` cookie)
+
+Returns the full attendee rows for an event, including any submitted custom field answers.
+
+### Response Body `200 OK`
+```json
+{
+    "success": true,
+    "message": "List of attendees for event ID: 1",
+    "data": [
+        {
+            "id": 1,
+            "eventId": 1,
+            "userId": 5,
+            "ticketId": 11,
+            "ticketCode": "TICKET-ABC123",
+            "registeredAt": "2026-08-01 10:30:00",
+            "status": "registered",
+            "firstName": "Nimal",
+            "lastName": "Perera",
+            "email": "nimal@gmail.com",
+            "profilePicture": null,
+            "customFields": {
+                "tshirtSize": "L",
+                "dietary": "Vegetarian"
+            }
         }
     ]
 }
@@ -95,9 +145,14 @@ All registration routes require `AuthMiddleware` (requires `auth_token` cookie).
         "id": 1,
         "eventId": 1,
         "userId": 5,
+        "ticketId": 11,
         "ticketCode": "TICKET-ABC123",
         "status": "registered",
-        "registeredAt": "2026-08-01 10:30:00"
+        "registeredAt": "2026-08-01 10:30:00",
+        "customFields": {
+            "tshirtSize": "L",
+            "dietary": "Vegetarian"
+        }
     }
 }
 ```

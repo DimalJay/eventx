@@ -4,11 +4,23 @@ namespace Services;
 
 use Models\Registration;
 use Models\Event;
+use Models\Ticket;
 
 use Exception;
 class RegistrationService
 {
     public function __construct() {}
+
+    private function formatRegistration(array $registration): array
+    {
+        if (!empty($registration['customFields']) && is_string($registration['customFields'])) {
+            $decoded = json_decode($registration['customFields'], true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $registration['customFields'] = $decoded;
+            }
+        }
+        return $registration;
+    }
 
     public function registerUserForEvent(Registration $registration)
     {
@@ -39,8 +51,14 @@ class RegistrationService
 
     public function getRegistrationById($reg_id)
     {
-        $registrations = Registration::where(["id" => $reg_id]);
-        return count($registrations) > 0 ? $registrations[0] : null;
+        $registrations = Registration::query(
+            'SELECT r.*, t.ticketCode AS ticketCode
+             FROM Registrations r
+             LEFT JOIN tickets t ON t.registerId = r.id
+             WHERE r.id = :id',
+            ['id' => $reg_id]
+        );
+        return count($registrations) > 0 ? $this->formatRegistration($registrations[0]) : null;
     }
 
     public function getRegistrationsByEventId($eventId)
@@ -50,10 +68,13 @@ class RegistrationService
 
     public function getRegistrationsList($eventId)
     {
-        return Registration::query('SELECT r.*, u.firstName, u.lastName, u.email
+        $rows = Registration::query('SELECT r.*, t.ticketCode AS ticketCode, u.firstName, u.lastName, u.email
             FROM Registrations r
+            LEFT JOIN tickets t ON t.registerId = r.id
             JOIN users u ON r.userId = u.id
             WHERE r.eventId = :eventId', ['eventId' => $eventId]);
+
+        return array_map([$this, 'formatRegistration'], $rows);
         
     }
 
@@ -72,7 +93,41 @@ class RegistrationService
 
     public function getRegistrationByTicketCode($ticketCode)
     {
-        $registrations = Registration::where(["ticketCode" => $ticketCode]);
-        return count($registrations) > 0 ? $registrations[0] : null;
+        $registrations = Registration::query(
+            'SELECT r.*, t.ticketCode AS ticketCode
+             FROM Registrations r
+             JOIN tickets t ON t.registerId = r.id
+             WHERE t.ticketCode = :code',
+            ['code' => $ticketCode]
+        );
+        return count($registrations) > 0 ? $this->formatRegistration($registrations[0]) : null;
+    }
+
+    /**
+     * Create a ticket row for a registration and link it via Registrations.ticketId.
+     */
+    public function createTicketForRegistration(int $regId, int $eventId, int $userId, ?string $ticketCode = null)
+    {
+        $ticketCode = $ticketCode ?: uniqid();
+        $ticket = new Ticket($eventId, $userId, $ticketCode, $regId);
+        $ticketId = $ticket->save();
+        Registration::updateRecord(["id" => $regId], ["ticketId" => $ticketId]);
+        return Ticket::where(["id" => $ticketId])[0] ?? null;
+    }
+
+    /**
+     * Ensure a registration has an INVITE-* ticket row (used by the invitation flow).
+     */
+    public function ensureInviteTicket(int $regId, int $eventId, int $userId, string $role)
+    {
+        $tickets = Ticket::where(["registerId" => $regId]);
+        $ticket = $tickets[0] ?? null;
+        if (!$ticket) {
+            $this->createTicketForRegistration($regId, $eventId, $userId, "INVITE-" . $role . "-" . uniqid());
+            return;
+        }
+        if (strpos((string) $ticket["ticketCode"], 'INVITE-') !== 0) {
+            Ticket::updateRecord(["id" => $ticket["id"]], ["ticketCode" => "INVITE-" . $role . "-" . uniqid()]);
+        }
     }
 }
