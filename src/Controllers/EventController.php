@@ -154,6 +154,7 @@ class EventController
                 $data["regDeadline"] ?? null,
                 $data["agenda"] ?? null,
                 $data["waitlistEnabled"] ?? false,
+                trim($data["category"] ?? 'General'),
             );
 
             $lastId = $this->eventService->createEvent($event);
@@ -191,6 +192,7 @@ class EventController
         $isPublic = $data["isPublic"] ?? false;
         $waitlistEnabled = $data["waitlistEnabled"] ?? false;
         $coverImage = $data["coverImage"] ?? "";
+        $category = $data["category"] ?? "";
 
         if (empty($id)) {
             return [
@@ -236,13 +238,16 @@ class EventController
         if (!empty($description)) {
             $eventData["description"] = trim($description);
         }
+        if (!empty($category) && is_string($category)) {
+            $eventData["category"] = trim($category);
+        }
         if (!empty($location)) {
             $eventData["location"] = trim($location);
         }
         if (!empty($agenda)) {
             $eventData["agenda"] = trim($agenda);
         }
-        if (!empty($coverImage)) {
+        if (!empty($coverImage) && is_string($coverImage)) {
             $eventData["coverImage"] = trim($coverImage);
         }
 
@@ -278,7 +283,9 @@ class EventController
             return [
                 "success" => true,
                 "message" => "Cover image uploaded successfully",
-                "data" => ["coverImage" => $coverPath],
+                "data" => $coverPath,
+                "path" => $coverPath,
+                "url" => $coverPath,
             ];
         } catch (\Throwable $th) {
             http_response_code(400);

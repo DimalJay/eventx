@@ -19,6 +19,9 @@ class Event extends BaseModel
   #[Column(type: 'VARCHAR', length: 100, nullable: false, default: "'online'")]
   protected string $eventType;
 
+  #[Column(type: 'VARCHAR', length: 50, nullable: false, default: "'General'")]
+  protected string $category = 'General';
+
   #[Column(type: 'TEXT', nullable: true)]
   protected ?string $description = null;
 
@@ -65,9 +68,10 @@ class Event extends BaseModel
   protected string $status = 'upcoming';
 
 
-    public function __construct($title, $eventType, $description, $startDate, $endDate, $location, $organizerId, $coverImage, $isPublic, $capacity, $ticketPrice, $regDeadline, $agenda, $waitlistEnabled = false) {
+    public function __construct($title, $eventType, $description, $startDate, $endDate, $location, $organizerId, $coverImage, $isPublic, $capacity, $ticketPrice, $regDeadline, $agenda, $waitlistEnabled = false, $category = 'General') {
       $this->title = $title;
       $this->eventType = $eventType;
+      $this->category = $category;
       $this->description = $description;
       $this->startDate = new DateTime($startDate);
       $this->endDate = new DateTime($endDate);

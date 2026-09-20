@@ -46,7 +46,7 @@ class TeamAccessService implements TeamAccessServiceInterface
 
     public function hasTeamAccess(int $userId, int $eventId)
     {
-        if ($this->isOrganizer($userId, $eventId)) {
+        if ($this->isOrganizer($eventId, $userId)) {
             return true;
         }
         $members = TeamAccess::where(["userId" => $userId, "eventId" => $eventId]);

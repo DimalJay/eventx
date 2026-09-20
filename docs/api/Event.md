@@ -20,7 +20,7 @@ startDate: "2026-08-15"
 endDate: "2026-08-15"
 agenda: "Keynote, Workshops, Networking Session"
 capacity: 300
-eventCategory: "Technology"
+category: "Technology"
 registrationDeadline: "2026-08-10"
 ticketPrice: 1500.00
 isPaid: true
@@ -55,6 +55,7 @@ Auth: `AuthMiddleware` (requires `auth_token` cookie)
             "eventID": 1,
             "title": "AI Innovation Summit 2026",
             "eventType": "Conference",
+            "category": "General",
             "description": "A university event focused on AI technologies.",
             "location": "Main Auditorium",
             "startDate": "2026-08-15 09:00:00",
@@ -89,6 +90,7 @@ Auth: `AuthMiddleware` (requires `auth_token` cookie)
         "eventID": 1,
         "title": "AI Innovation Summit 2026",
         "eventType": "Conference",
+            "category": "General",
         "description": "A university event focused on AI technologies.",
         "location": "Main Auditorium",
         "startDate": "2026-08-15 09:00:00",
@@ -120,6 +122,7 @@ Auth: `AuthMiddleware` (requires `auth_token` cookie)
 {
     "id": 1,
     "title": "AI Innovation Summit 2026 - Updated",
+    "category": "Business",
     "description": "Updated event description",
     "location": "Conference Hall",
     "startDate": "2026-08-16",
@@ -157,6 +160,7 @@ Auth: `AuthMiddleware` (requires `auth_token` cookie)
         {
             "eventID": 1,
             "title": "AI Innovation Summit 2026",
+            "category": "General",
             "description": "A university event focused on AI technologies.",
             "location": "Main Auditorium",
             "startDate": "2026-08-15 09:00:00",
