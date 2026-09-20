@@ -25,13 +25,13 @@ class TeamAccess extends BaseModel
   #[Column(type: 'VARCHAR', length: 50, nullable: true)]
   protected ?string $label = null;
 
-  #[Column(type: 'VARCHAR', length: 20, nullable: false, default: "'ACTIVE'")]
-  protected string $status = 'ACTIVE';
+  #[Column(type: 'VARCHAR', length: 20, nullable: false, default: "'PENDING'")]
+  protected string $status = 'PENDING';
 
   #[Column(type: 'DATETIME', default: 'CURRENT_TIMESTAMP')]
   protected DateTime $joinedAt;
 
-  public function __construct($userId, $eventId, $role, string $status = 'ACTIVE', ?string $label = null)
+  public function __construct($userId, $eventId, $role, string $status = 'PENDING', ?string $label = null)
   {
     $this->userId = $userId;
     $this->eventId = $eventId;

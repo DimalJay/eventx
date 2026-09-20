@@ -16,7 +16,7 @@ class TeamAccessService implements TeamAccessServiceInterface
         if (count($members) > 0) {
             throw new Exception("User is already a member of the team");
         }
-        $member = new TeamAccess($userId, $eventId, $role, 'ACTIVE', $label);
+        $member = new TeamAccess($userId, $eventId, $role, 'PENDING', $label);
         return $member->save();
     }
 
@@ -58,7 +58,7 @@ class TeamAccessService implements TeamAccessServiceInterface
         if ($this->isOrganizer($eventId, $userId)) {
             return true;
         }
-        $members = TeamAccess::where(["userId" => $userId, "eventId" => $eventId]);
+        $members = TeamAccess::where(["userId" => $userId, "eventId" => $eventId, "status" => "ACTIVE"]);
         return count($members) > 0;
     }
 
@@ -72,6 +72,7 @@ class TeamAccessService implements TeamAccessServiceInterface
                     ta.userId,
                     ta.role, 
                     ta.label, 
+                    ta.status,
                     ta.joinedAt, 
                     u.email, 
                     CONCAT(u.firstName, ' ', u.lastName) as name 
@@ -94,6 +95,7 @@ class TeamAccessService implements TeamAccessServiceInterface
                 "email" => $member["email"],
                 "role" => strtoupper(trim($member["role"])),
                 "label" => $member["label"] ?? null,
+                "status" => strtoupper(trim($member["status"] ?? "ACTIVE")),
                 "isOrganizer" => false,
             ];
         }, $members));
@@ -107,6 +109,7 @@ class TeamAccessService implements TeamAccessServiceInterface
                     "email" => $organizer[0]["email"] ?? "",
                     "role" => "ORGANIZER",
                     "label" => null,
+                    "status" => "ACTIVE",
                     "isOrganizer" => true,
                 ]);
             }
