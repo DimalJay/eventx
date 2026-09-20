@@ -8,7 +8,7 @@ use Services\UserService;
 use Services\EventService;
 use Helpers\EmailHelper;
 use Helpers\Config;
-use Models\FeedBack;
+use Models\Feedback;
 
 class FeedbackController
 {
@@ -33,7 +33,7 @@ class FeedbackController
       $sentimentService = new \Services\SentimentService();
       $label = $sentimentService->classifyComment($comment);
       if ($label !== 'Pending') {
-        FeedBack::updateRecord(["id" => $feedbackId], ["sentiment" => $label]);
+        Feedback::updateRecord(["id" => $feedbackId], ["sentiment" => $label]);
       }
     } catch (\Throwable $e) {
       error_log("Sentiment analysis skipped for feedback {$feedbackId}: " . $e->getMessage());
@@ -71,7 +71,7 @@ class FeedbackController
       ];
     }
 
-    $feedback = new FeedBack($eventId, $participantId, $organizationRating, $contentRating, $experienceRating, $comment, 'Pending');
+    $feedback = new Feedback($eventId, $participantId, $organizationRating, $contentRating, $experienceRating, $comment, 'Pending');
 
     $response = $this->feedBackService->submitFeedback($feedback);
 
@@ -186,15 +186,15 @@ class FeedbackController
     }
 
     // Check if feedback already exists
-    $feedbacks = FeedBack::where(["eventId" => $eventId, "participantId" => $participantId]);
+    $feedbacks = Feedback::where(["eventId" => $eventId, "participantId" => $participantId]);
     
     $sentiment = 'Pending';
 
     if (count($feedbacks) === 0) {
-      $feedback = new FeedBack($eventId, $participantId, 0, 0, $rating, '', $sentiment);
+      $feedback = new Feedback($eventId, $participantId, 0, 0, $rating, '', $sentiment);
       $this->feedBackService->submitFeedback($feedback);
     } else {
-      FeedBack::updateRecord(
+      Feedback::updateRecord(
         ["eventId" => $eventId, "participantId" => $participantId],
         ["experienceRating" => $rating, "sentiment" => $sentiment]
       );
@@ -244,10 +244,10 @@ class FeedbackController
       ];
     }
 
-    $existing = FeedBack::where(["eventId" => $eventId, "participantId" => $participantId]);
+    $existing = Feedback::where(["eventId" => $eventId, "participantId" => $participantId]);
 
     if (count($existing) === 0) {
-      $feedback = new FeedBack($eventId, $participantId, $organizationRating, $contentRating, $experienceRating > 0 ? $experienceRating : 0, $comment, 'Pending');
+      $feedback = new Feedback($eventId, $participantId, $organizationRating, $contentRating, $experienceRating > 0 ? $experienceRating : 0, $comment, 'Pending');
       $feedbackId = (int) $this->feedBackService->submitFeedback($feedback);
       $this->classifyAndStore($feedbackId, $comment);
     } else {
@@ -261,7 +261,7 @@ class FeedbackController
         $updateData["experienceRating"] = $experienceRating;
       }
 
-      FeedBack::updateRecord(
+      Feedback::updateRecord(
         ["eventId" => $eventId, "participantId" => $participantId],
         $updateData
       );
@@ -270,7 +270,7 @@ class FeedbackController
         $sentimentService = new \Services\SentimentService();
         $label = $sentimentService->classifyComment($comment);
         if ($label !== 'Pending') {
-          FeedBack::updateRecord(["id" => $existingId], ["sentiment" => $label]);
+          Feedback::updateRecord(["id" => $existingId], ["sentiment" => $label]);
         }
       }
     }
