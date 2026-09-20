@@ -14,4 +14,5 @@ $router->post("/registration/scan", [$registrationController, "scanTicket"], [Au
 $router->get("/ticket", [$registrationController, "getTicketDetails"]);
 
 $router->post("/invitation/send", [$invitationController, "sendInvitations"], [AuthMiddleware::class]);
+$router->get("/event/guests", [$invitationController, "getEventGuests"], [AuthMiddleware::class]);
 $router->get("/invitation/respond", [$invitationController, "respondToInvitation"]);
