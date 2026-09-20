@@ -11,9 +11,20 @@ class EventService
 {
     public function __construct() {}
 
+    private function formatEvent(array $event): array
+    {
+        if (!empty($event['customFields']) && is_string($event['customFields'])) {
+            $decoded = json_decode($event['customFields'], true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $event['customFields'] = $decoded;
+            }
+        }
+        return $event;
+    }
+
     public function getEvents()
     {
-        return Event::selectAll();
+        return array_map([$this, 'formatEvent'], Event::selectAll());
     }
 
     public function getEventForUserId(String $userId){
@@ -27,7 +38,7 @@ class EventService
         )));
 
         if (count($teamEventIds) === 0) {
-            return $organized;
+            return array_map([$this, 'formatEvent'], $organized);
         }
 
         // Pull full event rows for those ids via direct query
@@ -49,13 +60,13 @@ class EventService
                 $result[] = $ev;
             }
         }
-        return $result;
+        return array_map([$this, 'formatEvent'], $result);
     }
 
     public function getEvent(String $id)
     {
         $events = Event::where(["id" => $id]);
-        return count($events) > 0 ? $events[0] : null;
+        return count($events) > 0 ? $this->formatEvent($events[0]) : null;
     }
 
     public function getEventWithUserId(String $userId, String $eventId)
@@ -89,6 +100,6 @@ class EventService
 
     public function getPublicEvents()
     {
-        return Event::where(["isPublic" => true]);
+        return array_map([$this, 'formatEvent'], Event::where(["isPublic" => true]));
     }
 }

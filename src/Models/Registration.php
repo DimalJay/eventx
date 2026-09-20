@@ -30,12 +30,35 @@ class Registration extends BaseModel
   #[Column(type: 'DATETIME', nullable: true)]
   protected DateTime $chekingTime;
 
-  public function __construct($eventId, $userId) {
+  #[Column(type: 'TEXT', nullable: true)]
+  protected ?string $customFields = null;
+
+  public function __construct($eventId, $userId, $customFields = null) {
     $this->eventId = $eventId;
     $this->userId = $userId;
     $this->ticketCode = $ticketCode ?? uniqid();
+    $this->customFields = self::encodeCustomFields($customFields);
     $this->registeredAt = new DateTime();
     parent::__construct();
+  }
+
+  /**
+   * Normalize submitted custom field data into a stored JSON string.
+   * Accepts an array/object or an already-encoded JSON string.
+   */
+  public static function encodeCustomFields($value): ?string
+  {
+      if ($value === null || $value === '') {
+          return null;
+      }
+      if (is_array($value) || is_object($value)) {
+          return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+      }
+      $decoded = json_decode((string) $value, true);
+      if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+          return (string) $value;
+      }
+      return null;
   }
 
   public static function empty() : self {

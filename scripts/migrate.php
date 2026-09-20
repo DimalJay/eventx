@@ -84,3 +84,31 @@ if ((int) $hasTeamLabel === 0) {
 } else {
     echo "✓ team_access.label column already exists.\n";
 }
+
+// events.customFields (JSON of {name, key, type} field definitions)
+$hasEventCustomFields = $db->query(
+    "SELECT COUNT(*) AS c FROM information_schema.columns
+     WHERE table_schema = DATABASE() AND table_name = 'events' AND column_name = 'customFields'"
+)['c'] ?? 0;
+
+if ((int) $hasEventCustomFields === 0) {
+    $db->execute("ALTER TABLE `events` ADD COLUMN `customFields` TEXT NULL");
+    echo "✓ events.customFields column added.\n";
+} else {
+    echo "✓ events.customFields column already exists.\n";
+}
+
+// Registrations.customFields (JSON of submitted key => value data)
+$hasRegistrationCustomFields = $db->query(
+    "SELECT COUNT(*) AS c FROM information_schema.columns
+     WHERE LOWER(table_schema) = LOWER(DATABASE())
+       AND LOWER(table_name) = 'registrations'
+       AND LOWER(column_name) = 'customfields'"
+)['c'] ?? 0;
+
+if ((int) $hasRegistrationCustomFields === 0) {
+    $db->execute("ALTER TABLE `Registrations` ADD COLUMN `customFields` TEXT NULL");
+    echo "✓ Registrations.customFields column added.\n";
+} else {
+    echo "✓ Registrations.customFields column already exists.\n";
+}

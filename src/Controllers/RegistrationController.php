@@ -37,6 +37,7 @@ class RegistrationController
         $eventId = $data["eventId"] ?? "";
         $firstName = $data["firstName"] ?? "";
         $lastName = $data["lastName"] ?? "";
+        $customFields = $data["customFields"] ?? null;
 
         if (empty($email) || empty($eventId) || empty($firstName) || empty($lastName)) {
             return [
@@ -66,7 +67,7 @@ class RegistrationController
                 ];
             }
 
-            $registration = new Registration($eventId, $userId);
+            $registration = new Registration($eventId, $userId, $customFields);
             $reg_id = $this->registrationService->registerUserForEvent($registration);
             $registration = $this->registrationService->getRegistrationById($reg_id);
 

@@ -10,6 +10,17 @@ class RegistrationService
 {
     public function __construct() {}
 
+    private function formatRegistration(array $registration): array
+    {
+        if (!empty($registration['customFields']) && is_string($registration['customFields'])) {
+            $decoded = json_decode($registration['customFields'], true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $registration['customFields'] = $decoded;
+            }
+        }
+        return $registration;
+    }
+
     public function registerUserForEvent(Registration $registration)
     {
         $event = Event::where(["id" => $registration->getEventId()])[0] ?? null;
@@ -40,7 +51,7 @@ class RegistrationService
     public function getRegistrationById($reg_id)
     {
         $registrations = Registration::where(["id" => $reg_id]);
-        return count($registrations) > 0 ? $registrations[0] : null;
+        return count($registrations) > 0 ? $this->formatRegistration($registrations[0]) : null;
     }
 
     public function getRegistrationsByEventId($eventId)
@@ -50,10 +61,12 @@ class RegistrationService
 
     public function getRegistrationsList($eventId)
     {
-        return Registration::query('SELECT r.*, u.firstName, u.lastName, u.email
+        $rows = Registration::query('SELECT r.*, u.firstName, u.lastName, u.email
             FROM Registrations r
             JOIN users u ON r.userId = u.id
             WHERE r.eventId = :eventId', ['eventId' => $eventId]);
+
+        return array_map([$this, 'formatRegistration'], $rows);
         
     }
 
@@ -73,6 +86,6 @@ class RegistrationService
     public function getRegistrationByTicketCode($ticketCode)
     {
         $registrations = Registration::where(["ticketCode" => $ticketCode]);
-        return count($registrations) > 0 ? $registrations[0] : null;
+        return count($registrations) > 0 ? $this->formatRegistration($registrations[0]) : null;
     }
 }

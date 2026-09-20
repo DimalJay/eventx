@@ -25,7 +25,11 @@ All registration routes require `AuthMiddleware` (requires `auth_token` cookie).
             },
             "ticketCode": "TICKET-ABC123",
             "registeredAt": "2026-08-01 10:30:00",
-            "status": "registered"
+            "status": "registered",
+            "customFields": {
+                "tshirtSize": "L",
+                "dietary": "Vegetarian"
+            }
         },
         {
             "id": 2,
@@ -36,7 +40,44 @@ All registration routes require `AuthMiddleware` (requires `auth_token` cookie).
             },
             "ticketCode": "TICKET-DEF456",
             "registeredAt": "2026-08-01 11:00:00",
-            "status": "waitlisted"
+            "status": "waitlisted",
+            "customFields": null
+        }
+    ]
+}
+```
+
+---
+
+## Get Attendees (Organizer)
+
+`GET /event/registrations?eventId={eventId}`
+
+Auth: `AuthMiddleware` (requires `auth_token` cookie)
+
+Returns the full attendee rows for an event, including any submitted custom field answers.
+
+### Response Body `200 OK`
+```json
+{
+    "success": true,
+    "message": "List of attendees for event ID: 1",
+    "data": [
+        {
+            "id": 1,
+            "eventId": 1,
+            "userId": 5,
+            "ticketCode": "TICKET-ABC123",
+            "registeredAt": "2026-08-01 10:30:00",
+            "status": "registered",
+            "firstName": "Nimal",
+            "lastName": "Perera",
+            "email": "nimal@gmail.com",
+            "profilePicture": null,
+            "customFields": {
+                "tshirtSize": "L",
+                "dietary": "Vegetarian"
+            }
         }
     ]
 }
@@ -97,7 +138,11 @@ All registration routes require `AuthMiddleware` (requires `auth_token` cookie).
         "userId": 5,
         "ticketCode": "TICKET-ABC123",
         "status": "registered",
-        "registeredAt": "2026-08-01 10:30:00"
+        "registeredAt": "2026-08-01 10:30:00",
+        "customFields": {
+            "tshirtSize": "L",
+            "dietary": "Vegetarian"
+        }
     }
 }
 ```

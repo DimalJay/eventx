@@ -27,13 +27,51 @@ isPaid: true
 isPublic: true
 waitlistEnabled: true
 coverImage: [file]
+customFields: '[{"name":"T-Shirt Size","key":"tshirtSize","type":"text"},{"name":"Dietary Notes","key":"dietary","type":"text"}]'
 ```
+
+`customFields` is optional. Send it as a JSON-encoded string of the event's custom registration fields. Each field contains:
+- `name` — the human-readable label shown to attendees
+- `key` — the machine key used as the property name in submitted answers
+- `type` — the field type (e.g. `text`)
 
 ### Response Body `200 OK`
 ```json
 {
     "success": true,
-    "message": "Event created successfully"
+    "message": "Event created successfully",
+    "data": {
+        "id": 39,
+        "title": "CF E2E 9821",
+        "eventType": "physical",
+        "category": "General",
+        "description": "",
+        "location": "Hall A",
+        "startDate": "2026-10-01 09:00:00",
+        "endDate": "2026-10-01 17:00:00",
+        "organizerId": 55,
+        "isPublic": 0,
+        "capacity": 0,
+        "ticketPrice": 0,
+        "regDeadline": null,
+        "agenda": null,
+        "waitlistEnabled": 0,
+        "status": "upcoming",
+        "customFields": [
+            {
+                "name": "T-Shirt Size",
+                "key": "tshirtSize",
+                "type": "text"
+            },
+            {
+                "name": "Dietary Notes",
+                "key": "dietary",
+                "type": "text"
+            }
+        ],
+        "createdAt": "2026-09-20 19:30:00",
+        "updatedAt": "2026-09-20 19:30:00"
+    }
 }
 ```
 
@@ -67,6 +105,13 @@ Auth: `AuthMiddleware` (requires `auth_token` cookie)
             "waitlistEnabled": true,
             "coverImage": "/uploads/event-covers/cover_12345.jpg",
             "status": "upcoming",
+            "customFields": [
+                {
+                    "name": "T-Shirt Size",
+                    "key": "tshirtSize",
+                    "type": "text"
+                }
+            ],
             "organizerID": 1,
             "createdAt": "2026-07-01 10:00:00",
             "updatedAt": "2026-07-01 10:00:00"
@@ -102,6 +147,13 @@ Auth: `AuthMiddleware` (requires `auth_token` cookie)
         "waitlistEnabled": true,
         "coverImage": "/uploads/event-covers/cover_12345.jpg",
         "status": "upcoming",
+        "customFields": [
+            {
+                "name": "T-Shirt Size",
+                "key": "tshirtSize",
+                "type": "text"
+            }
+        ],
         "organizerID": 1,
         "createdAt": "2026-07-01 10:00:00",
         "updatedAt": "2026-07-01 10:00:00"
@@ -132,7 +184,19 @@ Auth: `AuthMiddleware` (requires `auth_token` cookie)
     "isPublic": true,
     "isPaid": true,
     "waitlistEnabled": false,
-    "agenda": "Updated agenda"
+    "agenda": "Updated agenda",
+    "customFields": [
+        {
+            "name": "T-Shirt Size",
+            "key": "tshirtSize",
+            "type": "text"
+        },
+        {
+            "name": "Hotel Room",
+            "key": "room",
+            "type": "text"
+        }
+    ]
 }
 ```
 
@@ -168,7 +232,14 @@ Auth: `AuthMiddleware` (requires `auth_token` cookie)
             "capacity": 300,
             "ticketPrice": 1500.00,
             "isPaid": true,
-            "coverImage": "/uploads/event-covers/cover_12345.jpg"
+            "coverImage": "/uploads/event-covers/cover_12345.jpg",
+            "customFields": [
+                {
+                    "name": "T-Shirt Size",
+                    "key": "tshirtSize",
+                    "type": "text"
+                }
+            ]
         }
     ]
 }
@@ -186,9 +257,15 @@ Auth: `AuthMiddleware` (requires `auth_token` cookie)
     "email": "nimal@gmail.com",
     "firstName": "Nimal",
     "lastName": "Perera",
-    "eventId": 1
+    "eventId": 1,
+    "customFields": {
+        "tshirtSize": "L",
+        "dietary": "Vegetarian"
+    }
 }
 ```
+
+`customFields` is optional. Keys must match the `key` values defined on the event's `customFields`, and each value answers that field during registration.
 
 ### Response Body `200 OK`
 ```json
@@ -200,7 +277,11 @@ Auth: `AuthMiddleware` (requires `auth_token` cookie)
         "eventId": 1,
         "userId": 5,
         "status": "registered",
-        "registeredAt": "2026-08-01 10:30:00"
+        "registeredAt": "2026-08-01 10:30:00",
+        "customFields": {
+            "tshirtSize": "L",
+            "dietary": "Vegetarian"
+        }
     }
 }
 ```
