@@ -7,6 +7,7 @@ require_once dirname(__DIR__, 2) . '/database/Database.php';
 use Models\Notification;
 use Models\TeamAccess;
 use Models\Event;
+use Models\User;
 use database\Database;
 
 class NotificationService
@@ -87,29 +88,59 @@ class NotificationService
     }
 
     /**
-     * Notify a team member that they were assigned a new task.
+     * Notify the assignee of a new task.
      *
-     * @param array $task     Task row (must contain id, title, assignedTo, eventId)
-     * @param string $eventTitle  Event title the task belongs to
+     * An assignedTo of 0 means the task belongs to the event organizer, so the
+     * recipient is resolved to the event's organizerId. Otherwise assignedTo is
+     * a team_access id, resolved to that member's userId.
+     *
+     * @param array $task  Task row (must contain id, title, assignedTo, eventId)
      */
-    public function notifyTaskAssigned(array $task, string $eventTitle): void
+    public function notifyTaskAssigned(array $task): void
     {
+        $eventId = (int) $task['eventId'];
+
         $this->notifyUsers(
-            [(int) $task['assignedTo']],
+            [$this->resolveAssigneeUserId($task, $eventId)],
             "New Task Assigned",
             "You have been assigned a new task: " . ($task['title'] ?? "") . ".",
             'task_assignment',
-            ["taskId" => (int) $task['id'], "eventId" => (int) $task['eventId']]
+            ["taskId" => (int) $task['id'], "eventId" => $eventId]
         );
+    }
+
+    /**
+     * Resolve the user ID an assigned task notification should go to.
+     */
+    private function resolveAssigneeUserId(array $task, int $eventId): int
+    {
+        $assignedTo = (int) ($task['assignedTo'] ?? 0);
+
+        if ($assignedTo === 0) {
+            $event = Event::where(["id" => $eventId]);
+            if (count($event) > 0 && !empty($event[0]['organizerId'])) {
+                return (int) $event[0]['organizerId'];
+            }
+            return 0;
+        }
+
+        $member = TeamAccess::where(["id" => $assignedTo]);
+        if (count($member) > 0 && !empty($member[0]['userId'])) {
+            return (int) $member[0]['userId'];
+        }
+
+        return $assignedTo;
     }
 
     /**
      * Notify the event organizer and all ACTIVE coordinators that a task
      * belonging to their event was updated.
      *
-     * @param array $task   Task row
+     * @param array  $task      Task row
+     * @param string $newStatus Status that changed, if this was a status update
+     * @param int    $byUserId  User who triggered the update (for "by user")
      */
-    public function notifyTaskUpdated(array $task): void
+    public function notifyTaskUpdated(array $task, ?string $newStatus = null, int $byUserId = 0): void
     {
         $eventId = (int) $task['eventId'];
         $recipients = $this->getEventRecipients($eventId);
@@ -117,10 +148,41 @@ class NotificationService
         $this->notifyUsers(
             $recipients,
             "Task Updated",
-            "Task \"" . ($task['title'] ?? "") . "\" was updated.",
+            $this->buildTaskUpdateMessage($task, $newStatus, $byUserId),
             'task_update',
             ["taskId" => (int) $task['id'], "eventId" => $eventId]
         );
+    }
+
+    private function buildTaskUpdateMessage(array $task, ?string $newStatus, int $byUserId): string
+    {
+        $title = $task['title'] ?? '';
+        $status = $newStatus !== null
+            ? strtoupper(trim($newStatus))
+            : strtoupper(trim($task['status'] ?? ''));
+
+        if (in_array($status, ['COMPLETED', 'DONE'], true)) {
+            return '"' . $title . '" is completed by ' . $this->userName($byUserId);
+        }
+
+        if ($status === 'IN_PROGRESS') {
+            return '"' . $title . '" in progress';
+        }
+
+        if ($status === 'CANCELLED') {
+            return '"' . $title . '" cancelled by ' . $this->userName($byUserId);
+        }
+
+        return '"' . $title . '" updated by ' . $this->userName($byUserId);
+    }
+
+    private function userName(int $userId): string
+    {
+        $user = User::where(["id" => $userId]);
+        if (count($user) < 1) {
+            return 'a user';
+        }
+        return trim(($user[0]['firstName'] ?? '') . ' ' . ($user[0]['lastName'] ?? ''));
     }
 
     /**
