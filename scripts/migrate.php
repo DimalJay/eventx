@@ -16,6 +16,7 @@ use Models\TeamAccess;
 use Models\TeamLabel;
 use Models\Notification;
 use Models\Admin;
+use Models\Guest;
 
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
@@ -34,6 +35,7 @@ $tables = [
     Task::class,
     Notification::class,
     Admin::class,
+    Guest::class,
 ];
 
 foreach ($tables as $table) {

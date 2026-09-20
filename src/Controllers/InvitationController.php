@@ -105,6 +105,13 @@ class InvitationController
 
             if ($success) {
                 $sentCount++;
+                $existing = \Models\Guest::where(['eventId' => $eventId, 'email' => $email])[0] ?? null;
+                if ($existing) {
+                    \Models\Guest::updateRecord(['id' => $existing['id']], ['role' => $roleLabel, 'status' => 'invited']);
+                } else {
+                    $guestModel = new \Models\Guest((int)$eventId, $email, $roleLabel, 'invited');
+                    $guestModel->save();
+                }
             }
             usleep(200000); // 0.2s delay
         }
@@ -115,6 +122,32 @@ class InvitationController
             "data" => [
                 "sentCount" => $sentCount
             ]
+        ];
+    }
+
+    public function getEventGuests()
+    {
+        $eventId = $_GET['eventId'] ?? '';
+        if (empty($eventId)) {
+            return [
+                "success" => false,
+                "message" => "eventId is required."
+            ];
+        }
+
+        $canManage = $this->teamAccessService->hasTeamAccess((int) ($_SERVER["uid"] ?? 0), (int) $eventId);
+        if (!$canManage) {
+            http_response_code(403);
+            return [
+                "success" => false,
+                "message" => "Unauthorized: You do not have access to this event"
+            ];
+        }
+
+        $guests = \Models\Guest::where(['eventId' => $eventId]);
+        return [
+            "success" => true,
+            "data" => $guests
         ];
     }
 
@@ -163,6 +196,12 @@ class InvitationController
             // Check if registration exists
             $existing = Registration::where(["userId" => $userId, "eventId" => $eventId])[0] ?? null;
             $status = $response === 'accept' ? 'PENDING' : 'NOT_GOING';
+
+            // Update guest table status
+            $guestRec = \Models\Guest::where(['eventId' => $eventId, 'email' => $email])[0] ?? null;
+            if ($guestRec) {
+                \Models\Guest::updateRecord(['id' => $guestRec['id']], ['status' => $response === 'accept' ? 'accepted' : 'declined']);
+            }
 
             if ($existing) {
                 $updateData = ["status" => $status];
