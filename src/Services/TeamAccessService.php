@@ -10,13 +10,13 @@ use Exception;
 
 class TeamAccessService implements TeamAccessServiceInterface
 {
-    public function addMember($userId, $eventId, $role)
+    public function addMember($userId, $eventId, $role, ?string $label = null)
     {
         $members = TeamAccess::where(["userId" => $userId, "eventId" => $eventId]);
         if (count($members) > 0) {
             throw new Exception("User is already a member of the team");
         }
-        $member = new TeamAccess($userId, $eventId, $role);
+        $member = new TeamAccess($userId, $eventId, $role, 'ACTIVE', $label);
         return $member->save();
     }
 
@@ -44,6 +44,15 @@ class TeamAccessService implements TeamAccessServiceInterface
         TeamAccess::updateRecord(["id" => $id], ["role" => strtoupper($role), "status" => "ACTIVE"]);
     }
 
+    public function updateMemberLabel(int $id, string $label)
+    {
+        $members = TeamAccess::where(["id" => $id]);
+        if (count($members) < 1) {
+            throw new Exception("Team member does not exist");
+        }
+        TeamAccess::updateRecord(["id" => $id], ["label" => $label !== "" ? $label : null]);
+    }
+
     public function hasTeamAccess(int $userId, int $eventId)
     {
         if ($this->isOrganizer($eventId, $userId)) {
@@ -62,6 +71,7 @@ class TeamAccessService implements TeamAccessServiceInterface
                     ta.id, 
                     ta.userId,
                     ta.role, 
+                    ta.label, 
                     ta.joinedAt, 
                     u.email, 
                     CONCAT(u.firstName, ' ', u.lastName) as name 
@@ -83,6 +93,7 @@ class TeamAccessService implements TeamAccessServiceInterface
                 "name" => $member["name"],
                 "email" => $member["email"],
                 "role" => strtoupper(trim($member["role"])),
+                "label" => $member["label"] ?? null,
                 "isOrganizer" => false,
             ];
         }, $members));
@@ -95,6 +106,7 @@ class TeamAccessService implements TeamAccessServiceInterface
                     "name" => trim(($organizer[0]["firstName"] ?? "") . " " . ($organizer[0]["lastName"] ?? "")),
                     "email" => $organizer[0]["email"] ?? "",
                     "role" => "ORGANIZER",
+                    "label" => null,
                     "isOrganizer" => true,
                 ]);
             }
