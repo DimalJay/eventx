@@ -17,16 +17,20 @@ All team access routes require `AuthMiddleware` (requires `auth_token` cookie).
     "message": "Team members fetched successfully",
     "data": [
         {
-            "id": 1,
+            "id": 0,
             "name": "John Silva",
             "email": "john@gmail.com",
-            "role": "Organizer"
+            "role": "ORGANIZER",
+            "label": null,
+            "isOrganizer": true
         },
         {
             "id": 2,
             "name": "Nimal Perera",
             "email": "nimal@gmail.com",
-            "role": "Member"
+            "role": "STAFF",
+            "label": "Speaker",
+            "isOrganizer": false
         }
     ]
 }
@@ -43,7 +47,8 @@ All team access routes require `AuthMiddleware` (requires `auth_token` cookie).
 {
     "email": "nimal@gmail.com",
     "eventId": 3,
-    "role": "MEMBER"
+    "role": "STAFF",
+    "label": "Speaker"
 }
 ```
 
@@ -89,6 +94,33 @@ All team access routes require `AuthMiddleware` (requires `auth_token` cookie).
 
 ---
 
+## Update Member Label
+
+`PUT /team-access/label`
+
+### Request Body
+```json
+{
+    "id": 2,
+    "label": "VIP"
+}
+```
+
+Passing an empty `label` clears it (sets to `null`).
+
+### Response Body `200 OK`
+```json
+{
+    "success": true,
+    "message": "Team member label updated successfully",
+    "data": {
+        "label": "VIP"
+    }
+}
+```
+
+---
+
 ## Remove Team Member
 
 `DELETE /team-access`
@@ -115,4 +147,8 @@ All team access routes require `AuthMiddleware` (requires `auth_token` cookie).
 
 - `ORGANIZER`
 - `COORDINATOR`
-- `MEMBER`
+- `STAFF`
+
+## Team Member Labels
+
+Optional free-text label on a team member row (e.g. `"Speaker"`, `"VIP"`, `"Press"`). Set when adding a member via the optional `label` field, or updated any time with `PUT /team-access/label`.

@@ -68,6 +68,7 @@ class TeamAccessController
         $email = trim($data["email"] ?? "");
         $eventId = $data["eventId"] ?? "";
         $role = trim($data["role"] ?? "");
+        $label = isset($data["label"]) && trim($data["label"]) !== "" ? trim($data["label"]) : null;
 
         if (empty($eventId) || empty($role) || empty($email)) {
             return APIResponse::error("Missing required fields");
@@ -90,7 +91,7 @@ class TeamAccessController
         if ($organizerCheck !== null) return $organizerCheck;
 
         try {
-            $this->teamService->addMember($userId, $eventId, $role);
+            $this->teamService->addMember($userId, $eventId, $role, $label);
         } catch (Exception $e) {
             return APIResponse::error("Error adding member to the team: " . $e->getMessage(), 500);
         }
@@ -197,5 +198,43 @@ class TeamAccessController
         $this->notifier->notifyMemberRoleChanged((int) $member["userId"], (int) $member["eventId"], $oldRole, $role);
 
         return APIResponse::success("Team member updated successfully");
+    }
+
+    public function updateMemberLabel()
+    {
+        $data = $this->parseJsonInput();
+        $id = $data["id"] ?? null;
+        $label = isset($data["label"]) ? trim($data["label"]) : "";
+
+        if ($id === null || $id === "") {
+            return APIResponse::error("Missing required fields");
+        }
+
+        if ((int) $id === 0) {
+            return APIResponse::error("The event organizer's label cannot be changed", 403);
+        }
+
+        $member = $this->teamService->getMember((int) $id);
+        if (!$member) {
+            return APIResponse::error("Team member not found", 404);
+        }
+
+        $denied = $this->requireManageAccess((int) $member["eventId"]);
+        if ($denied !== null) return $denied;
+
+        $organizerCheck = $this->requireNotOrganizer(
+            (int) $member["eventId"],
+            (int) $member["userId"],
+            "The event organizer's label cannot be changed"
+        );
+        if ($organizerCheck !== null) return $organizerCheck;
+
+        try {
+            $this->teamService->updateMemberLabel((int) $id, $label);
+        } catch (Exception $e) {
+            return APIResponse::error("Error updating team member label: " . $e->getMessage(), 500);
+        }
+
+        return APIResponse::success("Team member label updated successfully", ["label" => $label]);
     }
 }
