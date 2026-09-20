@@ -85,7 +85,7 @@ class EmailHelper
         if (!is_string($value) || $value === '') {
             return 'localhost';
         }
-        return rtrim($value, '/');
+        return ltrim(rtrim($value, '/'), '.');
     }
 
     public static function backendUrl(): string
