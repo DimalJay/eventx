@@ -154,11 +154,18 @@ class RegistrationController
                 "message" => "Event ID is required"
             ];
         }
-        $event = $this->eventService->getEventWithUserId($userId, $eventId);
+        $event = $this->eventService->getEvent($eventId);
         if (!$event) {
             return [
                 "success" => false,
                 "message" => "Event not found"
+            ];
+        }
+        if (!$this->teamAccessService->hasTeamAccess($userId, (int) $eventId)) {
+            http_response_code(403);
+            return [
+                "success" => false,
+                "message" => "Unauthorized: You do not have access to this event"
             ];
         }
         $registrations = $this->registrationService->getRegistrationsList($eventId);
