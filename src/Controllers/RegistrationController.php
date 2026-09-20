@@ -14,6 +14,27 @@ use Helpers\QrHelper;
 
 class RegistrationController
 {
+    /**
+     * Accept both a bare ticket code (6aafb…) and a ticket URL/QR payload
+     * (…/ticket/6aafb…). URLs yield their last path segment, URI-decoded.
+     */
+    private static function extractTicketCode(?string $raw): string
+    {
+        $value = trim((string) $raw);
+        if ($value === "") {
+            return "";
+        }
+        $value = preg_split('/[?#]/', $value)[0];
+        if (strpos($value, "/") !== false) {
+            $segments = explode("/", rtrim($value, "/"));
+            $last = rawurldecode(end($segments));
+            if ($last !== "") {
+                return $last;
+            }
+        }
+        return $value;
+    }
+
     private RegistrationService $registrationService;
     private EventService $eventService;
     private UserService $userService;
@@ -219,7 +240,7 @@ class RegistrationController
 
     public function getTicketDetails()
     {
-        $code = $_GET["code"] ?? "";
+        $code = self::extractTicketCode($_GET["code"] ?? "");
         if (empty($code)) {
             http_response_code(400);
             return [
@@ -287,7 +308,7 @@ class RegistrationController
         $jsonData = file_get_contents('php://input');
         $data = json_decode($jsonData, true);
 
-        $ticketCode = $data["ticketCode"] ?? "";
+        $ticketCode = self::extractTicketCode($data["ticketCode"] ?? "");
 
         if (empty($ticketCode)) {
             return [

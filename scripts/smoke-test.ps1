@@ -27,7 +27,7 @@ function Invoke-Curl {
 function Call-Web {
     param($method, $url, [string]$json, [string]$cookie, [string]$extraHeaders)
     Remove-Item $tmpBody,$tmpJson -ErrorAction SilentlyContinue
-    $a = @("-s","-o",$tmpBody,"-w","%{http_code}","-X",$method,$url,"-m",20)
+    $a = @("-s","-o",$tmpBody,"-w","%{http_code}","-X",$method,$url,"-m",60)
     if ($json) {
         [System.IO.File]::WriteAllText($tmpJson, $json, (New-Object System.Text.UTF8Encoding($false)))
         $a += @("-H","Content-Type: application/json","--data","@$tmpJson")
@@ -45,7 +45,7 @@ function Call-Web {
 function Call-Form {
     param($url, $fields, $cookie)
     Remove-Item $tmpBody -ErrorAction SilentlyContinue
-    $a = @("-s","-o",$tmpBody,"-w","%{http_code}","-X","POST",$url,"-m",20)
+    $a = @("-s","-o",$tmpBody,"-w","%{http_code}","-X","POST",$url,"-m",60)
     foreach ($k in $fields.Keys) { $a += @("-F","$k=$($fields[$k])") }
     if ($cookie) { $a += @("-H","Cookie: $cookie") }
     $status = Invoke-Curl $a
