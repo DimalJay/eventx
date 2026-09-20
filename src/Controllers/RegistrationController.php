@@ -57,10 +57,20 @@ class RegistrationController
                 $userId = $user["id"];
             }
 
+            // the event organizer cannot register to their own event
+            $event = $this->eventService->getEvent($eventId);
+            if ($event && (int) $event["organizerId"] === (int) $userId) {
+                http_response_code(400);
+                return [
+                    "success" => false,
+                    "message" => "Organizer cannot register to their own event"
+                ];
+            }
 
             // check if the user is already registered for the event
             $existingRegistration = $this->registrationService->isUserRegisteredForEvent($userId, $eventId);
             if ($existingRegistration) {
+                http_response_code(400);
                 return [
                     "success" => false,
                     "message" => "User is already registered for this event"
@@ -71,7 +81,6 @@ class RegistrationController
             $reg_id = $this->registrationService->registerUserForEvent($registration);
             $registration = $this->registrationService->getRegistrationById($reg_id);
 
-            $event = $this->eventService->getEvent($eventId);
             if ($event) {
                 $startTs = strtotime($event["startDate"]);
                 $endTs = strtotime($event["endDate"]);
