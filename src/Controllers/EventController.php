@@ -110,8 +110,25 @@ class EventController
 
     public function getEventDetails()
     {
-        $id = $_GET["id"];
-        $event = $this->eventService->getEvent($id);
+        $id = $_GET["id"] ?? null;
+        if ($id === null || !is_numeric($id)) {
+            http_response_code(400);
+            return [
+                "success" => false,
+                "message" => "Invalid event id",
+                "data" => null,
+            ];
+        }
+
+        $event = $this->eventService->getEvent((string) $id);
+        if ($event === null) {
+            http_response_code(404);
+            return [
+                "success" => false,
+                "message" => "Event not found",
+                "data" => null,
+            ];
+        }
 
         return [
             "success" => true,
