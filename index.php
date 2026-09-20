@@ -36,5 +36,6 @@ require_once __DIR__ . '/Routes/admin.php';
 require_once __DIR__ . '/Routes/cron.php';
 require_once __DIR__ . '/Routes/payments.php';
 require_once __DIR__ . '/Routes/notifications.php';
+require_once __DIR__ . '/Routes/teamLabels.php';
 
 $router->dispatch();
