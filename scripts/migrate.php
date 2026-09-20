@@ -112,3 +112,75 @@ if ((int) $hasRegistrationCustomFields === 0) {
 } else {
     echo "✓ Registrations.customFields column already exists.\n";
 }
+
+// tickets.ticketCode (ticket rows are created per registration)
+$hasTicketCode = $db->query(
+    "SELECT COUNT(*) AS c FROM information_schema.columns
+     WHERE LOWER(table_schema) = LOWER(DATABASE())
+       AND LOWER(table_name) = 'tickets'
+       AND LOWER(column_name) = 'ticketcode'"
+)['c'] ?? 0;
+
+if ((int) $hasTicketCode === 0) {
+    $db->execute("ALTER TABLE `tickets` ADD COLUMN `ticketCode` VARCHAR(100) NOT NULL DEFAULT ''");
+    echo "✓ tickets.ticketCode column added.\n";
+} else {
+    echo "✓ tickets.ticketCode column already exists.\n";
+}
+
+// Registrations.ticketCode still exists? Then migrate it into tickets and rename to ticketId.
+$regTicketCodeExists = $db->query(
+    "SELECT COUNT(*) AS c FROM information_schema.columns
+     WHERE LOWER(table_schema) = LOWER(DATABASE())
+       AND LOWER(table_name) = 'registrations'
+       AND LOWER(column_name) = 'ticketcode'"
+)['c'] ?? 0;
+
+$regTicketIdExists = $db->query(
+    "SELECT COUNT(*) AS c FROM information_schema.columns
+     WHERE LOWER(table_schema) = LOWER(DATABASE())
+       AND LOWER(table_name) = 'registrations'
+       AND LOWER(column_name) = 'ticketid'"
+)['c'] ?? 0;
+
+if ((int) $regTicketCodeExists === 1) {
+    // Backfill ticket rows from legacy Registrations.ticketCode
+    $db->execute(
+        "INSERT INTO `tickets` (`eventId`, `userId`, `paymentId`, `registerId`, `ticketCode`)
+         SELECT r.`eventId`, r.`userId`, 0, r.`id`, r.`ticketCode`
+         FROM `Registrations` r
+         WHERE r.`ticketCode` IS NOT NULL AND r.`ticketCode` != ''
+           AND NOT EXISTS (SELECT 1 FROM `tickets` t WHERE t.`registerId` = r.`id`)"
+    );
+    echo "✓ tickets backfilled from legacy registration ticket codes.\n";
+
+    if ((int) $regTicketIdExists === 0) {
+        $db->execute("ALTER TABLE `Registrations` ADD COLUMN `ticketId` INT NULL");
+        echo "✓ Registrations.ticketId column added.\n";
+        $regTicketIdExists = 1;
+    }
+
+    // Drop the legacy string column; codes are preserved in the tickets rows.
+    $db->execute("ALTER TABLE `Registrations` DROP COLUMN `ticketCode`");
+    echo "✓ Registrations.ticketCode dropped (codes preserved in tickets).\n";
+}
+
+// Sync Registrations.ticketId from the linked ticket rows
+if ((int) $regTicketIdExists === 1) {
+    $rows = $db->queryAll(
+        "SELECT r.`id` AS rid, t.`id` AS tid
+         FROM `Registrations` r
+         JOIN `tickets` t ON t.`registerId` = r.`id`
+         WHERE r.`ticketId` IS NULL OR r.`ticketId` <> t.`id`"
+    );
+    $syncDb = new database\Database();
+    foreach ($rows as $row) {
+        $syncDb->execute(
+            "UPDATE `Registrations` SET `ticketId` = :tid WHERE `id` = :rid",
+            ["tid" => (int) $row['tid'], "rid" => (int) $row['rid']]
+        );
+    }
+    echo "✓ Registrations.ticketId synced from tickets.\n";
+} else {
+    echo "✓ Registrations.ticketId already migrated.\n";
+}

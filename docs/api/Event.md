@@ -276,6 +276,8 @@ Auth: `AuthMiddleware` (requires `auth_token` cookie)
         "id": 1,
         "eventId": 1,
         "userId": 5,
+        "ticketId": 11,
+        "ticketCode": "TICKET-ABC123",
         "status": "registered",
         "registeredAt": "2026-08-01 10:30:00",
         "customFields": {
@@ -285,6 +287,10 @@ Auth: `AuthMiddleware` (requires `auth_token` cookie)
     }
 }
 ```
+
+> A ticket row is created in the `tickets` table when a user registers, and the
+> registration links to it via `ticketId`. `ticketCode` is returned (joined from the
+> `tickets` row) so scanning, email and QR flows keep working unchanged.
 
 ### Response Body `400 ERROR`
 ```json

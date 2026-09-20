@@ -419,8 +419,9 @@ class EventController
             ];
         }
 
-        $q = "SELECT r.*, u.firstName, u.lastName, u.email, u.profilePicture 
+        $q = "SELECT r.*, t.ticketCode AS ticketCode, u.firstName, u.lastName, u.email, u.profilePicture 
               FROM Registrations r 
+              LEFT JOIN tickets t ON t.registerId = r.id
               JOIN users u ON r.userId = u.id 
               WHERE r.eventId = ?";
         

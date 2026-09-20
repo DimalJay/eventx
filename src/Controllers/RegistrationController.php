@@ -79,6 +79,7 @@ class RegistrationController
 
             $registration = new Registration($eventId, $userId, $customFields);
             $reg_id = $this->registrationService->registerUserForEvent($registration);
+            $this->registrationService->createTicketForRegistration((int) $reg_id, (int) $eventId, (int) $userId);
             $registration = $this->registrationService->getRegistrationById($reg_id);
 
             if ($event) {

@@ -2,6 +2,10 @@
 
 Base URL `/api/v1`
 
+> **Data model:** `ticketCode` is stored on the `tickets` table. A registration links to
+> its ticket via `Registrations.ticketId` → `tickets.id`. Tickets are created
+> automatically on `POST /join-event` and by the invitation flow (`INVITE-*` codes).
+
 ---
 
 ## Get Ticket Details

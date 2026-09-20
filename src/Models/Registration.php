@@ -21,8 +21,8 @@ class Registration extends BaseModel
   #[Column(type: 'DATETIME', default: 'CURRENT_TIMESTAMP')]
   protected DateTime $registeredAt;
 
-  #[Column(type: 'VARCHAR', length: 100, nullable: false)]
-  protected string $ticketCode;
+  #[Column(type: 'INT', nullable: true)]
+  protected ?int $ticketId = null;
 
   #[Column(type: 'VARCHAR', length: 100, nullable: false, default: "'PENDING'")]
   protected string $status = 'PENDING';
@@ -36,7 +36,6 @@ class Registration extends BaseModel
   public function __construct($eventId, $userId, $customFields = null) {
     $this->eventId = $eventId;
     $this->userId = $userId;
-    $this->ticketCode = $ticketCode ?? uniqid();
     $this->customFields = self::encodeCustomFields($customFields);
     $this->registeredAt = new DateTime();
     parent::__construct();

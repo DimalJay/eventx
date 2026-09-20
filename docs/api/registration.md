@@ -4,6 +4,12 @@ Base URL `/api/v1`
 
 All registration routes require `AuthMiddleware` (requires `auth_token` cookie).
 
+> **Data model:** every registration is backed by a row in the `tickets` table. The
+> `Registrations.ticketId` column references `tickets.id`, and the human-readable
+> `ticketCode` lives on the `tickets` row. A ticket row is created automatically when
+> a user joins (`POST /join-event`) and by the invitation flow (`INVITE-*` codes).
+> Registration responses include a joined `ticketCode` for compatibility.
+
 ---
 
 ## Get All Registrations
@@ -23,6 +29,7 @@ All registration routes require `AuthMiddleware` (requires `auth_token` cookie).
                 "userId": 5,
                 "name": "Kumara"
             },
+            "ticketId": 11,
             "ticketCode": "TICKET-ABC123",
             "registeredAt": "2026-08-01 10:30:00",
             "status": "registered",
@@ -38,6 +45,7 @@ All registration routes require `AuthMiddleware` (requires `auth_token` cookie).
                 "userId": 7,
                 "name": "Nimal"
             },
+            "ticketId": 12,
             "ticketCode": "TICKET-DEF456",
             "registeredAt": "2026-08-01 11:00:00",
             "status": "waitlisted",
@@ -67,6 +75,7 @@ Returns the full attendee rows for an event, including any submitted custom fiel
             "id": 1,
             "eventId": 1,
             "userId": 5,
+            "ticketId": 11,
             "ticketCode": "TICKET-ABC123",
             "registeredAt": "2026-08-01 10:30:00",
             "status": "registered",
@@ -136,6 +145,7 @@ Returns the full attendee rows for an event, including any submitted custom fiel
         "id": 1,
         "eventId": 1,
         "userId": 5,
+        "ticketId": 11,
         "ticketCode": "TICKET-ABC123",
         "status": "registered",
         "registeredAt": "2026-08-01 10:30:00",
