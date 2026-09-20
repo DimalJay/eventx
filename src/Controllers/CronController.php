@@ -73,4 +73,24 @@ class CronController
             ];
         }
     }
+
+    public function analyzeSentiments()
+    {
+        set_time_limit(0);
+        try {
+            $service = new \Services\SentimentService();
+            $result = $service->analyzePendingFeedbacks();
+
+            return [
+                "success" => true,
+                "message" => "Sentiment analysis cron completed successfully.",
+                "data" => $result
+            ];
+        } catch (\Throwable $th) {
+            return [
+                "success" => false,
+                "message" => "Error running sentiment analysis cron: " . $th->getMessage()
+            ];
+        }
+    }
 }
