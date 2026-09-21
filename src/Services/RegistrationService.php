@@ -28,6 +28,15 @@ class RegistrationService
         if(!$event) {
             throw new Exception("Event not found");
         }
+
+        if ((int)$event['organizerId'] === (int)$registration->getUserId()) {
+            throw new Exception("Organizer cannot register to their own event");
+        }
+
+        if ($this->isUserRegisteredForEvent($registration->getUserId(), $registration->getEventId())) {
+            throw new Exception("User is already registered for this event");
+        }
+
         $capacity =  $event['capacity'] ?? 0;
         if($capacity > 0) {
             $registrationCount = count($this->getRegistrationsByEventId($registration->getEventId()));
@@ -106,10 +115,10 @@ class RegistrationService
     /**
      * Create a ticket row for a registration and link it via Registrations.ticketId.
      */
-    public function createTicketForRegistration(int $regId, int $eventId, int $userId, ?string $ticketCode = null)
+    public function createTicketForRegistration(int $regId, int $eventId, int $userId, ?string $ticketCode = null, int $paymentId = 0)
     {
         $ticketCode = $ticketCode ?: uniqid();
-        $ticket = new Ticket($eventId, $userId, $ticketCode, $regId);
+        $ticket = new Ticket($eventId, $userId, $ticketCode, $regId, $paymentId);
         $ticketId = $ticket->save();
         Registration::updateRecord(["id" => $regId], ["ticketId" => $ticketId]);
         return Ticket::where(["id" => $ticketId])[0] ?? null;

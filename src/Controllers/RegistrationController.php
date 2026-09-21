@@ -78,9 +78,27 @@ class RegistrationController
                 $userId = $user["id"];
             }
 
-            // the event organizer cannot register to their own event
             $event = $this->eventService->getEvent($eventId);
-            if ($event && (int) $event["organizerId"] === (int) $userId) {
+            if (!$event) {
+                http_response_code(404);
+                return [
+                    "success" => false,
+                    "message" => "Event not found"
+                ];
+            }
+
+            // A paid event requires purchasing a ticket; free join is blocked
+            if ((float)($event["ticketPrice"] ?? 0) > 0) {
+                http_response_code(400);
+                return [
+                    "success" => false,
+                    "message" => "This is a paid event. Please purchase a ticket to register."
+                ];
+            }
+
+            // The event organizer cannot register to their own event
+            $authUid = isset($_SERVER['uid']) ? (int)$_SERVER['uid'] : null;
+            if ((int)$event["organizerId"] === (int)$userId || ($authUid && (int)$event["organizerId"] === $authUid)) {
                 http_response_code(400);
                 return [
                     "success" => false,
@@ -88,7 +106,7 @@ class RegistrationController
                 ];
             }
 
-            // check if the user is already registered for the event
+            // Check if the user is already registered for the event
             $existingRegistration = $this->registrationService->isUserRegisteredForEvent($userId, $eventId);
             if ($existingRegistration) {
                 http_response_code(400);

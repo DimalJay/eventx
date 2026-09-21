@@ -217,7 +217,6 @@ class EventController
         $agenda = $data["agenda"] ?? "";
         $capacity = $data["capacity"] ?? "";
         $regDeadline = $data["regDeadline"] ?? "";
-        $ticketPrice = $data["ticketPrice"] ?? "";
         $isPublic = $data["isPublic"] ?? false;
         $waitlistEnabled = $data["waitlistEnabled"] ?? false;
         $coverImage = $data["coverImage"] ?? "";
@@ -252,9 +251,6 @@ class EventController
         }
         if (!empty($capacity)) {
             $eventData["capacity"] = trim($capacity);
-        }
-        if (!empty($ticketPrice)) {
-            $eventData["ticketPrice"] = trim($ticketPrice);
         }
         if (isset($data["isPublic"])) {
             $eventData["isPublic"] = filter_var($data["isPublic"], FILTER_VALIDATE_BOOLEAN) ? 1 : 0;

@@ -193,6 +193,13 @@ class InvitationController
                 $userId = $user['id'];
             }
 
+            // The event organizer cannot register to their own event
+            if ($response === 'accept' && (int)$event['organizerId'] === (int)$userId) {
+                http_response_code(400);
+                echo json_encode(["success" => false, "message" => "Organizer cannot register to their own event"]);
+                exit;
+            }
+
             // Check if registration exists
             $existing = Registration::where(["userId" => $userId, "eventId" => $eventId])[0] ?? null;
             $status = $response === 'accept' ? 'PENDING' : 'NOT_GOING';

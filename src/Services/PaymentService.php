@@ -6,6 +6,12 @@ use Stripe\StripeClient;
 use Models\Payment;
 use Models\PaymentAccount;
 use Models\Registration;
+use Models\Ticket;
+use Services\UserService;
+use Services\RegistrationService;
+use Services\NotificationService;
+use Helpers\EmailHelper;
+use Helpers\QrHelper;
 use DateTime;
 use Exception;
 use Throwable;
@@ -13,10 +19,16 @@ use Throwable;
 class PaymentService
 {
     private EventService $eventService;
+    private UserService $userService;
+    private RegistrationService $registrationService;
+    private NotificationService $notificationService;
 
     public function __construct()
     {
         $this->eventService = new EventService();
+        $this->userService = new UserService();
+        $this->registrationService = new RegistrationService();
+        $this->notificationService = new NotificationService();
     }
 
     private function getStripeClient(): StripeClient
@@ -253,33 +265,45 @@ class PaymentService
             throw new Exception("This event is free. No payment required.");
         }
 
+        if ((int)$event['organizerId'] === (int)$userId) {
+            throw new Exception("Organizer cannot register to their own event");
+        }
+
+        // Prevent the user from buying a ticket if they have already purchased one
+        // or already have a ticket/registration for this event.
+        $existingPayment = Payment::query(
+            "SELECT p.id FROM Payments p 
+             JOIN Registrations r ON r.id = p.registerId 
+             WHERE p.userId = ? AND r.eventId = ?",
+            [(int)$userId, (int)$eventId]
+        );
+        if (count($existingPayment) > 0) {
+            throw new Exception("You have already purchased a ticket for this event.");
+        }
+
+        $existingTicket = Ticket::where([
+            "userId" => (int)$userId,
+            "eventId" => (int)$eventId
+        ]);
+        if (count($existingTicket) > 0) {
+            throw new Exception("You are already registered for this event.");
+        }
+
         // Ensure a registration exists for this user+event so the buyer's
         // registration appears immediately (the frontend only sends
         // eventId + email). The real registration id is stored in the
         // Stripe session metadata so the payment can be linked on success.
         if (!$registerId) {
-            $registrationService = new RegistrationService();
-            if ($registrationService->isUserRegisteredForEvent($userId, $eventId)) {
+            if ($this->registrationService->isUserRegisteredForEvent($userId, $eventId)) {
                 $existing = \Models\Registration::where(["userId" => $userId, "eventId" => $eventId]);
                 $registerId = $existing[0]['id'];
             } else {
                 $registration = new \Models\Registration($eventId, $userId);
-                $registerId = $registrationService->registerUserForEvent($registration);
+                $registerId = $this->registrationService->registerUserForEvent($registration);
             }
             if (!$registerId) {
                 throw new Exception("Could not create a registration for this event");
             }
-        }
-
-        // Prevent the same user from buying a ticket for an event they have
-        // already paid for. A freshly created registration (no payment yet)
-        // is left untouched so a cancelled checkout can be retried.
-        $existingPayments = Payment::where([
-            "userId" => (int)$userId,
-            "registerId" => (int)$registerId,
-        ]);
-        if (count($existingPayments) > 0) {
-            throw new Exception("You have already purchased a ticket for this event.");
         }
 
         $domain = rtrim($this->frontendHost(), '/');
@@ -379,15 +403,14 @@ class PaymentService
 
     public function recordCompletedPayment($session): void
     {
-        
         if (($session->payment_status ?? '') !== 'paid') {
             return;
         }
 
-        $metadata = $session->metadata;
-        $userId = $metadata->userId;
-        $eventId = $metadata->eventId;
-        $registerId = $metadata->registerId;
+        $metadata = $session->metadata ?? null;
+        $userId = is_array($metadata) ? ($metadata['userId'] ?? null) : ($metadata->userId ?? null);
+        $eventId = is_array($metadata) ? ($metadata['eventId'] ?? null) : ($metadata->eventId ?? null);
+        $registerId = is_array($metadata) ? ($metadata['registerId'] ?? null) : ($metadata->registerId ?? null);
 
         if (!$userId || !$eventId) {
             return;
@@ -397,31 +420,96 @@ class PaymentService
         // (the frontend sends only eventId + email). Ensure one exists so
         // the registration appears in the user's registrations.
         if (!$registerId) {
-            $registrationService = new RegistrationService();
-            if (!$registrationService->isUserRegisteredForEvent($userId, $eventId)) {
+            if (!$this->registrationService->isUserRegisteredForEvent($userId, $eventId)) {
                 $registration = new Registration($eventId, $userId);
-                $registerId = $registrationService->registerUserForEvent($registration);
+                $registerId = $this->registrationService->registerUserForEvent($registration);
             } else {
                 $existing = Registration::where(["userId" => $userId, "eventId" => $eventId]);
-                $registerId = $existing[0]['id'];
+                $registerId = $existing[0]['id'] ?? null;
             }
         }
 
         if (!$registerId) {
             return;
         }
-        
+
         $exists = Payment::where([
             "userId" => (int)$userId,
             "registerId" => (int)$registerId,
         ]);
+
+        $paymentId = null;
         if (count($exists) > 0) {
-            return;
+            $paymentId = (int)$exists[0]['id'];
+        } else {
+            $amount = $session->amount_total ? (float)($session->amount_total / 100) : 0.0;
+            $payment = new Payment((int)$userId, (int)$registerId, $amount);
+            $paymentId = $payment->save();
         }
 
-        $amount = $session->amount_total ? (float)($session->amount_total / 100) : 0.0;
-        $payment = new Payment((int)$userId, (int)$registerId, $amount);
-        $payment->save();
+        // Update registration status to CONFIRMED
+        Registration::updateRecord(["id" => (int)$registerId], ["status" => "CONFIRMED"]);
+
+        // Check if ticket already exists; if not, create it
+        $existingTicket = Ticket::where(["registerId" => (int)$registerId])[0] ?? null;
+        $ticketCode = null;
+
+        if (!$existingTicket) {
+            $ticketCode = 'TICKET-' . strtoupper(substr(uniqid(), -8));
+            $newTicket = $this->registrationService->createTicketForRegistration(
+                (int)$registerId,
+                (int)$eventId,
+                (int)$userId,
+                $ticketCode,
+                (int)$paymentId
+            );
+            $ticketCode = $newTicket['ticketCode'] ?? $ticketCode;
+        } else {
+            $ticketCode = $existingTicket['ticketCode'] ?? null;
+            if (empty($existingTicket['paymentId']) && $paymentId) {
+                Ticket::updateRecord(["id" => (int)$existingTicket['id']], ["paymentId" => (int)$paymentId]);
+            }
+        }
+
+        // Send ticket email and notify organizer (only if we just created payment or ticket was missing)
+        if (count($exists) === 0 || !$existingTicket) {
+            $user = $this->userService->getUser((string)$userId);
+            $event = $this->eventService->getEvent((string)$eventId);
+
+            if ($user && $event && $ticketCode) {
+                $buyerEmail = $user['email'] ?? ($session->customer_details->email ?? ($session->customer_email ?? null));
+                $firstName = $user['firstName'] ?? 'Attendee';
+                $lastName = $user['lastName'] ?? '';
+
+                if ($buyerEmail) {
+                    $startTs = strtotime($event["startDate"]);
+                    $endTs = strtotime($event["endDate"]);
+                    $domain = $_ENV['DOMAIN'] ?? getenv('DOMAIN') ?? 'localhost';
+                    $ticketLink = EmailHelper::frontendUrl() . '/ticket/' . rawurlencode($ticketCode);
+
+                    EmailHelper::sendWithTemplate($buyerEmail, "Your Ticket for " . $event["title"], "ticket", [
+                        "firstName" => $firstName,
+                        "lastName" => $lastName,
+                        "eventTitle" => $event["title"],
+                        "ticketCode" => $ticketCode,
+                        "eventDate" => $startTs ? date("D, M j, Y", $startTs) : $event["startDate"],
+                        "eventTime" => $startTs && $endTs
+                            ? date("g:i A", $startTs) . " – " . date("g:i A", $endTs)
+                            : "",
+                        "eventLocation" => $event["location"] ?? "TBD",
+                        "eventType" => $event["eventType"] ?? "General admission",
+                        "ticketPrice" => number_format((float)($event["ticketPrice"] ?? 0), 2),
+                        "status" => "Valid",
+                        "eventLink" => "http://" . $domain . "/event/" . $event["id"],
+                        "ticketLink" => $ticketLink,
+                        "raw_qrCode" => QrHelper::renderTable($ticketLink),
+                    ]);
+
+                    $attendeeName = trim($firstName . " " . $lastName);
+                    $this->notificationService->notifyNewRegistration($event, $attendeeName);
+                }
+            }
+        }
     }
 
     public function getPaymentRecords(int $userId): array

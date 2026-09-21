@@ -71,4 +71,8 @@ class Registration extends BaseModel
   public function getEventId() : int {
     return $this->eventId;
   }
+
+  public function getUserId() : int {
+    return $this->userId;
+  }
 }
