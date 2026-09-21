@@ -32,5 +32,3 @@ composer dump-autoload
 ```cmd
 php scripts/migrate.php
 ```
-
-@copyright
