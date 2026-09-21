@@ -64,7 +64,12 @@ class PaymentService
 
     private function frontendHost(): string
     {
-        return $_ENV['FRONTEND_HOST'] ?? getenv('FRONTEND_HOST') ?? ($_ENV['DOMAIN'] ?? getenv('DOMAIN') ?? 'localhost');
+        $frontend = $_ENV['FRONTEND_HOST'] ?? getenv('FRONTEND_HOST');
+        if (is_string($frontend) && $frontend !== '') {
+            return $frontend;
+        }
+        $domain = $_ENV['DOMAIN'] ?? getenv('DOMAIN');
+        return is_string($domain) && $domain !== '' ? $domain : 'localhost';
     }
 
     private function getPaymentAccount(int $userId): ?array

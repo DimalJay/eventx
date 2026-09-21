@@ -23,5 +23,16 @@
             "database/Database.php",
             "database/SchemaGenerator.php"
         ]
+    },
+    "require-dev": {
+        "phpunit/phpunit": "11.5.50"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
     }
 }

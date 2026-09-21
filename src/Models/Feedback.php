@@ -59,6 +59,6 @@ class Feedback extends BaseModel
 
     public static function empty(): self
     {
-        return new self("","","","","");
+        return new self(0, 0, 0, 0, 0);
     }
     }

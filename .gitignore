@@ -2,6 +2,7 @@
 .VSCodeCounter
 /uploads/*
 .env
+/.phpunit.cache/
 
 .env.*
 !.env.example
