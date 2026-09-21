@@ -296,6 +296,7 @@ class AuthController
             "expires" => 0,
             "path" => "/",
             "secure" => true,
+            "domain" => getenv('DOMAIN'),
             "httponly" => true,
             "samesite" => "Lax"
         ]);
