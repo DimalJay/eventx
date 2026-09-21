@@ -7,6 +7,7 @@ use Contracts\TeamNotifierInterface;
 use Services\TeamAccessService;
 use Services\Team\TeamNotifier;
 use Helpers\APIResponse;
+use Helpers\EmailHelper;
 use Models\User;
 use Exception;
 
@@ -90,15 +91,68 @@ class TeamAccessController
         );
         if ($organizerCheck !== null) return $organizerCheck;
 
+        $teamAccessId = 0;
         try {
-            $this->teamService->addMember($userId, $eventId, $role, $label);
+            $teamAccessId = (int) $this->teamService->addMember($userId, $eventId, $role, $label);
         } catch (Exception $e) {
             return APIResponse::error("Error adding member to the team: " . $e->getMessage(), 500);
         }
 
-        $this->notifier->notifyMemberAdded($userId, (int) $eventId, $role);
+        $this->notifier->notifyMemberAdded($userId, (int) $eventId, $role, $teamAccessId);
 
-        return APIResponse::success("Member added to the team successfully");
+        return APIResponse::success("Team invitation sent successfully");
+    }
+
+    public function respondToTeamInvitation()
+    {
+        $teamAccessId = $_GET['teamAccessId'] ?? '';
+        $response = $_GET['response'] ?? ''; // accept or decline
+        $token = $_GET['token'] ?? '';
+
+        if (empty($teamAccessId) || empty($response) || empty($token)) {
+            http_response_code(400);
+            echo json_encode(["success" => false, "message" => "Missing response parameters."]);
+            exit;
+        }
+
+        $secretKey = \Helpers\Config::requireSecret('APP_SECRET');
+        $expectedToken = hash_hmac('sha256', 'team-' . $teamAccessId . '-' . $response, $secretKey);
+
+        if (!hash_equals($expectedToken, $token)) {
+            http_response_code(403);
+            echo json_encode(["success" => false, "message" => "Invalid security token."]);
+            exit;
+        }
+
+        $member = $this->teamService->getMember((int) $teamAccessId);
+        if (!$member) {
+            http_response_code(404);
+            echo json_encode(["success" => false, "message" => "Team invitation record not found."]);
+            exit;
+        }
+
+        $eventId = (int) $member['eventId'];
+        $event = (new \Services\EventService())->getEvent($eventId);
+        $eventTitle = $event ? $event['title'] : 'the event';
+
+        try {
+            if ($response === 'accept') {
+                \Models\TeamAccess::updateRecord(["id" => (int) $teamAccessId], ["status" => "ACTIVE"]);
+            } else {
+                $this->teamService->removeMember((int) $teamAccessId);
+            }
+
+            // Redirect to Next.js frontend status page
+            $redirectUrl = EmailHelper::frontendUrl() . "/invitation/status?success=true&response=" . $response 
+                . "&eventTitle=" . urlencode($eventTitle) . "&eventId=" . $eventId . "&type=team";
+            header("Location: " . $redirectUrl);
+            exit;
+
+        } catch (\Throwable $th) {
+            http_response_code(500);
+            echo json_encode(["success" => false, "message" => "Error recording response: " . $th->getMessage()]);
+            exit;
+        }
     }
 
     public function removeMember()

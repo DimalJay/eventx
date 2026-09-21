@@ -10,7 +10,7 @@ use Models\Event;
 
 class TeamNotifier extends NotificationService implements TeamNotifierInterface
 {
-    public function notifyMemberAdded(int $memberId, int $eventId, string $role): void
+    public function notifyMemberAdded(int $memberId, int $eventId, string $role, int $teamAccessId = 0): void
     {
         $context = $this->userAndEvent($memberId, $eventId);
         if (!$context) {
@@ -24,15 +24,27 @@ class TeamNotifier extends NotificationService implements TeamNotifierInterface
 
         $this->notifyTeamMemberAdded($memberId, $eventTitle, $eventId);
 
+        $backendUrl = EmailHelper::backendUrl();
+        $secretKey = \Helpers\Config::requireSecret('APP_SECRET');
+
+        $acceptToken = hash_hmac('sha256', 'team-' . $teamAccessId . '-accept', $secretKey);
+        $declineToken = hash_hmac('sha256', 'team-' . $teamAccessId . '-decline', $secretKey);
+
+        $acceptLink = $backendUrl . "/eventx/api/v1/team-access/respond?teamAccessId=" . $teamAccessId 
+            . "&response=accept&token=" . $acceptToken;
+        $declineLink = $backendUrl . "/eventx/api/v1/team-access/respond?teamAccessId=" . $teamAccessId 
+            . "&response=decline&token=" . $declineToken;
+
         EmailHelper::sendWithTemplate(
             $email,
-            "You've been added to {$eventTitle}'s team",
+            "Team Invitation: You've been invited to {$eventTitle}'s team",
             "team_access",
             [
                 "firstName" => $firstName,
                 "eventTitle" => $eventTitle,
                 "roleLabel" => $roleLabel,
-                "eventLink" => EmailHelper::frontendUrl() . "/events/{$eventId}",
+                "acceptLink" => $acceptLink,
+                "declineLink" => $declineLink,
             ]
         );
 
@@ -41,8 +53,8 @@ class TeamNotifier extends NotificationService implements TeamNotifierInterface
                 $organizerId,
                 $eventTitle,
                 $eventId,
-                "New team member",
-                "{$firstName} ({$email}) has been added to the team as {$roleLabel}."
+                "New team member invited",
+                "{$firstName} ({$email}) has been invited to the team as {$roleLabel}."
             );
         }
     }

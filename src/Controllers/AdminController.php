@@ -357,6 +357,46 @@ class AdminController
         }
     }
 
+    public function getEventRegistrationCounts()
+    {
+        try {
+            // Fetch all registrations (admin has full access)
+            $registrations = Registration::selectAll();
+
+            // Group registrations by eventId and count
+            $counts = [];
+            foreach ($registrations as $reg) {
+                $eventId = $reg['eventId'] ?? null;
+                if ($eventId === null) continue;
+                if (!isset($counts[$eventId])) {
+                    $counts[$eventId] = 0;
+                }
+                $counts[$eventId]++;
+            }
+
+            // Format as array of { eventId, count }
+            $result = [];
+            foreach ($counts as $eventId => $count) {
+                $result[] = [
+                    "eventId" => (int) $eventId,
+                    "count"   => $count
+                ];
+            }
+
+            return [
+                "success" => true,
+                "message" => "Event registration counts retrieved successfully",
+                "data"    => $result
+            ];
+        } catch (\Throwable $th) {
+            http_response_code(500);
+            return [
+                "success" => false,
+                "message" => "Error retrieving event registration counts: " . $th->getMessage()
+            ];
+        }
+    }
+
     private function getRelativeTime($timestamp)
     {
         $diff = time() - $timestamp;

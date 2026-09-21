@@ -5,6 +5,7 @@ use Middlewares\AuthMiddleware;
 $teamAccessController = new TeamAccessController();
 
 $router->get("/team-access", [$teamAccessController, "getMembers"], [AuthMiddleware::class]);
+$router->get("/team-access/respond", [$teamAccessController, "respondToTeamInvitation"]);
 $router->post("/team-access", [$teamAccessController, "addMember"], [AuthMiddleware::class]);
 $router->put("/team-access", [$teamAccessController, "updateMemberRole"], [AuthMiddleware::class]);
 $router->put("/team-access/label", [$teamAccessController, "updateMemberLabel"], [AuthMiddleware::class]);
