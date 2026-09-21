@@ -116,6 +116,20 @@ class RegistrationController
                 ];
             }
 
+            // Check capacity and waitlist
+            $capacity = (int)($event['capacity'] ?? 0);
+            $waitlistEnabled = filter_var($event['waitlistEnabled'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            if ($capacity > 0) {
+                $regCount = $this->registrationService->getActiveRegistrationCount((int)$eventId);
+                if ($regCount >= $capacity && !$waitlistEnabled) {
+                    http_response_code(400);
+                    return [
+                        "success" => false,
+                        "message" => "Event is full. Registration is closed."
+                    ];
+                }
+            }
+
             $registration = new Registration($eventId, $userId, $customFields);
             $reg_id = $this->registrationService->registerUserForEvent($registration);
             $this->registrationService->createTicketForRegistration((int) $reg_id, (int) $eventId, (int) $userId);
@@ -155,9 +169,10 @@ class RegistrationController
                 "data" => $registration
             ];
         } catch (\Throwable $th) {
+            http_response_code(400);
             return [
                 "success" => false,
-                "message" => "Error registering user for the event: " . $th->getMessage()
+                "message" => $th->getMessage()
             ];
         }
     }

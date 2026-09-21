@@ -37,19 +37,31 @@ class RegistrationService
             throw new Exception("User is already registered for this event");
         }
 
-        $capacity =  $event['capacity'] ?? 0;
-        if($capacity > 0) {
-            $registrationCount = count($this->getRegistrationsByEventId($registration->getEventId()));
-            if($registrationCount >= $capacity) {
-                if($event['waitlistEnabled'] ?? false) {
+        $capacity = (int)($event['capacity'] ?? 0);
+        if ($capacity > 0) {
+            $registrationCount = $this->getActiveRegistrationCount((int)$registration->getEventId());
+            if ($registrationCount >= $capacity) {
+                $waitlistEnabled = filter_var($event['waitlistEnabled'] ?? false, FILTER_VALIDATE_BOOLEAN);
+                if ($waitlistEnabled) {
                     $registration->setInWaitlist();
                 } else {
-                    throw new Exception("Event is full and waitlist is not enabled");
+                    throw new Exception("Event is full. Registration is closed.");
                 }
             }
         }
 
         return $registration->save();
+    }
+
+    public function getActiveRegistrationCount(int $eventId): int
+    {
+        $rows = Registration::query(
+            "SELECT COUNT(*) as count FROM Registrations 
+             WHERE eventId = :eventId 
+               AND status NOT IN ('WAITLIST', 'CANCELLED', 'NOT_GOING')",
+            ['eventId' => $eventId]
+        );
+        return (int)($rows[0]['count'] ?? 0);
     }
 
     public function isUserRegisteredForEvent($userId, $eventId)

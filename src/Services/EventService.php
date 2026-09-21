@@ -19,6 +19,12 @@ class EventService
                 $event['customFields'] = $decoded;
             }
         }
+        if (isset($event['waitlistEnabled'])) {
+            $event['waitlistEnabled'] = filter_var($event['waitlistEnabled'], FILTER_VALIDATE_BOOLEAN);
+        }
+        if (isset($event['isPublic'])) {
+            $event['isPublic'] = filter_var($event['isPublic'], FILTER_VALIDATE_BOOLEAN);
+        }
         return $event;
     }
 

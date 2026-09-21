@@ -181,7 +181,7 @@ class EventController
                 $data["ticketPrice"] ?? 0.0,
                 $data["regDeadline"] ?? null,
                 $data["agenda"] ?? null,
-                $data["waitlistEnabled"] ?? false,
+                isset($data["waitlistEnabled"]) ? filter_var($data["waitlistEnabled"], FILTER_VALIDATE_BOOLEAN) : false,
                 trim($data["category"] ?? 'General'),
                 $data["customFields"] ?? null,
             );
@@ -258,8 +258,8 @@ class EventController
         if (!empty($regDeadline)) {
             $eventData["regDeadline"] = trim($regDeadline);
         }
-        if (!empty($waitlistEnabled)) {
-            $eventData["waitlistEnabled"] = trim($waitlistEnabled);
+        if (array_key_exists("waitlistEnabled", $data)) {
+            $eventData["waitlistEnabled"] = filter_var($data["waitlistEnabled"], FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
         }
         if (!empty($description)) {
             $eventData["description"] = trim($description);

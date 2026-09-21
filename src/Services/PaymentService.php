@@ -289,6 +289,16 @@ class PaymentService
             throw new Exception("You are already registered for this event.");
         }
 
+        // Check capacity and waitlist
+        $capacity = (int)($event['capacity'] ?? 0);
+        $waitlistEnabled = filter_var($event['waitlistEnabled'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        if ($capacity > 0) {
+            $regCount = $this->registrationService->getActiveRegistrationCount((int)$eventId);
+            if ($regCount >= $capacity && !$waitlistEnabled) {
+                throw new Exception("Event is full. Registration is closed.");
+            }
+        }
+
         // Ensure a registration exists for this user+event so the buyer's
         // registration appears immediately (the frontend only sends
         // eventId + email). The real registration id is stored in the
