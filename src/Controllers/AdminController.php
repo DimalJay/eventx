@@ -202,6 +202,79 @@ class AdminController
                 ];
             }
 
+            $now = time();
+            $periodDays = 7;
+            if ($range === 'month') {
+                $periodDays = 30;
+            } elseif ($range === 'year') {
+                $periodDays = 365;
+            }
+
+            $currentStart = $now - ($periodDays * 86400);
+            $previousStart = $now - (2 * $periodDays * 86400);
+
+            // Active users calculation
+            $currentUsers = 0;
+            $prevUsers = 0;
+            foreach ($users as $u) {
+                if (isset($u['accountStatus']) && strtolower($u['accountStatus']) === 'active') {
+                    $cTime = isset($u['createdAt']) ? strtotime($u['createdAt']) : 0;
+                    if ($cTime >= $currentStart) {
+                        $currentUsers++;
+                    } elseif ($cTime >= $previousStart && $cTime < $currentStart) {
+                        $prevUsers++;
+                    }
+                }
+            }
+
+            // Events created calculation
+            $currentEvents = 0;
+            $prevEvents = 0;
+            foreach ($events as $e) {
+                $cTime = isset($e['createdAt']) ? strtotime($e['createdAt']) : 0;
+                if ($cTime >= $currentStart) {
+                    $currentEvents++;
+                } elseif ($cTime >= $previousStart && $cTime < $currentStart) {
+                    $prevEvents++;
+                }
+            }
+
+            // Registrations calculation
+            $currentRegs = 0;
+            $prevRegs = 0;
+            foreach ($registrations as $r) {
+                $cTime = isset($r['registeredAt']) ? strtotime($r['registeredAt']) : 0;
+                if ($cTime >= $currentStart) {
+                    $currentRegs++;
+                } elseif ($cTime >= $previousStart && $cTime < $currentStart) {
+                    $prevRegs++;
+                }
+            }
+
+            $calcChange = function($current, $prev) {
+                if ($prev > 0) {
+                    $pct = (($current - $prev) / $prev) * 100;
+                    $sign = $pct >= 0 ? '+' : '';
+                    return [
+                        'change' => $sign . number_format($pct, 1) . '%',
+                        'isPositive' => $pct >= 0
+                    ];
+                } elseif ($current > 0) {
+                    return [
+                        'change' => '+' . number_format($current * 100, 1) . '%',
+                        'isPositive' => true
+                    ];
+                }
+                return [
+                    'change' => '0.0%',
+                    'isPositive' => true
+                ];
+            };
+
+            $userChange = $calcChange($currentUsers, $prevUsers);
+            $eventChange = $calcChange($currentEvents, $prevEvents);
+            $regChange = $calcChange($currentRegs, $prevRegs);
+
             // Return counts, activities, and chartData
             return [
                 "success" => true,
@@ -209,22 +282,22 @@ class AdminController
                 "data" => [
                     "activeUsers" => [
                         "value" => number_format($activeUsersCount),
-                        "change" => "+5.2%",
-                        "isPositive" => true
+                        "change" => $userChange['change'],
+                        "isPositive" => $userChange['isPositive']
                     ],
                     "eventsCreated" => [
                         "value" => number_format($eventsCount),
-                        "change" => "+18.1%",
-                        "isPositive" => true
+                        "change" => $eventChange['change'],
+                        "isPositive" => $eventChange['isPositive']
                     ],
                     "registrations" => [
                         "value" => number_format($registrationsCount),
-                        "change" => "0.00%",
-                        "isPositive" => true
+                        "change" => $regChange['change'],
+                        "isPositive" => $regChange['isPositive']
                     ],
                     "uptime" => [
                         "value" => "99.99%",
-                        "change" => "0.00%",
+                        "change" => "0.0%",
                         "isPositive" => true
                     ],
                     "recentActivities" => $activities,
