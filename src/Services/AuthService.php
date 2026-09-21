@@ -39,6 +39,14 @@ class AuthService
     {
         $user = User::where(["email" => $email])[0] ?? null;
         if ($user && password_verify($password, $user['password'])) {
+            if (isset($user['accountStatus']) && strtolower($user['accountStatus']) === 'suspended') {
+                return [
+                    "success" => false,
+                    "suspended" => true,
+                    "message" => "Your account has been suspended by the administrator."
+                ];
+            }
+
             if (empty($user['isVerified'])) {
                 return [
                     "success" => false,
@@ -108,6 +116,14 @@ class AuthService
         }
 
         if ($user) {
+            if (isset($user['accountStatus']) && strtolower($user['accountStatus']) === 'suspended') {
+                return [
+                    "success" => false,
+                    "suspended" => true,
+                    "message" => "Your account has been suspended by the administrator."
+                ];
+            }
+
             $jwt = AuthMiddleware::generateToken($user['id']);
             setcookie("auth_token", $jwt, [
                 "expires" => time() + (60 * 60 * 24),

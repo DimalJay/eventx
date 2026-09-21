@@ -76,6 +76,13 @@ class RegistrationController
                 $userId = $this->userService->createUser($user);
             } else {
                 $userId = $user["id"];
+                if (isset($user['accountStatus']) && strtolower($user['accountStatus']) === 'suspended') {
+                    http_response_code(403);
+                    return [
+                        "success" => false,
+                        "message" => "Your account has been suspended by the administrator. Registration is not allowed."
+                    ];
+                }
             }
 
             // the event organizer cannot register to their own event
