@@ -200,6 +200,32 @@ Returns the authenticated user's payment records grouped per event. Requires `Au
 
 ---
 
+## Confirm Payment
+
+`POST /payment/confirm`
+
+Records a paid Checkout Session by id (idempotent). Use this as a fallback from the client-facing success page so a payment is saved even if the webhook hasn't been received yet. Requires `AuthMiddleware`; the session must belong to the authenticated user.
+
+### Request Body
+```json
+{
+    "session_id": "cs_test_a1b2c3d4"
+}
+```
+
+### Response Body `200 OK`
+```json
+{
+    "success": true,
+    "message": "Payment recorded",
+    "data": null
+}
+```
+
+If the session is not yet `paid`, or it belongs to a different user, a `200` response with `success: false` and an explanatory `message` is returned instead.
+
+---
+
 ## Webhook (Payment Events)
 
 `POST /payment/webhook`
