@@ -96,6 +96,17 @@ class EventController
             "data" => $events
         ];
     }
+
+    public function getMyEvents()
+    {
+        $userId = $_SERVER["uid"];
+        $events = $this->eventService->getRegisteredEventsForUser($userId);
+        return [
+            "success" => true,
+            "message" => "Events the user joined retrieved successfully",
+            "data" => $events
+        ];
+    }
     public function getPublicEvents()
     {
         $events = $this->eventService->getPublicEvents();

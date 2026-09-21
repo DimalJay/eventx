@@ -141,6 +141,65 @@ Client should redirect the user to `data.url`.
 
 ---
 
+## Payment Records
+
+`GET /payment/records`
+
+Returns the authenticated user's payment records grouped per event. Requires `AuthMiddleware`.
+
+### Response Body `200 OK`
+```json
+{
+    "success": true,
+    "message": "Payment records retrieved",
+    "data": {
+        "sales": [
+            {
+                "event": {
+                    "id": 1,
+                    "title": "Tech Conference 2026",
+                    "startDate": "2026-05-10 09:00:00",
+                    "coverImage": "cover.jpg"
+                },
+                "paymentCount": 2,
+                "revenue": 5000.00,
+                "commission": 250.00,
+                "payout": 4750.00,
+                "payments": [
+                    {
+                        "id": 7,
+                        "amount": 2500.00,
+                        "paymentAt": "2026-05-01 12:34:56",
+                        "buyer": {
+                            "firstName": "Amaya",
+                            "lastName": "Perera",
+                            "email": "amaya@example.com"
+                        }
+                    }
+                ]
+            }
+        ],
+        "purchases": []
+    }
+}
+```
+
+| Field         | Description                                                        |
+|---------------|--------------------------------------------------------------------|
+| `sales`       | Payments collected by the user's events, grouped per event. Each group contains the event summary, `paymentCount`, `revenue`, platform `commission` (5%), `payout`, and the per-payment records with buyer details. |
+| `purchases`   | Payments the user made for other organizers' events, grouped per event. |
+
+### Response Body `401 ERROR` (missing auth)
+```json
+{
+    "success": false,
+    "message": "User not authenticated",
+    "data": null
+}
+```
+
+---
+
 ## Webhook (Payment Events)
 
 `POST /payment/webhook`

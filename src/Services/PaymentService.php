@@ -66,6 +66,16 @@ class PaymentService
         return $value === '1' || $value === 1 || $value === true;
     }
 
+    private function getOrganizerConnectedAccount(int $userId): ?string
+    {
+        $rows = PaymentAccount::where(['userId' => $userId]);
+        if (count($rows) === 0) {
+            return null;
+        }
+        $account = $rows[0];
+        return $this->isAccountConnected($account) ? $account['accountId'] : null;
+    }
+
     public function connectAccount(int $userId, string $email): array
     {
         $stripe = $this->getStripeClient();
@@ -282,13 +292,29 @@ class PaymentService
         $buyer = $userService->getUser((string)$userId);
         $customerEmail = ($buyer['email'] ?? null) ?: null;
 
+        $unitAmount = (int)round($ticketPrice * 100);
+        $totalAmount = $unitAmount * $quantity;
+
+        // 5% platform commission. Charged only when the event organizer has a
+        // connected Stripe account so the remaining 95% can be transferred to
+        // them at checkout. Without a connected account the full amount is
+        // collected by the platform and no commission applies.
+        $commissionRate = 0.05;
+        $applicationFeeAmount = null;
+        $transferDestination = null;
+        $organizerAccount = $this->getOrganizerConnectedAccount((int) $event['organizerId']);
+        if ($organizerAccount) {
+            $applicationFeeAmount = (int)round($totalAmount * $commissionRate);
+            $transferDestination = $organizerAccount;
+        }
+
         $sessionParams = [
             'payment_method_types' => ['card'],
             'mode' => 'payment',
             'line_items' => [[
                 'price_data' => [
                     'currency' => $currency,
-                    'unit_amount' => (int)round($ticketPrice * 100),
+                    'unit_amount' => $unitAmount,
                     'product_data' => [
                         'name' => $event['title'] ?? 'Event Ticket',
                         'description' => 'Ticket for ' . ($event['title'] ?? 'Event'),
@@ -308,6 +334,12 @@ class PaymentService
         if ($customerEmail) {
             $sessionParams['customer_email'] = $customerEmail;
         }
+        if ($applicationFeeAmount !== null && $transferDestination !== null) {
+            $sessionParams['payment_intent_data'] = [
+                'application_fee_amount' => $applicationFeeAmount,
+                'transfer_data' => ['destination' => $transferDestination],
+            ];
+        }
 
         $session = $this->runStripe(function () use ($stripe, $sessionParams) {
             return $stripe->checkout->sessions->create($sessionParams);
@@ -318,7 +350,30 @@ class PaymentService
             'url' => $session->url,
             'amount' => $ticketPrice,
             'currency' => $currency,
+            'quantity' => $quantity,
+            'commission' => $applicationFeeAmount !== null ? (float)($applicationFeeAmount / 100) : 0.0,
+            'organizerReceives' => $applicationFeeAmount !== null ? (float)(($totalAmount - $applicationFeeAmount) / 100) : null,
         ];
+    }
+
+    public function confirmPayment(int $userId, string $sessionId): void
+    {
+        $stripe = $this->getStripeClient();
+        $session = $this->runStripe(function () use ($stripe, $sessionId) {
+            return $stripe->checkout->sessions->retrieve($sessionId);
+        });
+
+        if (($session->payment_status ?? '') !== 'paid') {
+            throw new Exception("Payment has not been completed.");
+        }
+
+        $metadata = (array)($session->metadata ?? []);
+        $buyerId = (int) ($metadata['userId'] ?? 0);
+        if ($buyerId !== $userId) {
+            throw new Exception("This checkout session does not belong to your account.");
+        }
+
+        $this->recordCompletedPayment($session);
     }
 
     public function recordCompletedPayment($session): void
@@ -365,6 +420,92 @@ class PaymentService
         $amount = $session->amount_total ? (float)($session->amount_total / 100) : 0.0;
         $payment = new Payment((int)$userId, (int)$registerId, $amount);
         $payment->save();
+    }
+
+    public function getPaymentRecords(int $userId): array
+    {
+        // Money the user's events collected (as organizer)
+        $salesRows = Payment::query(
+            "SELECT p.id, p.amount, p.paymentAt,
+                    e.id AS eventId, e.title AS eventTitle, e.startDate AS eventStartDate, e.coverImage AS coverImage,
+                    u.firstName AS buyerFirstName, u.lastName AS buyerLastName, u.email AS buyerEmail
+             FROM Payments p
+             JOIN Registrations r ON r.id = p.registerId
+             JOIN events e ON e.id = r.eventId
+             JOIN users u ON u.id = p.userId
+             WHERE e.organizerId = ?
+             ORDER BY e.startDate DESC, p.paymentAt DESC",
+            [(int) $userId]
+        );
+
+        // Money the user spent on tickets (as buyer)
+        $purchaseRows = Payment::query(
+            "SELECT p.id, p.amount, p.paymentAt,
+                    e.id AS eventId, e.title AS eventTitle, e.startDate AS eventStartDate, e.coverImage AS coverImage
+             FROM Payments p
+             JOIN Registrations r ON r.id = p.registerId
+             JOIN events e ON e.id = r.eventId
+             WHERE p.userId = ?
+             ORDER BY e.startDate DESC, p.paymentAt DESC",
+            [(int) $userId]
+        );
+
+        return [
+            "sales" => $this->groupPaymentsByEvent($salesRows),
+            "purchases" => $this->groupPaymentsByEvent($purchaseRows),
+        ];
+    }
+
+    private function groupPaymentsByEvent(array $rows): array
+    {
+        $events = [];
+        $order = [];
+        foreach ($rows as $row) {
+            $eventId = (int) $row['eventId'];
+            if (!isset($events[$eventId])) {
+                $order[] = $eventId;
+                $events[$eventId] = [
+                    "event" => [
+                        "id" => $eventId,
+                        "title" => $row['eventTitle'] ?? '',
+                        "startDate" => $row['eventStartDate'] ?? null,
+                        "coverImage" => $row['coverImage'] ?? null,
+                    ],
+                    "paymentCount" => 0,
+                    "revenue" => 0.0,
+                    "commission" => 0.0,
+                    "payout" => 0.0,
+                    "payments" => [],
+                ];
+            }
+            $amount = (float) ($row['amount'] ?? 0);
+            $events[$eventId]['paymentCount']++;
+            $events[$eventId]['revenue'] = round($events[$eventId]['revenue'] + $amount, 2);
+            $events[$eventId]['payments'][] = [
+                "id" => (int) $row['id'],
+                "amount" => $amount,
+                "paymentAt" => $row['paymentAt'] ?? null,
+                "buyer" => isset($row['buyerFirstName'])
+                    ? [
+                        "firstName" => $row['buyerFirstName'],
+                        "lastName" => $row['buyerLastName'],
+                        "email" => $row['buyerEmail'],
+                    ]
+                    : null,
+            ];
+        }
+
+        $result = [];
+        foreach ($order as $eventId) {
+            $event = $events[$eventId];
+            if (isset($event['event'])) {
+                $commission = round($event['revenue'] * 0.05, 2);
+                $event['commission'] = $commission;
+                $event['payout'] = round($event['revenue'] - $commission, 2);
+            }
+            $result[] = $event;
+        }
+        return $result;
     }
 
     public function recordAccountUpdate($account): void
