@@ -8,6 +8,7 @@ $eventController = new EventController();
 $registrationController = new RegistrationController();
 
 $router->get("/events", [$eventController, "listEvents"], [AuthMiddleware::class]);
+$router->get("/my-events", [$eventController, "getMyEvents"], [AuthMiddleware::class]);
 $router->get("/event", [$eventController, "getEventDetails"]);
 $router->get("/event/{id}/can-manage", [$eventController, "canManageEvent"], [AuthMiddleware::class]);
 $router->post("/event", [$eventController, "createEvent"], [AuthMiddleware::class]);

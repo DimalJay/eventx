@@ -63,6 +63,27 @@ class EventService
         return array_map([$this, 'formatEvent'], $result);
     }
 
+    /**
+     * Events the user registered for (joined) — excludes events they created.
+     * Each item is the event row enriched with registration context:
+     *   registeredAt, registrationStatus, ticketCode.
+     */
+    public function getRegisteredEventsForUser(String $userId)
+    {
+        $rows = Event::query(
+            "SELECT e.*, r.registeredAt, r.status AS registrationStatus, t.ticketCode AS ticketCode
+             FROM Registrations r
+             JOIN events e ON e.id = r.eventId
+             LEFT JOIN tickets t ON t.registerId = r.id
+             WHERE r.userId = ?
+               AND e.organizerId <> ?
+             ORDER BY r.registeredAt DESC",
+            [(int) $userId, (int) $userId]
+        );
+
+        return array_map([$this, 'formatEvent'], $rows);
+    }
+
     public function getEvent(String $id)
     {
         $events = Event::where(["id" => $id]);
