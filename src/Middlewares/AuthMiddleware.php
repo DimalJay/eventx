@@ -46,6 +46,14 @@ class AuthMiddleware
             $user = \Models\User::where(["id" => $userId])[0] ?? null;
             if ($user && isset($user['accountStatus']) && strtolower($user['accountStatus']) === 'suspended') {
                 http_response_code(403);
+                setcookie("auth_token", null, [
+                "expires" => 0,
+                "path" => "/",
+                "domain" => getenv('DOMAIN'),
+                "secure" => true,
+                "httponly" => true,
+                "samesite" => "Lax"
+            ]);
                 echo json_encode([
                     "success" => false,
                     "suspended" => true,

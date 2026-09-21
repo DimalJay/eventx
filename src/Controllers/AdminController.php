@@ -414,4 +414,44 @@ class AdminController
         $diffDays = round($diff / 86400);
         return $diffDays . " day" . ($diffDays > 1 ? "s" : "") . " ago";
     }
+
+    public function updateEventStatus()
+    {
+        $data = json_decode(file_get_contents("php://input"), true);
+        $eventId = $data['eventId'] ?? null;
+        $status = $data['status'] ?? null;
+
+        if (empty($eventId) || empty($status)) {
+            http_response_code(400);
+            return [
+                "success" => false,
+                "message" => "Event ID and Status are required"
+            ];
+        }
+
+        if (!in_array($status, ['active', 'suspended'])) {
+            http_response_code(400);
+            return [
+                "success" => false,
+                "message" => "Invalid status value"
+            ];
+        }
+
+        try {
+            $newStatus = $status === 'suspended' ? 'suspended' : 'upcoming';
+
+            Event::updateRecord(["id" => (int)$eventId], ["status" => $newStatus]);
+            
+            return [
+                "success" => true,
+                "message" => "Event status updated successfully"
+            ];
+        } catch (\Throwable $th) {
+            http_response_code(500);
+            return [
+                "success" => false,
+                "message" => "Error updating status: " . $th->getMessage()
+            ];
+        }
+    }
 }

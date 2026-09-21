@@ -95,6 +95,15 @@ class RegistrationController
                 ];
             }
 
+            // check if event is suspended
+            if ($event && isset($event['status']) && strtolower($event['status']) === 'suspended') {
+                http_response_code(403);
+                return [
+                    "success" => false,
+                    "message" => "This event has been suspended by the administrator. Registration is not allowed."
+                ];
+            }
+
             // check if the user is already registered for the event
             $existingRegistration = $this->registrationService->isUserRegisteredForEvent($userId, $eventId);
             if ($existingRegistration) {

@@ -31,6 +31,15 @@ class EventController
         }
 
         try {
+            $event = $this->eventService->getEvent($eventId);
+            if ($event && isset($event['status']) && strtolower($event['status']) === 'suspended') {
+                return [
+                    "success" => true,
+                    "message" => "Access denied. Event is suspended.",
+                    "data" => ["canManage" => false, "isSuspended" => true],
+                ];
+            }
+
             $canManage = $this->teamAccessService->hasTeamAccess((int) $userId, (int) $eventId);
             return [
                 "success" => true,
@@ -83,6 +92,10 @@ class EventController
     private function assertManageAccess(int $eventId): bool
     {
         $userId = (int) ($_SERVER["uid"] ?? 0);
+        $event = $this->eventService->getEvent((string)$eventId);
+        if ($event && isset($event['status']) && strtolower($event['status']) === 'suspended') {
+            return false;
+        }
         return $this->teamAccessService->hasTeamAccess($userId, $eventId);
     }
 
