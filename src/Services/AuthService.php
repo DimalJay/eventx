@@ -79,8 +79,8 @@ class AuthService
     }
 
     public function logout() {
-        setcookie("auth_token", "", [
-            "expires" => time() - 3600,
+        setcookie("auth_token", null, [
+            "expires" => 0,
             "path" => "/",
             "secure" => true,
             "httponly" => true,

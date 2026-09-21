@@ -200,6 +200,11 @@ class InvitationController
                 exit;
             }
 
+            // If accepting, check that event is open and not ended/closed
+            if ($response === 'accept') {
+                $this->eventService->assertRegistrationOpen($event);
+            }
+
             // Check if registration exists
             $existing = Registration::where(["userId" => $userId, "eventId" => $eventId])[0] ?? null;
             $status = $response === 'accept' ? 'PENDING' : 'NOT_GOING';

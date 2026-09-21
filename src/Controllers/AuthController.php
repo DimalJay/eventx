@@ -300,7 +300,14 @@ class AuthController
     // logout function
     public function logout()
     {
-        $this->authService->logout();
+        setcookie("auth_token", null, [
+            "expires" => 0,
+            "path" => "/",
+            "secure" => true,
+            "domain" => getenv('DOMAIN'),
+            "httponly" => true,
+            "samesite" => "Lax"
+        ]);
         return [
             "success" => true,
             "message" => "User Logged out"

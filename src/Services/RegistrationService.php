@@ -29,6 +29,8 @@ class RegistrationService
             throw new Exception("Event not found");
         }
 
+        (new EventService())->assertRegistrationOpen($event);
+
         if ((int)$event['organizerId'] === (int)$registration->getUserId()) {
             throw new Exception("Organizer cannot register to their own event");
         }

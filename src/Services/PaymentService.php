@@ -260,6 +260,8 @@ class PaymentService
             throw new Exception("Event not found");
         }
 
+        $this->eventService->assertRegistrationOpen($event);
+
         $ticketPrice = (float)($event['ticketPrice'] ?? 0);
         if ($ticketPrice <= 0) {
             throw new Exception("This event is free. No payment required.");

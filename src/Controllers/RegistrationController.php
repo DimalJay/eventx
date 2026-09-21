@@ -95,6 +95,9 @@ class RegistrationController
                 ];
             }
 
+            // Check if event is closed or ended
+            $this->eventService->assertRegistrationOpen($event);
+
             // A paid event requires purchasing a ticket; free join is blocked
             if ((float)($event["ticketPrice"] ?? 0) > 0) {
                 http_response_code(400);

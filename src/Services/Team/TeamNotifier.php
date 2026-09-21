@@ -7,6 +7,7 @@ use Services\NotificationService;
 use Helpers\EmailHelper;
 use Models\User;
 use Models\Event;
+use Helpers\Config;
 
 class TeamNotifier extends NotificationService implements TeamNotifierInterface
 {
@@ -25,14 +26,14 @@ class TeamNotifier extends NotificationService implements TeamNotifierInterface
         $this->notifyTeamMemberAdded($memberId, $eventTitle, $eventId);
 
         $backendUrl = EmailHelper::backendUrl();
-        $secretKey = \Helpers\Config::requireSecret('APP_SECRET');
+        $secretKey = Config::requireSecret('APP_SECRET');
 
         $acceptToken = hash_hmac('sha256', 'team-' . $teamAccessId . '-accept', $secretKey);
         $declineToken = hash_hmac('sha256', 'team-' . $teamAccessId . '-decline', $secretKey);
 
-        $acceptLink = $backendUrl . "/eventx/api/v1/team-access/respond?teamAccessId=" . $teamAccessId 
+        $acceptLink = $backendUrl . "/team-access/respond?teamAccessId=" . $teamAccessId 
             . "&response=accept&token=" . $acceptToken;
-        $declineLink = $backendUrl . "/eventx/api/v1/team-access/respond?teamAccessId=" . $teamAccessId 
+        $declineLink = $backendUrl . "/team-access/respond?teamAccessId=" . $teamAccessId 
             . "&response=decline&token=" . $declineToken;
 
         EmailHelper::sendWithTemplate(

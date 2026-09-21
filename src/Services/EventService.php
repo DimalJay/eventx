@@ -129,4 +129,47 @@ class EventService
     {
         return array_map([$this, 'formatEvent'], Event::where(["isPublic" => true]));
     }
+
+    public function assertRegistrationOpen(array $event): void
+    {
+        $now = new \DateTime('now', new \DateTimeZone('Asia/Colombo'));
+        $status = strtolower(trim($event['status'] ?? 'upcoming'));
+
+        if (in_array($status, ['completed', 'ended'], true)) {
+            throw new \Exception("Event has ended. New registrations are not accepted.");
+        }
+        if ($status === 'cancelled') {
+            throw new \Exception("Event has been cancelled. New registrations are not accepted.");
+        }
+        if ($status === 'closed') {
+            throw new \Exception("Event is closed. New registrations are not accepted.");
+        }
+        if ($status === 'draft') {
+            throw new \Exception("Event is not open for registration.");
+        }
+
+        if (!empty($event['endDate'])) {
+            $end = new \DateTime($event['endDate'], new \DateTimeZone('Asia/Colombo'));
+            if ($now > $end) {
+                throw new \Exception("Event has ended. New registrations are not accepted.");
+            }
+        }
+
+        if (!empty($event['regDeadline'])) {
+            $deadline = new \DateTime($event['regDeadline'], new \DateTimeZone('Asia/Colombo'));
+            if ($now > $deadline) {
+                throw new \Exception("Registration deadline has passed. New registrations are not accepted.");
+            }
+        }
+    }
+
+    public function isRegistrationOpen(array $event): bool
+    {
+        try {
+            $this->assertRegistrationOpen($event);
+            return true;
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
 }
