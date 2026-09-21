@@ -19,4 +19,4 @@ package: sha256:7ded89e1e3059f953635d96c22824fec0f31d988b3233053b20db39d4d14abd8
 
 volumes:
   - name: uploads
-    mount: /uploads
+    mount: /app/uploads
