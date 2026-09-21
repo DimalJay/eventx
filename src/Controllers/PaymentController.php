@@ -138,6 +138,62 @@ class PaymentController
         }
     }
 
+    public function getPaymentRecords()
+    {
+        $userId = $this->userId();
+        if (!$userId) {
+            return [
+                "success" => false,
+                "message" => "User not authenticated",
+                "data" => null
+            ];
+        }
+
+        $data = $this->paymentService->getPaymentRecords($userId);
+
+        return [
+            "success" => true,
+            "message" => "Payment records retrieved",
+            "data" => $data
+        ];
+    }
+
+    public function confirmPayment()
+    {
+        $userId = $this->userId();
+        if (!$userId) {
+            return [
+                "success" => false,
+                "message" => "User not authenticated",
+                "data" => null
+            ];
+        }
+
+        $sessionId = $this->requestData()["session_id"] ?? "";
+        if (empty($sessionId)) {
+            return [
+                "success" => false,
+                "message" => "session_id is required",
+                "data" => null
+            ];
+        }
+
+        try {
+            $this->paymentService->confirmPayment($userId, $sessionId);
+            return [
+                "success" => true,
+                "message" => "Payment recorded",
+                "data" => null
+            ];
+        } catch (Throwable $th) {
+            return [
+                "success" => false,
+                "message" => "Error confirming payment: " . $th->getMessage(),
+                "data" => null
+            ];
+        }
+    }
+
     public function handleWebhook()
     {
         $payload = @file_get_contents('php://input');
