@@ -5,6 +5,7 @@ namespace Services;
 use Stripe\StripeClient;
 use Models\Payment;
 use Models\PaymentAccount;
+use Models\Registration;
 use DateTime;
 use Exception;
 use Throwable;
@@ -378,14 +379,15 @@ class PaymentService
 
     public function recordCompletedPayment($session): void
     {
+        
         if (($session->payment_status ?? '') !== 'paid') {
             return;
         }
 
-        $metadata = (array)($session->metadata ?? []);
-        $userId = $metadata['userId'] ?? null;
-        $eventId = $metadata['eventId'] ?? null;
-        $registerId = $metadata['registerId'] ?? null;
+        $metadata = $session->metadata;
+        $userId = $metadata->userId;
+        $eventId = $metadata->eventId;
+        $registerId = $metadata->registerId;
 
         if (!$userId || !$eventId) {
             return;
@@ -397,10 +399,10 @@ class PaymentService
         if (!$registerId) {
             $registrationService = new RegistrationService();
             if (!$registrationService->isUserRegisteredForEvent($userId, $eventId)) {
-                $registration = new \Models\Registration($eventId, $userId);
+                $registration = new Registration($eventId, $userId);
                 $registerId = $registrationService->registerUserForEvent($registration);
             } else {
-                $existing = \Models\Registration::where(["userId" => $userId, "eventId" => $eventId]);
+                $existing = Registration::where(["userId" => $userId, "eventId" => $eventId]);
                 $registerId = $existing[0]['id'];
             }
         }
@@ -408,7 +410,7 @@ class PaymentService
         if (!$registerId) {
             return;
         }
-
+        
         $exists = Payment::where([
             "userId" => (int)$userId,
             "registerId" => (int)$registerId,
