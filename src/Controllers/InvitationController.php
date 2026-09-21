@@ -87,9 +87,9 @@ class InvitationController
             $acceptToken = hash_hmac('sha256', $eventId . '-' . $email . '-accept', $secretKey);
             $declineToken = hash_hmac('sha256', $eventId . '-' . $email . '-decline', $secretKey);
 
-            $acceptLink = $backendUrl . "/eventx/api/v1/invitation/respond?eventId=" . $eventId 
+            $acceptLink = $backendUrl . "/invitation/respond?eventId=" . $eventId 
                 . "&email=" . urlencode($email) . "&role=" . urlencode($role) . "&response=accept&token=" . $acceptToken;
-            $declineLink = $backendUrl . "/eventx/api/v1/invitation/respond?eventId=" . $eventId 
+            $declineLink = $backendUrl . "/invitation/respond?eventId=" . $eventId 
                 . "&email=" . urlencode($email) . "&role=" . urlencode($role) . "&response=decline&token=" . $declineToken;
 
             $success = EmailHelper::sendWithTemplate($email, "Exclusive Invitation: " . $event["title"], "invitation", [

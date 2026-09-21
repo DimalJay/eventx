@@ -97,7 +97,7 @@ class EmailHelper
 
     public static function backendUrl(): string
     {
-        $host = self::host('DOMAIN');
+        $host = self::host('BACKEND_ENDPOINT');
         if (str_starts_with($host, 'http://') || str_starts_with($host, 'https://')) {
             return rtrim($host, '/');
         }
