@@ -13,7 +13,8 @@ class Router
             "http://localhost:3000",
             "http://localhost:3001",
             "https://eventx-mega.vercel.app",
-            "https://eventx.dimaljay.com"
+            "https://eventx.dimaljay.com",
+            "https://admin.eventx.dimaljay.com"
         ];
         
         $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
