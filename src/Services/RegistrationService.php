@@ -28,19 +28,40 @@ class RegistrationService
         if(!$event) {
             throw new Exception("Event not found");
         }
-        $capacity =  $event['capacity'] ?? 0;
-        if($capacity > 0) {
-            $registrationCount = count($this->getRegistrationsByEventId($registration->getEventId()));
-            if($registrationCount >= $capacity) {
-                if($event['waitlistEnabled'] ?? false) {
+
+        if ((int)$event['organizerId'] === (int)$registration->getUserId()) {
+            throw new Exception("Organizer cannot register to their own event");
+        }
+
+        if ($this->isUserRegisteredForEvent($registration->getUserId(), $registration->getEventId())) {
+            throw new Exception("User is already registered for this event");
+        }
+
+        $capacity = (int)($event['capacity'] ?? 0);
+        if ($capacity > 0) {
+            $registrationCount = $this->getActiveRegistrationCount((int)$registration->getEventId());
+            if ($registrationCount >= $capacity) {
+                $waitlistEnabled = filter_var($event['waitlistEnabled'] ?? false, FILTER_VALIDATE_BOOLEAN);
+                if ($waitlistEnabled) {
                     $registration->setInWaitlist();
                 } else {
-                    throw new Exception("Event is full and waitlist is not enabled");
+                    throw new Exception("Event is full. Registration is closed.");
                 }
             }
         }
 
         return $registration->save();
+    }
+
+    public function getActiveRegistrationCount(int $eventId): int
+    {
+        $rows = Registration::query(
+            "SELECT COUNT(*) as count FROM Registrations 
+             WHERE eventId = :eventId 
+               AND status NOT IN ('WAITLIST', 'CANCELLED', 'NOT_GOING')",
+            ['eventId' => $eventId]
+        );
+        return (int)($rows[0]['count'] ?? 0);
     }
 
     public function isUserRegisteredForEvent($userId, $eventId)
@@ -106,10 +127,10 @@ class RegistrationService
     /**
      * Create a ticket row for a registration and link it via Registrations.ticketId.
      */
-    public function createTicketForRegistration(int $regId, int $eventId, int $userId, ?string $ticketCode = null)
+    public function createTicketForRegistration(int $regId, int $eventId, int $userId, ?string $ticketCode = null, int $paymentId = 0)
     {
         $ticketCode = $ticketCode ?: uniqid();
-        $ticket = new Ticket($eventId, $userId, $ticketCode, $regId);
+        $ticket = new Ticket($eventId, $userId, $ticketCode, $regId, $paymentId);
         $ticketId = $ticket->save();
         Registration::updateRecord(["id" => $regId], ["ticketId" => $ticketId]);
         return Ticket::where(["id" => $ticketId])[0] ?? null;
