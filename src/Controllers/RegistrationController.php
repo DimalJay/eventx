@@ -76,8 +76,16 @@ class RegistrationController
                 $userId = $this->userService->createUser($user);
             } else {
                 $userId = $user["id"];
+                if (isset($user['accountStatus']) && strtolower($user['accountStatus']) === 'suspended') {
+                    http_response_code(403);
+                    return [
+                        "success" => false,
+                        "message" => "Your account has been suspended by the administrator. Registration is not allowed."
+                    ];
+                }
             }
 
+            // the event organizer cannot register to their own event
             $event = $this->eventService->getEvent($eventId);
             if (!$event) {
                 http_response_code(404);
@@ -109,7 +117,16 @@ class RegistrationController
                 ];
             }
 
-            // Check if the user is already registered for the event
+            // check if event is suspended
+            if ($event && isset($event['status']) && strtolower($event['status']) === 'suspended') {
+                http_response_code(403);
+                return [
+                    "success" => false,
+                    "message" => "This event has been suspended by the administrator. Registration is not allowed."
+                ];
+            }
+
+            // check if the user is already registered for the event
             $existingRegistration = $this->registrationService->isUserRegisteredForEvent($userId, $eventId);
             if ($existingRegistration) {
                 http_response_code(400);
