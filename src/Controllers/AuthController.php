@@ -265,6 +265,14 @@ class AuthController
         }
 
         $response = $this->authService->login($email, $password);
+        if ($response && isset($response['suspended'])) {
+            http_response_code(403);
+            return [
+                "success" => false,
+                "message" => $response['message'] ?? "Your account has been suspended.",
+                "suspended" => true
+            ];
+        }
         if ($response && isset($response['unverified'])) {
             http_response_code(403);
             return [
@@ -376,6 +384,14 @@ class AuthController
         }
 
         $response = $this->authService->googleLogin($credential);
+        if ($response && isset($response['suspended'])) {
+            http_response_code(403);
+            return [
+                "success" => false,
+                "message" => $response['message'] ?? "Your account has been suspended.",
+                "suspended" => true
+            ];
+        }
         if ($response) {
             http_response_code(200);
             return [

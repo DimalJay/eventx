@@ -40,7 +40,29 @@ class AuthMiddleware
 
         try {
             $decoded = JWT::decode($token, new Key($secretKey, 'HS256'));
-            $_SERVER['uid'] = $decoded->data->id;
+            $userId = $decoded->data->id;
+
+            // Check if user is suspended
+            $user = \Models\User::where(["id" => $userId])[0] ?? null;
+            if ($user && isset($user['accountStatus']) && strtolower($user['accountStatus']) === 'suspended') {
+                http_response_code(403);
+                setcookie("auth_token", null, [
+                    "expires" => 0,
+                    "path" => "/",
+                    "domain" => getenv('DOMAIN'),
+                    "secure" => true,
+                    "httponly" => true,
+                    "samesite" => "Lax"
+                ]);
+                echo json_encode([
+                    "success" => false,
+                    "suspended" => true,
+                    "message" => "Your account has been suspended by an administrator."
+                ]);
+                return false;
+            }
+
+            $_SERVER['uid'] = $userId;
             return true;
         } catch (\Firebase\JWT\ExpiredException $e) {
             http_response_code(401);

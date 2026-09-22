@@ -205,26 +205,10 @@ class InvitationController
                 $this->eventService->assertRegistrationOpen($event);
             }
 
-            // Check if registration exists
-            $existing = Registration::where(["userId" => $userId, "eventId" => $eventId])[0] ?? null;
-            $status = $response === 'accept' ? 'PENDING' : 'NOT_GOING';
-
             // Update guest table status
             $guestRec = \Models\Guest::where(['eventId' => $eventId, 'email' => $email])[0] ?? null;
             if ($guestRec) {
                 \Models\Guest::updateRecord(['id' => $guestRec['id']], ['status' => $response === 'accept' ? 'accepted' : 'declined']);
-            }
-
-            if ($existing) {
-                $updateData = ["status" => $status];
-                Registration::updateRecord(["id" => $existing['id']], $updateData);
-                $this->registrationService->ensureInviteTicket((int) $existing['id'], (int) $eventId, (int) $userId, $role);
-            } else {
-                $registration = new Registration($eventId, $userId);
-                $regId = $this->registrationService->registerUserForEvent($registration);
-
-                Registration::updateRecord(["id" => $regId], ["status" => $status]);
-                $this->registrationService->ensureInviteTicket((int) $regId, (int) $eventId, (int) $userId, $role);
             }
 
             // Redirect to Next.js
